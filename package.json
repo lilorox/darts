@@ -1,0 +1,23 @@
+{
+  "name": "darts",
+  "version": "0.0.1",
+  "description": "Web app to keep scores and stats at darts",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lilorox/darts.git"
+  },
+  "author": "Pierre Gaxatte",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/lilorox/darts/issues"
+  },
+  "homepage": "https://github.com/lilorox/darts#readme",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-bowercopy": "^1.2.4"
+  }
+}
