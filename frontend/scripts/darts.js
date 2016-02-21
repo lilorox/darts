@@ -1,15 +1,14 @@
 $(function() {
-    var canvas = $("#dartboard > canvas")[0],
-        dartboard = new DartBoard(canvas);
-
-    (function(dartboard) {
-        $(canvas).on('click', function(evt) {
+    var dartboard = $('#dartboard').DartBoard({
+        onClick: function(evt) {
             var rect = this.getBoundingClientRect(),
-                score = dartboard.detectScore(
+                dartboard =  $(this).data('dartboard'),
+                score = dartboard.DartBoard(
+                    'getScore',
                     evt.clientX - rect.left,
                     evt.clientY - rect.top
                 );
             console.log('score=', score);
-        });
-    })(dartboard);
+        }
+    });
 });
