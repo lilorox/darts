@@ -20,10 +20,12 @@ var games = {
         desc: "Cricket",
         variants: {
             normal: {
-                desc: "Normal (2 players)"
+                desc: "Normal (2 players)",
+                nbPlayers: { min: 2, max: 2 }
             },
             cutThroat: {
-                desc: "Cut throat (2+ players)"
+                desc: "Cut throat (2+ players)",
+                nbPlayers: { min: 2 }
             }
         }
     },
@@ -46,12 +48,20 @@ var games = {
     }
 };
 
+function buildNbPlayersSpinbox(conf) {
+    console.log(conf);
+    $('#game-nbplayers').spinbox(conf);
+    $('#game-nbplayers').prop('disabled', false);
+}
+
 function buildVariantSelect(game) {
     $('#game-variant').empty();
+    /*
     $('<option>')
         .val('')
         .text('')
         .appendTo($('#game-variant'));
+    */
 
     Object.keys(games[game].variants).forEach(function(key) {
         $('<option>')
@@ -61,9 +71,26 @@ function buildVariantSelect(game) {
     });
 
     $('#game-variant').on('change', function(evt) {
-        var variant = $(this).val();
-        console.log(variant);
+        var variant = games[game].variants[$(this).val()],
+            nbPlayersConf = {
+                value: 2,
+                min: 1
+            };
+
+        if('nbPlayers' in variant) {
+            if('min' in variant.nbPlayers) {
+                nbPlayersConf.min = variant.nbPlayers.min;
+            }
+
+            if('max' in variant.nbPlayers) {
+                nbPlayersConf.max = variant.nbPlayers.max;
+            }
+        }
+
+        buildNbPlayersSpinbox(nbPlayersConf);
     });
+
+    $('#game-variant').trigger('change');
 }
 
 function buildGameSelect() {
@@ -83,6 +110,8 @@ function buildGameSelect() {
         $('#game-variant').prop('disabled', false);
         buildVariantSelect(game);
     });
+
+    $('#game-select').trigger('change');
 }
 
 $(function() {
@@ -100,4 +129,11 @@ $(function() {
     });
 
     buildGameSelect();
+
+    $('#fold-menu').on('click', function(evt) {
+        evt.preventDefault();
+        $('#menu').toggle();
+        $("span", this).toggleClass("glyphicon-chevron-up");
+        $("span", this).toggleClass("glyphicon-chevron-down");
+    });
 });
