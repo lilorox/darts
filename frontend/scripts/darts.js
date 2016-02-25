@@ -50,18 +50,11 @@ var games = {
 
 function buildNbPlayersSpinbox(conf) {
     console.log(conf);
-    $('#game-nbplayers').spinbox(conf);
     $('#game-nbplayers').prop('disabled', false);
 }
 
 function buildVariantSelect(game) {
     $('#game-variant').empty();
-    /*
-    $('<option>')
-        .val('')
-        .text('')
-        .appendTo($('#game-variant'));
-    */
 
     Object.keys(games[game].variants).forEach(function(key) {
         $('<option>')
