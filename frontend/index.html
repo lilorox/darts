@@ -8,7 +8,8 @@
 
     <link rel="stylesheet" href="css/libs/bootstrap/bootstrap.min.css"/>
     <link rel="stylesheet" href="css/libs/bootstrap/bootstrap-theme.min.css"/>
-    <link rel="stylesheet" href="css/libs/fuelux/fuelux.min.css"/>
+    <link rel="stylesheet" href="css/libs/select2/select2.min.css"/>
+    <link rel="stylesheet" href="css/libs/select2/select2-bootstrap.css"/>
     <link rel="stylesheet" href="css/darts.css"/>
   </head>
   <body>
@@ -26,8 +27,13 @@
           </div>
           <div class="form-group">
             <label for"game-nbplayers">Nb. of players</label>
-            <input id="game-nbplayers" class="form-control" type="number" disabled="disabled"></input>
+            <input id="game-nbplayers" class="form-control" type="number" disabled="disabled" value="0"></input>
           </div>
+          <div class="form-group">
+            <label for"game-players">Players</label>
+            <select id="game-players" class="form-control" disabled="disabled"></select>
+          </div>
+          <input id="game-submit" class="form-control" type="submit" value="Go"></input>
         </form>
       </div>
       <div class="fold">
@@ -48,7 +54,7 @@
     </div>
     <script type="text/javascript" src="scripts/libs/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="scripts/libs/bootstrap/bootstrap.min.js"></script>
-    <script type="text/javascript" src="scripts/libs/fuelux/fuelux.min.js"></script>
+    <script type="text/javascript" src="scripts/libs/select2/select2.min.js"></script>
     <script type="text/javascript" src="scripts/jquery.DartBoard.js"></script>
     <script type="text/javascript" src="scripts/darts.js"></script>
   </body>

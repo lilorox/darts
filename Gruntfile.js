@@ -13,6 +13,7 @@ module.exports = function(grunt) {
                 files: {
                     'jquery/jquery.min.js': 'jquery/dist/jquery.min.js',
                     'bootstrap/bootstrap.min.js': 'bootstrap/dist/js/bootstrap.min.js',
+                    'select2/select2.min.js': 'select2/dist/js/select2.min.js',
                 }
             },
             css: {
@@ -23,6 +24,8 @@ module.exports = function(grunt) {
                     'bootstrap/bootstrap.min.css': 'bootstrap/dist/css/bootstrap.min.css',
                     'fonts/glyphicons-halflings-regular.woff': 'bootstrap/dist/fonts/glyphicons-halflings-regular.woff',
                     'bootstrap/bootstrap-theme.min.css': 'bootstrap/dist/css/bootstrap-theme.min.css',
+                    'select2/select2.min.css': 'select2/dist/css/select2.min.css',
+                    'select2/select2-bootstrap.css': 'select2-bootstrap/select2-bootstrap.css',
                 }
             },
             fonts: {

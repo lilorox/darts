@@ -48,9 +48,34 @@ var games = {
     }
 };
 
-function buildNbPlayersSpinbox(conf) {
-    console.log(conf);
+function buildPlayersSelect() {
+    $('#game-players').select2({
+        tags: true
+    });
+}
+
+function buildNbPlayersInput(conf) {
+    var min = conf.min || 1,
+        max = conf.max || null,
+        value = conf.value || 2;
+    $('#game-nbplayers').val(value);
+
+    if(min === max) {
+        // Disable the input since there is no possible choice
+        $('#game-nbplayers').prop('disabled', true);
+        return;
+    }
+    
     $('#game-nbplayers').prop('disabled', false);
+    (function(value, min, max) {
+        $('#game-nbplayers').on('change', function(evt) {
+            if($(this).val() < min) {
+                $(this).val(min);
+            } else if(max != null && $(this).val() > max) {
+                $(this).val(max);
+            }
+        });
+    })(value, min, max);
 }
 
 function buildVariantSelect(game) {
@@ -80,7 +105,7 @@ function buildVariantSelect(game) {
             }
         }
 
-        buildNbPlayersSpinbox(nbPlayersConf);
+        buildNbPlayersInput(nbPlayersConf);
     });
 
     $('#game-variant').trigger('change');
@@ -122,6 +147,16 @@ $(function() {
     });
 
     buildGameSelect();
+    buildPlayersSelect();
+
+    $('#menu form').on('submit', function(evt) {
+        evt.preventDefault();
+        var game = $('#game-select').val(),
+            variant = $('#game-variant').val(),
+            nbPlayers = $('#game-nbplayers').val();
+
+        console.log('Game:', game, variant, nbPlayers);
+    });
 
     $('#fold-menu').on('click', function(evt) {
         evt.preventDefault();
