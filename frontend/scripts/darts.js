@@ -49,8 +49,31 @@ var games = {
 };
 
 function buildPlayersSelect() {
+    $('#game-players').prop('disabled', false);
     $('#game-players').select2({
-        tags: true
+        placeholder: 'Add players',
+        tags: true,
+        tokenSeparators: [',', ' '],
+        multiple: true
+    });
+    
+    $('#game-players').on('change', function(evt) {
+        var min = $('#game-nbplayers').data('min'),
+            max = $('#game-nbplayers').data('max'),
+            values = $(this).val();
+
+        if(values.length < min) {
+            $('#game-submit').prop('disabled', true);
+            return;
+        }
+
+        while(values.length > max) {
+            $('#game-players option:last-child').remove();
+            $('#game-players').trigger('change');
+            values = $(this).val();
+        }
+
+        $('#game-submit').prop('disabled', false);
     });
 }
 
@@ -59,6 +82,10 @@ function buildNbPlayersInput(conf) {
         max = conf.max || null,
         value = conf.value || 2;
     $('#game-nbplayers').val(value);
+    $('#game-nbplayers').data('min', min);
+    if(max != null) {
+        $('#game-nbplayers').data('max', max);
+    }
 
     if(min === max) {
         // Disable the input since there is no possible choice
@@ -67,15 +94,13 @@ function buildNbPlayersInput(conf) {
     }
     
     $('#game-nbplayers').prop('disabled', false);
-    (function(value, min, max) {
-        $('#game-nbplayers').on('change', function(evt) {
-            if($(this).val() < min) {
-                $(this).val(min);
-            } else if(max != null && $(this).val() > max) {
-                $(this).val(max);
-            }
-        });
-    })(value, min, max);
+    $('#game-nbplayers').on('change', function(evt) {
+        if($(this).data('min') && $(this).val() < $(this).data('min')) {
+            $(this).val(min);
+        } else if($(this).data('max') && $(this).val() > $(this).data('max')) {
+            $(this).val(max);
+        }
+    });
 }
 
 function buildVariantSelect(game) {
@@ -132,6 +157,22 @@ function buildGameSelect() {
     $('#game-select').trigger('change');
 }
 
+function toggleMenu() {
+    $('#menu').toggle();
+    $("span", this).toggleClass("glyphicon-chevron-up");
+    $("span", this).toggleClass("glyphicon-chevron-down");
+}
+
+function startGame() {
+    var game = $('#game-select').val(),
+        variant = $('#game-variant').val(),
+        players = $('#game-players').val();
+
+    toggleMenu();
+
+    console.log('Game:', game, variant, players);
+}
+
 $(function() {
     var dartboard = $('#dartboard').DartBoard({
         onClick: function(evt) {
@@ -151,17 +192,11 @@ $(function() {
 
     $('#menu form').on('submit', function(evt) {
         evt.preventDefault();
-        var game = $('#game-select').val(),
-            variant = $('#game-variant').val(),
-            nbPlayers = $('#game-nbplayers').val();
-
-        console.log('Game:', game, variant, nbPlayers);
+        startGame();
     });
 
     $('#fold-menu').on('click', function(evt) {
         evt.preventDefault();
-        $('#menu').toggle();
-        $("span", this).toggleClass("glyphicon-chevron-up");
-        $("span", this).toggleClass("glyphicon-chevron-down");
+        toggleMenu();
     });
 });
