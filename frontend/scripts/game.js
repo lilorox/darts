@@ -17,4 +17,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;(function(window) {
 
+    var rules = {
+        cricket: {
+            desc: "Cricket",
+            variants: {
+                normal: {
+                    desc: "Normal (2 players)",
+                    nbPlayers: { min: 2, max: 2 }
+                },
+                cutThroat: {
+                    desc: "Cut throat (2+ players)",
+                    nbPlayers: { min: 2 }
+                }
+            }
+        },
+        x01: {
+            desc: "x01",
+            variants: {
+                301: {
+                    desc: "301"
+                },
+                501: {
+                    desc: "501"
+                },
+                701: {
+                    desc: "701"
+                }
+            }
+        },
+        clock: {
+            desc: "Around the clock",
+            variants: {
+                normal: {
+                    desc: "No variant"
+                }
+            }
+        }
+    };
+
+    var Game = function(type, variant, players) {
+    };
+
+    window.Game = Game;
+    window.rules = rules;
+
 })(window);

@@ -15,39 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-var games = {
-    cricket: {
-        desc: "Cricket",
-        variants: {
-            normal: {
-                desc: "Normal (2 players)",
-                nbPlayers: { min: 2, max: 2 }
-            },
-            cutThroat: {
-                desc: "Cut throat (2+ players)",
-                nbPlayers: { min: 2 }
-            }
-        }
-    },
-    x01: {
-        desc: "x01",
-        variants: {
-            301: {
-                desc: "301"
-            },
-            501: {
-                desc: "501"
-            },
-            701: {
-                desc: "701"
-            }
-        }
-    },
-    clock: {
-        desc: "Around the clock"
-    }
-};
-
 function buildPlayersSelect() {
     $('#game-players').prop('disabled', false);
     $('#game-players').select2({
@@ -59,7 +26,7 @@ function buildPlayersSelect() {
     
     $('#game-players').on('change', function(evt) {
         var min = $('#game-nbplayers').data('min'),
-            max = $('#game-nbplayers').data('max'),
+            max = $('#game-nbplayers').val(),
             values = $(this).val();
 
         if(values.length < min) {
@@ -81,11 +48,10 @@ function buildNbPlayersInput(conf) {
     var min = conf.min || 1,
         max = conf.max || null,
         value = conf.value || 2;
+
     $('#game-nbplayers').val(value);
     $('#game-nbplayers').data('min', min);
-    if(max != null) {
-        $('#game-nbplayers').data('max', max);
-    }
+    $('#game-nbplayers').data('max', max);
 
     if(min === max) {
         // Disable the input since there is no possible choice
@@ -106,15 +72,15 @@ function buildNbPlayersInput(conf) {
 function buildVariantSelect(game) {
     $('#game-variant').empty();
 
-    Object.keys(games[game].variants).forEach(function(key) {
+    Object.keys(rules[game].variants).forEach(function(key) {
         $('<option>')
             .val(key)
-            .text(games[game].variants[key].desc)
+            .text(rules[game].variants[key].desc)
             .appendTo($('#game-variant'));
     });
 
     $('#game-variant').on('change', function(evt) {
-        var variant = games[game].variants[$(this).val()],
+        var variant = rules[game].variants[$(this).val()],
             nbPlayersConf = {
                 value: 2,
                 min: 1
@@ -137,16 +103,16 @@ function buildVariantSelect(game) {
 }
 
 function buildGameSelect() {
-    Object.keys(games).forEach(function(key) {
+    Object.keys(rules).forEach(function(key) {
         $('<option>')
             .val(key)
-            .text(games[key].desc)
+            .text(rules[key].desc)
             .appendTo($('#game-select'));
     });
 
     $('#game-select').on('change', function(evt) {
         var game = $(this).val();
-        if(game.length === 0 || !('variants' in games[game])) {
+        if(game.length === 0 || !('variants' in rules[game])) {
             $('#game-variant').prop('disabled', true);
             return;
         };
@@ -158,9 +124,9 @@ function buildGameSelect() {
 }
 
 function toggleMenu() {
-    $('#menu').toggle();
-    $("span", this).toggleClass("glyphicon-chevron-up");
-    $("span", this).toggleClass("glyphicon-chevron-down");
+    $('#menu').toggle(200);
+    $(".fold span").toggleClass("glyphicon-chevron-up");
+    $(".fold span").toggleClass("glyphicon-chevron-down");
 }
 
 function startGame() {
