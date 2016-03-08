@@ -16,49 +16,124 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
+    var BaseGame = function(type, variant, players, dartboardId, scoreboardId) {
+        this.type = type;
+        this.variant = variant;
+        this.players = players;
 
-    var rules = {
-        cricket: {
-            desc: "Cricket",
-            variants: {
-                normal: {
-                    desc: "Normal (2 players)",
-                    nbPlayers: { min: 2, max: 2 }
-                },
-                cutThroat: {
-                    desc: "Cut throat (2+ players)",
-                    nbPlayers: { min: 2 }
-                }
+        var onClickAction = (function(game) {
+            return function(evt) {
+                var rect = this.getBoundingClientRect(),
+                    dartboard =  $(this).data('dartboard'),
+                    score = dartboard.DartBoard(
+                        'getScore',
+                        evt.clientX - rect.left,
+                        evt.clientY - rect.top
+                    );
+                game.processNewScore(score);
+            }
+        })(this);
+
+        this.dartboard = $('#' + dartboardId).DartBoard({
+            onClick: onClickAction
+        });
+
+        this.scoreboard = $('#' + scoreboardId);
+
+        this.buildScoreTable();
+//        console.log('BaseGame:', this.type, this.variant, this.players);
+    };
+    BaseGame.prototype = {
+        buildScoreTable: function() { return; },
+        processNewScore: function(score) { return; }
+    };
+
+    var games = {}
+    games.cricket =  {
+        desc: "Cricket",
+        variants: {
+            normal: {
+                desc: "Normal (2 players)",
+                nbPlayers: { min: 2, max: 2 }
+            },
+            cutThroat: {
+                desc: "Cut throat (2+ players)",
+                nbPlayers: { min: 2 }
             }
         },
-        x01: {
-            desc: "x01",
-            variants: {
-                301: {
-                    desc: "301"
-                },
-                501: {
-                    desc: "501"
-                },
-                701: {
-                    desc: "701"
-                }
+        obj: {}
+    };
+    games.cricket.obj = function(players, dartboardId, scoreboardId) {
+        BaseGame.call(this, 'cricket', 'normal', players, dartboardId, scoreboardId);
+    };
+    games.cricket.obj.prototype = Object.create(BaseGame.prototype, {
+        buildScoreTable: {
+            value: function() {
+                console.log('Building score table');
+                this.scoreboard.append('<p>Pouet</p>');
             }
         },
-        clock: {
-            desc: "Around the clock",
-            variants: {
-                normal: {
-                    desc: "No variant"
-                }
+        processNewScore: {
+            value: function(score) {
+                console.log('score=', score);
+            }
+        }
+    });
+    games.cricket.obj.prototype.constructor = games.cricket.obj;
+
+
+    games.x01 = {
+        desc: "x01",
+        variants: {
+            301: {
+                desc: "301"
+            },
+            501: {
+                desc: "501"
+            },
+            701: {
+                desc: "701"
             }
         }
     };
 
-    var Game = function(type, variant, players) {
+
+    games.clock = {
+        desc: "Around the clock",
+        variants: {
+            normal: {
+                desc: "No variant"
+            }
+        }
     };
 
-    window.Game = Game;
-    window.rules = rules;
 
+    games.killer = {
+        desc: "Killer",
+        variants: {
+            normal: {
+                desc: "No variant",
+                nbPlayers: { min: 4 }
+            }
+        }
+    };
+
+
+    window.getGameClass = function(type, variant) {
+        if(! games.hasOwnProperty(type) ||
+                ! games[type].variants.hasOwnProperty(variant)) {
+            return null;
+        }
+
+        var GameClass = null;
+        if(variant === 'normal') {
+            GameClass = games[type].obj
+        } else {
+            GameClass = games[type].variants[variant].obj;
+        }
+
+        return GameClass;
+    };
+
+    window.games = games;
 })(window);

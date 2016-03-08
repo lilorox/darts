@@ -69,29 +69,30 @@ function buildNbPlayersInput(conf) {
     });
 }
 
-function buildVariantSelect(game) {
+function buildVariantSelect() {
     $('#game-variant').empty();
+    var game = $('#game-select').val();
 
-    Object.keys(rules[game].variants).forEach(function(key) {
+    Object.keys(games[game].variants).forEach(function(key) {
         $('<option>')
             .val(key)
-            .text(rules[game].variants[key].desc)
+            .text(games[game].variants[key].desc)
             .appendTo($('#game-variant'));
     });
 
     $('#game-variant').on('change', function(evt) {
-        var variant = rules[game].variants[$(this).val()],
+        var variant = games[game].variants[$(this).val()],
             nbPlayersConf = {
                 value: 2,
                 min: 1
             };
 
-        if('nbPlayers' in variant) {
-            if('min' in variant.nbPlayers) {
+        if(variant.hasOwnProperty('variant')) {
+            if(variant.nbPlayers.hasOwnProperty('min')) {
                 nbPlayersConf.min = variant.nbPlayers.min;
             }
 
-            if('max' in variant.nbPlayers) {
+            if(variant.nbPlayers.hasOwnProperty('max')) {
                 nbPlayersConf.max = variant.nbPlayers.max;
             }
         }
@@ -103,21 +104,21 @@ function buildVariantSelect(game) {
 }
 
 function buildGameSelect() {
-    Object.keys(rules).forEach(function(key) {
+    Object.keys(games).forEach(function(key) {
         $('<option>')
             .val(key)
-            .text(rules[key].desc)
+            .text(games[key].desc)
             .appendTo($('#game-select'));
     });
 
     $('#game-select').on('change', function(evt) {
         var game = $(this).val();
-        if(game.length === 0 || !('variants' in rules[game])) {
+        if(game.length === 0 || !('variants' in games[game])) {
             $('#game-variant').prop('disabled', true);
             return;
         };
         $('#game-variant').prop('disabled', false);
-        buildVariantSelect(game);
+        buildVariantSelect();
     });
 
     $('#game-select').trigger('change');
@@ -136,23 +137,19 @@ function startGame() {
 
     toggleMenu();
 
-    console.log('Game:', game, variant, players);
+    if(window.g) {
+        g.destroy();
+        g = null;
+    }
+    var GameClass = getGameClass(game, variant);
+    if(GameClass != null) {
+        window.g = new GameClass(players, 'dartboard', 'scoreboard');
+    } else {
+        console.error("No class found for game '" + game + "' with variant '" + variant + "'");
+    }
 }
 
 $(function() {
-    var dartboard = $('#dartboard').DartBoard({
-        onClick: function(evt) {
-            var rect = this.getBoundingClientRect(),
-                dartboard =  $(this).data('dartboard'),
-                score = dartboard.DartBoard(
-                    'getScore',
-                    evt.clientX - rect.left,
-                    evt.clientY - rect.top
-                );
-            console.log('score=', score);
-        }
-    });
-
     buildGameSelect();
     buildPlayersSelect();
 
