@@ -386,6 +386,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             obj: Cricket
         },
 
+        /*
         x01: {
             desc: "x01",
             variants: {
@@ -400,7 +401,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         },
-
+        */
 
         clock: {
             desc: "Around the clock",
@@ -412,7 +413,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             obj: AroundTheClock
         },
 
-
+        /*
         killer: {
             desc: "Killer",
             variants: {
@@ -422,6 +423,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         }
+        */
     };
 
     window.getGameClass = function(type, variant) {
