@@ -16,20 +16,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
-    var loadTemplate = function(templatePath, target, data) {
-        $.get(templatePath, function(response) {
-            console.log(response);
-            template = Handlebars.compile(response);
-            $(target).html(template(data));
+    var getTemplate = function(name, context) {
+        return $.ajax({
+            url: 'templates/' + name + '.hbs',
+            method: 'GET',
+            dataType: 'text'
+        }).then(function(src) {
+            return Handlebars.compile(src)(context);
         });
     };
+
 
     var BaseGame = function(type, variant, players, dartboardId, scoreboardId) {
         this.type = type;
         this.variant = variant;
         this.players = players.map(function(player) {
-            return { name: player, score: 0 };
+            return {
+                name: player,
+                score: 0,
+                throwsLeft: 3,
+                active: false
+            };
         });
+        this.currentPlayer = 0;
+        this.players[0].active = true;
+        this.turnNumber = 1;
+        this.gameEnded = false;
 
         var onClickAction = (function(game) {
             return function(evt) {
@@ -51,12 +63,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.scoreboard = $('#' + scoreboardId);
 
         this.buildScoreTable();
-        console.log('BaseGame:', this.type, this.variant, this.players);
     };
     BaseGame.prototype = {
         buildScoreTable: function() { return; },
         processNewScore: function(score) { return; }
     };
+
 
     var games = {}
     games.cricket =  {
@@ -75,20 +87,142 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     };
     games.cricket.obj = function(players, dartboardId, scoreboardId) {
         BaseGame.call(this, 'cricket', 'normal', players, dartboardId, scoreboardId);
+        for(var i = 0; i < this.players.length; i++) {
+            this.players[i].targets = {
+                _15: 0,
+                _16: 0,
+                _17: 0,
+                _18: 0,
+                _19: 0,
+                _20: 0,
+                _B: 0
+            };
+        }
+
+        this.allowedTargets = {
+            _15: true,
+            _16: true,
+            _17: true,
+            _18: true,
+            _19: true,
+            _20: true,
+            _B: true
+        };
+
+        Handlebars.registerHelper('targetFormat', function() {
+            var labelClass = "default";
+            if(this >= 3) {
+                labelClass = "success";
+            }
+            return new Handlebars.SafeString(
+                '<span class="label label-' + labelClass + '">' + this + '</span>'
+            );
+        });
+
+        (function(game) {
+            Handlebars.registerHelper('activePlayer', function() {
+                return game.players[game.currentPlayer].name;
+            });
+        })(this);
     };
     games.cricket.obj.prototype = Object.create(BaseGame.prototype, {
         buildScoreTable: {
             value: function() {
-                console.log('Building score table');
-                var tmplData = {
-                    players: this.players
+                var context = {
+                    players: this.players,
+                    turn: this.turnNumber,
+                    gameEnded: this.gameEnded
                 };
-                loadTemplate('templates/cricket.normal.hbs', '#scoreboard', tmplData);
+                (function(game) {
+                    getTemplate('cricket.normal', context).done(function(html) {
+                        game.scoreboard.html(html);
+                    });
+                })(this);
+            }
+        },
+        _addScore: {
+            value: function(score) {
+                this.players[this.currentPlayer].score += score;
+            }
+        },
+        _checkTargetIsClosed: {
+            enumerable: false,
+            value: function(target) {
+                var playersClosed = 0;
+                for(var i = 0; i < this.players.length; i++) {
+                    if(this.players[i].targets[target] >= 3) {
+                        playersClosed ++;
+                    }
+                }
+
+                return (playersClosed === this.players.length);
+            }
+        },
+        _checkAllTargetsClosed: {
+            enumerable: false,
+            value: function() {
+                var targets = Object.keys(this.allowedTargets);
+                for(var i = 0; i < this.players.length; i++) {
+                    var playerClosed = true,
+                        j = 0;
+                    while(playerClosed && j < targets.length) {
+                        playerClosed = (playerClosed && this.players[i].targets[targets[j]] >= 3);
+                        j ++;
+                    }
+
+                    if(playerClosed) {
+                        return true;
+                    }
+                }
+                return false;
             }
         },
         processNewScore: {
             value: function(score) {
-                console.log('score=', score);
+                if(this.gameEnded) {
+                    return;
+                }
+
+                var player = this.players[this.currentPlayer];
+
+                var targetName = (score.bull ? '_B' : '_' + score.value);
+                if(this.allowedTargets.hasOwnProperty(targetName) &&
+                        this.allowedTargets[targetName]) {
+                    if(player.targets[targetName] < 3) {
+                        player.targets[targetName] = Math.min(
+                            3,
+                            player.targets[targetName] + score.factor
+                        );
+                    } else {
+                        this._addScore(score.factor * score.value);
+                    }
+                }
+
+                if(this._checkTargetIsClosed(targetName)) {
+                    this.allowedTargets[targetName] = false;
+                }
+
+                if(this._checkAllTargetsClosed()) {
+                    this.endOfGame();
+                }
+
+                player.throwsLeft --;
+                if(player.throwsLeft === 0) {
+                    player.throwsLeft = 3;
+                    player.active = false;
+                    this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
+                    this.players[this.currentPlayer].active = true;
+                    if(this.currentPlayer === 0) {
+                        this.turnNumber ++;
+                    }
+                }
+                this.buildScoreTable();
+            }
+        },
+        endOfGame: {
+            value: function() {
+                this.gameEnded = true;
+                this.buildScoreTable();
             }
         }
     });

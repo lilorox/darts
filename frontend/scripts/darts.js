@@ -138,8 +138,9 @@ function startGame() {
     toggleMenu();
 
     if(window.g) {
-        g.destroy();
-        g = null;
+        $('#dartboard').empty();
+        delete window.g;
+        window.g = null;
     }
     var GameClass = getGameClass(game, variant);
     if(GameClass != null) {
@@ -152,6 +153,9 @@ function startGame() {
 $(function() {
     buildGameSelect();
     buildPlayersSelect();
+
+    var GameClass = getGameClass('cricket', 'normal');
+    window.g = new GameClass(["player1", "player2"], 'dartboard', 'scoreboard');
 
     $('#menu form').on('submit', function(evt) {
         evt.preventDefault();
