@@ -155,7 +155,7 @@ $(function() {
     buildPlayersSelect();
 
     /* For test purposes
-    var GameClass = getGameClass('cricket', 'cutThroat');
+    var GameClass = getGameClass('clock', 'normal');
     window.g = new GameClass(["player1", "player2", "player3"], 'dartboard', 'scoreboard');
     */
 

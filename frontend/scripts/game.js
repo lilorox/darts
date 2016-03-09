@@ -63,12 +63,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.scoreboard = $('#' + scoreboardId);
 
         this.buildScoreTable();
+
+        (function(game) {
+            Handlebars.registerHelper('activePlayer', function() {
+                return game.players[game.currentPlayer].name;
+            });
+        })(this);
     };
     BaseGame.prototype = {
         buildScoreTable: function() { return; },
         processNewScore: function(score) { return; }
     };
 
+    /*
+     * Cricket
+     */
     var Cricket = function(players, dartboardId, scoreboardId) {
         BaseGame.call(this, 'cricket', 'normal', players, dartboardId, scoreboardId);
         for(var i = 0; i < this.players.length; i++) {
@@ -102,12 +111,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 '<span class="label label-' + labelClass + '">' + this + '</span>'
             );
         });
-
-        (function(game) {
-            Handlebars.registerHelper('activePlayer', function() {
-                return game.players[game.currentPlayer].name;
-            });
-        })(this);
     };
     Cricket.prototype = Object.create(BaseGame.prototype, {
         buildScoreTable: {
@@ -230,6 +233,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     });
     Cricket.prototype.constructor = Cricket;
 
+    /*
+     * Cut-Throat Cricket
+     */
     var CutThroatCricket = function(players, dartboardId, scoreboardId) {
         Cricket.call(this, players, dartboardId, scoreboardId);
     }
@@ -263,6 +269,101 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     });
     CutThroatCricket.prototype.constructor = Cricket;
+
+    /*
+     * Around the clock
+     */
+    var AroundTheClock = function(players, dartboardId, scoreboardId) {
+        BaseGame.call(this, 'clock', 'normal', players, dartboardId, scoreboardId);
+        for(var i = 0; i < this.players.length; i++) {
+            this.players[i].won = false;
+            this.players[i].winningTurn = 0;
+        }
+    };
+    AroundTheClock.prototype = Object.create(BaseGame.prototype, {
+        buildScoreTable: {
+            value: function() {
+                var context = {
+                    players: this.players,
+                    turn: this.turnNumber,
+                    gameEnded: this.gameEnded,
+                    winner: this.winner
+                };
+                (function(game) {
+                    getTemplate('clock.normal', context).done(function(html) {
+                        game.scoreboard.html(html);
+                    });
+                })(this);
+            }
+        },
+        _isGameOver: {
+            enumerable: false,
+            value: function() {
+                var gameIsOver = true;
+                for(var i = 0; i < this.players.length; i++) {
+                    gameIsOver = gameIsOver && this.players[i].won;
+                }
+                return gameIsOver;
+            }
+        },
+        _nextPlayer: {
+            value: function() {
+                var player = this.players[this.currentPlayer],
+                    nextPlayerId = (this.currentPlayer + 1) % this.players.length,
+                    nextPlayer = this.players[nextPlayerId];
+
+                while(nextPlayer.won) {
+                    nextPlayerId = (nextPlayerId + 1) % this.players.length;
+                    nextPlayer = this.players[nextPlayerId];
+                }
+
+                if(this.currentPlayer != nextPlayerId) {
+                    player.active = false;
+                }
+
+                if(nextPlayerId <= this.currentPlayer) {
+                    this.turnNumber ++;
+                }
+
+                this.currentPlayer = nextPlayerId;
+                nextPlayer.active = true;
+            }
+        },
+        processNewScore: {
+            value: function(score) {
+                if(this.gameEnded) {
+                    return;
+                }
+
+                var player = this.players[this.currentPlayer];
+
+                if(player.score == 20 && score.bull) {
+                    player.won = true;
+                    player.winningTurn = this.turnNumber;
+                    player.throwsLeft = 0;
+
+                    if(this._isGameOver()) {
+                        player.active = false;
+                        this.gameEnded = true;
+                        this.buildScoreTable();
+                        return;
+                    } else {
+                        this._nextPlayer();
+                    }
+                } else if(score.value == player.score + 1) {
+                    player.score ++;
+                }
+                player.throwsLeft --;
+
+                if(player.throwsLeft === 0) {
+                    player.throwsLeft = 3;
+                    this._nextPlayer();
+                }
+                this.buildScoreTable();
+            }
+        }
+    });
+    Cricket.prototype.constructor = Cricket;
 
 
     /*
@@ -307,7 +408,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 normal: {
                     desc: "No variant"
                 }
-            }
+            },
+            obj: AroundTheClock
         },
 
 

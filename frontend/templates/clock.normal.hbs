@@ -1,0 +1,31 @@
+<div class="container-fluid">
+    <h3>Turn #{{turn}}, player {{activePlayer}}</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {{#each players as |player playerId|}}
+            <tr {{#if player.active}} class="info" {{/if}}>
+                <td class="player-name">
+                    {{player.name}}
+                    {{#if player.active}}
+                        <span class="badge">{{player.throwsLeft}}</span>
+                    {{/if}}
+                </td>
+                <td class="player-score">
+                    {{#if player.won}}
+                        <span class="label label-success">{{player.winningTurn}}</span>
+                    {{else}}
+                        {{player.score}}
+                    {{/if}}
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
