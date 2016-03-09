@@ -14,6 +14,7 @@ module.exports = function(grunt) {
                     'jquery/jquery.min.js': 'jquery/dist/jquery.min.js',
                     'bootstrap/bootstrap.min.js': 'bootstrap/dist/js/bootstrap.min.js',
                     'select2/select2.min.js': 'select2/dist/js/select2.min.js',
+                    'handlebars/handlebars.min.js': 'handlebars/handlebars.min.js',
                 }
             },
             css: {

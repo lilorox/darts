@@ -16,10 +16,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
+    var loadTemplate = function(templatePath, target, data) {
+        $.get(templatePath, function(response) {
+            console.log(response);
+            template = Handlebars.compile(response);
+            $(target).html(template(data));
+        });
+    };
+
     var BaseGame = function(type, variant, players, dartboardId, scoreboardId) {
         this.type = type;
         this.variant = variant;
-        this.players = players;
+        this.players = players.map(function(player) {
+            return { name: player, score: 0 };
+        });
 
         var onClickAction = (function(game) {
             return function(evt) {
@@ -41,7 +51,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.scoreboard = $('#' + scoreboardId);
 
         this.buildScoreTable();
-//        console.log('BaseGame:', this.type, this.variant, this.players);
+        console.log('BaseGame:', this.type, this.variant, this.players);
     };
     BaseGame.prototype = {
         buildScoreTable: function() { return; },
@@ -70,7 +80,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         buildScoreTable: {
             value: function() {
                 console.log('Building score table');
-                this.scoreboard.append('<p>Pouet</p>');
+                var tmplData = {
+                    players: this.players
+                };
+                loadTemplate('templates/cricket.normal.hbs', '#scoreboard', tmplData);
             }
         },
         processNewScore: {
