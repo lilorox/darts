@@ -69,23 +69,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         processNewScore: function(score) { return; }
     };
 
-
-    var games = {}
-    games.cricket =  {
-        desc: "Cricket",
-        variants: {
-            normal: {
-                desc: "Normal (2 players)",
-                nbPlayers: { min: 2, max: 2 }
-            },
-            cutThroat: {
-                desc: "Cut throat (2+ players)",
-                nbPlayers: { min: 2 }
-            }
-        },
-        obj: {}
-    };
-    games.cricket.obj = function(players, dartboardId, scoreboardId) {
+    var Cricket = function(players, dartboardId, scoreboardId) {
         BaseGame.call(this, 'cricket', 'normal', players, dartboardId, scoreboardId);
         for(var i = 0; i < this.players.length; i++) {
             this.players[i].targets = {
@@ -125,13 +109,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             });
         })(this);
     };
-    games.cricket.obj.prototype = Object.create(BaseGame.prototype, {
+    Cricket.prototype = Object.create(BaseGame.prototype, {
         buildScoreTable: {
             value: function() {
                 var context = {
                     players: this.players,
                     turn: this.turnNumber,
-                    gameEnded: this.gameEnded
+                    gameEnded: this.gameEnded,
+                    winner: this.winner
                 };
                 (function(game) {
                     getTemplate('cricket.normal', context).done(function(html) {
@@ -158,19 +143,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 return (playersClosed === this.players.length);
             }
         },
+        _playerClosedAllTargets: {
+            enumerable: false,
+            value: function(playerId) {
+                var targets = Object.keys(this.allowedTargets),
+                    playerClosed = true,
+                    j = 0;
+                while(playerClosed && j < targets.length) {
+                    playerClosed = (playerClosed && this.players[playerId].targets[targets[j]] >= 3);
+                    j ++;
+                }
+
+                return playerClosed;
+            }
+        },
         _checkAllTargetsClosed: {
             enumerable: false,
             value: function() {
-                var targets = Object.keys(this.allowedTargets);
                 for(var i = 0; i < this.players.length; i++) {
-                    var playerClosed = true,
-                        j = 0;
-                    while(playerClosed && j < targets.length) {
-                        playerClosed = (playerClosed && this.players[i].targets[targets[j]] >= 3);
-                        j ++;
-                    }
-
-                    if(playerClosed) {
+                    if(this._playerClosedAllTargets(i)) {
                         return true;
                     }
                 }
@@ -194,16 +185,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                             player.targets[targetName] + score.factor
                         );
                     } else {
-                        this._addScore(score.factor * score.value);
+                        this._addScore(score);
                     }
                 }
 
                 if(this._checkTargetIsClosed(targetName)) {
                     this.allowedTargets[targetName] = false;
-                }
-
-                if(this._checkAllTargetsClosed()) {
-                    this.endOfGame();
                 }
 
                 player.throwsLeft --;
@@ -213,7 +200,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
                     this.players[this.currentPlayer].active = true;
                     if(this.currentPlayer === 0) {
-                        this.turnNumber ++;
+                        if(this._checkAllTargetsClosed()) {
+                            this.endOfGame();
+                        } else {
+                            this.turnNumber ++;
+                        }
                     }
                 }
                 this.buildScoreTable();
@@ -222,49 +213,114 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         endOfGame: {
             value: function() {
                 this.gameEnded = true;
+                var winner = this.players[0].name,
+                    winnerScore = this.players[0].score;
+
+                for(var i = 1; i < this.players.length; i++) {
+                    if(this.players[i].score > winnerScore) {
+                        winner = this.players[i].name;
+                        winnerScore = this.players[i].score;
+                    }
+                }
+
+                this.winner = winner;
                 this.buildScoreTable();
             }
         }
     });
-    games.cricket.obj.prototype.constructor = games.cricket.obj;
+    Cricket.prototype.constructor = Cricket;
+
+    var CutThroatCricket = function(players, dartboardId, scoreboardId) {
+        Cricket.call(this, players, dartboardId, scoreboardId);
+    }
+    CutThroatCricket.prototype = Object.create(Cricket.prototype, {
+        _addScore: {
+            value: function(score) {
+                var targetName = (score.bull ? '_B' : '_' + score.value);
+                for(var i = 0; i < this.players.length; i ++) {
+                    if(i != this.currentPlayer && this.players[i].targets[targetName] < 3) {
+                        this.players[i].score += score.factor * score.value;
+                    }
+                }
+            }
+        },
+        endOfGame: {
+            value: function() {
+                this.gameEnded = true;
+                var winner = this.players[0].name,
+                    winnerScore = this.players[0].score;
+
+                for(var i = 1; i < this.players.length; i++) {
+                    if(this.players[i].score < winnerScore) {
+                        winner = this.players[i].name;
+                        winnerScore = this.players[i].score;
+                    }
+                }
+
+                this.winner = winner;
+                this.buildScoreTable();
+            }
+        }
+    });
+    CutThroatCricket.prototype.constructor = Cricket;
 
 
-    games.x01 = {
-        desc: "x01",
-        variants: {
-            301: {
-                desc: "301"
+    /*
+     * Games catalog object
+     */
+    var games = {
+        cricket:  {
+            desc: "Cricket",
+            variants: {
+                normal: {
+                    desc: "Normal (2 players)",
+                    nbPlayers: { min: 2, max: 2 }
+                },
+                cutThroat: {
+                    desc: "Cut throat (2+ players)",
+                    nbPlayers: { min: 2 },
+                    obj: CutThroatCricket
+                }
             },
-            501: {
-                desc: "501"
-            },
-            701: {
-                desc: "701"
+            obj: Cricket
+        },
+
+        x01: {
+            desc: "x01",
+            variants: {
+                301: {
+                    desc: "301"
+                },
+                501: {
+                    desc: "501"
+                },
+                701: {
+                    desc: "701"
+                }
+            }
+        },
+
+
+        clock: {
+            desc: "Around the clock",
+            variants: {
+                normal: {
+                    desc: "No variant"
+                }
+            }
+        },
+
+
+        killer: {
+            desc: "Killer",
+            variants: {
+                normal: {
+                    desc: "No variant",
+                    nbPlayers: { min: 4 }
+                }
             }
         }
     };
-
-
-    games.clock = {
-        desc: "Around the clock",
-        variants: {
-            normal: {
-                desc: "No variant"
-            }
-        }
-    };
-
-
-    games.killer = {
-        desc: "Killer",
-        variants: {
-            normal: {
-                desc: "No variant",
-                nbPlayers: { min: 4 }
-            }
-        }
-    };
-
 
     window.getGameClass = function(type, variant) {
         if(! games.hasOwnProperty(type) ||

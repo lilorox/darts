@@ -154,8 +154,10 @@ $(function() {
     buildGameSelect();
     buildPlayersSelect();
 
-    var GameClass = getGameClass('cricket', 'normal');
-    window.g = new GameClass(["player1", "player2"], 'dartboard', 'scoreboard');
+    /* For test purposes
+    var GameClass = getGameClass('cricket', 'cutThroat');
+    window.g = new GameClass(["player1", "player2", "player3"], 'dartboard', 'scoreboard');
+    */
 
     $('#menu form').on('submit', function(evt) {
         evt.preventDefault();
