@@ -130,7 +130,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         _addScore: {
             value: function(score) {
-                this.players[this.currentPlayer].score += score;
+                this.players[this.currentPlayer].score += score.factor * score.value;
             }
         },
         _checkTargetIsClosed: {
