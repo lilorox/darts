@@ -375,6 +375,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         for(var i = 0; i < this.players.length; i++) {
             this.players[i].startingDouble = false;
+            this.players[i].score = this.startingScore;
+            this.players[i].startedTurnAt = this.startingScore;
         }
     };
     X01.prototype = Object.create(BaseGame.prototype, {
@@ -383,13 +385,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 var context = {
                     players: this.players,
                     turn: this.turnNumber,
-                    gameEnded: this.gameEnded
+                    gameEnded: this.gameEnded,
+                    winner: this.winner
                 };
                 (function(game) {
                     getTemplate('x01.normal', context).done(function(html) {
                         game.scoreboard.html(html);
                     });
                 })(this);
+            }
+        },
+        _nextPlayer: {
+            value: function() {
+                var player = this.players[this.currentPlayer],
+                    nextPlayerId = (this.currentPlayer + 1) % this.players.length,
+                    nextPlayer = this.players[nextPlayerId];
+
+                player.throwsLeft = 3;
+                player.active = false;
+                player.startedTurnAt = player.score;
+
+                this.currentPlayer = nextPlayerId;
+                nextPlayer.active = true;
+
+                if(nextPlayerId <= this.currentPlayer) {
+                    this.turnNumber ++;
+                }
             }
         },
         processNewScore: {
@@ -399,35 +420,76 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
 
                 var player = this.players[this.currentPlayer];
-
-                if(player.score == 20 && score.bull) {
-                    player.won = true;
-                    player.winningTurn = this.turnNumber;
-                    player.throwsLeft = 0;
-
-                    if(this._isGameOver()) {
-                        player.active = false;
-                        this.gameEnded = true;
-                        this.buildScoreTable();
-                        return;
-                    } else {
-                        this._nextPlayer();
-                    }
-                } else if(score.value == player.score + 1) {
-                    player.score ++;
-                }
                 player.throwsLeft --;
 
+                if(! player.startingDouble && score.factor == 2) {
+                    player.startingDouble = true;
+                }
+
+                if(player.startingDouble) {
+                    player.score -= score.factor * score.value;
+                    if(player.score < 0 ||
+                            (player.score == 0 && score.factor != 2) ||
+                            player.score == 1) {
+
+                        player.score = player.startedTurnAt;
+                        this._nextPlayer();
+                    }
+
+                    if(player.score == 0 && score.factor == 2) {
+                        this.endOfGame(player.name);
+                        return;
+                    }
+                }
+
                 if(player.throwsLeft === 0) {
-                    player.throwsLeft = 3;
                     this._nextPlayer();
                 }
+                this.buildScoreTable();
+            }
+        },
+        endOfGame: {
+            value: function(winner) {
+                this.gameEnded = true;
+                this.winner = winner;
                 this.buildScoreTable();
             }
         }
     });
     X01.prototype.constructor = X01;
 
+    var NoDoubleStartX01 = function(players, dartboardId, scoreboardId, options) {
+        X01.call(this, players, dartboardId, scoreboardId, options);
+    }
+    NoDoubleStartX01.prototype = Object.create(X01.prototype, {
+        processNewScore: {
+            value: function(score) {
+                if(this.gameEnded) {
+                    return;
+                }
+
+                var player = this.players[this.currentPlayer];
+                player.throwsLeft --;
+
+                player.score -= score.factor * score.value;
+                if(player.score < 0) {
+                    player.score = player.startedTurnAt;
+                    this._nextPlayer();
+                }
+
+                if(player.score == 0) {
+                    this.endOfGame(player.name);
+                    return;
+                }
+
+                if(player.throwsLeft === 0) {
+                    this._nextPlayer();
+                }
+                this.buildScoreTable();
+            }
+        },
+    });
+    NoDoubleStartX01.prototype.constructor = X01;
 
     /*
      * Games catalog object
@@ -456,7 +518,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     desc: "Normal"
                 },
                 noDoubleStart: {
-                    desc: "Start without double"
+                    desc: "Start without double",
+                    obj: NoDoubleStartX01
                 }
             },
             options: {

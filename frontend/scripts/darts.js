@@ -124,7 +124,8 @@ function buildVariantSelect() {
     });
 
     $('#game-variant').on('change', function(evt) {
-        var variant = games[game].variants[$(this).val()],
+        var game = $('#game-select').val(),
+            variant = games[game].variants[$(this).val()],
             nbPlayersConf = {
                 value: 2,
                 min: 1
