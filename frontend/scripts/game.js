@@ -286,8 +286,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 var context = {
                     players: this.players,
                     turn: this.turnNumber,
-                    gameEnded: this.gameEnded,
-                    winner: this.winner
+                    gameEnded: this.gameEnded
                 };
                 (function(game) {
                     getTemplate('clock.normal', context).done(function(html) {
@@ -363,7 +362,71 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
         }
     });
-    Cricket.prototype.constructor = Cricket;
+    AroundTheClock.prototype.constructor = AroundTheClock;
+
+    /*
+     * x01
+     */
+    var X01 = function(players, dartboardId, scoreboardId, options) {
+        BaseGame.call(this, 'x01', 'normal', players, dartboardId, scoreboardId);
+
+        options = options || {};
+        this.startingScore = parseInt(options.startingScore) || 301;
+
+        for(var i = 0; i < this.players.length; i++) {
+            this.players[i].startingDouble = false;
+        }
+    };
+    X01.prototype = Object.create(BaseGame.prototype, {
+        buildScoreTable: {
+            value: function() {
+                var context = {
+                    players: this.players,
+                    turn: this.turnNumber,
+                    gameEnded: this.gameEnded
+                };
+                (function(game) {
+                    getTemplate('x01.normal', context).done(function(html) {
+                        game.scoreboard.html(html);
+                    });
+                })(this);
+            }
+        },
+        processNewScore: {
+            value: function(score) {
+                if(this.gameEnded) {
+                    return;
+                }
+
+                var player = this.players[this.currentPlayer];
+
+                if(player.score == 20 && score.bull) {
+                    player.won = true;
+                    player.winningTurn = this.turnNumber;
+                    player.throwsLeft = 0;
+
+                    if(this._isGameOver()) {
+                        player.active = false;
+                        this.gameEnded = true;
+                        this.buildScoreTable();
+                        return;
+                    } else {
+                        this._nextPlayer();
+                    }
+                } else if(score.value == player.score + 1) {
+                    player.score ++;
+                }
+                player.throwsLeft --;
+
+                if(player.throwsLeft === 0) {
+                    player.throwsLeft = 3;
+                    this._nextPlayer();
+                }
+                this.buildScoreTable();
+            }
+        }
+    });
+    X01.prototype.constructor = X01;
 
 
     /*
@@ -386,22 +449,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             obj: Cricket
         },
 
-        /*
         x01: {
             desc: "x01",
             variants: {
-                301: {
-                    desc: "301"
+                normal: {
+                    desc: "Normal"
                 },
-                501: {
-                    desc: "501"
-                },
-                701: {
-                    desc: "701"
+                noDoubleStart: {
+                    desc: "Start without double"
                 }
-            }
+            },
+            options: {
+                startingScore: {
+                    label: "Starting score",
+                    type: "select",
+                    values: {
+                        301: "301",
+                        501: "501",
+                        701: "701",
+                        1001: "1001",
+                    }
+                }
+            },
+            obj: X01
         },
-        */
 
         clock: {
             desc: "Around the clock",

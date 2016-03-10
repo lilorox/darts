@@ -15,6 +15,49 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+function buildAdditionnalOptions() {
+    var game = $('#game-select').val();
+
+    $('.additionnal-group').remove();
+
+    if(! games[game].hasOwnProperty('options')) {
+        return;
+    }
+    
+    Object.keys(games[game].options).forEach(function(optionName) {
+        var option = games[game].options[optionName],
+            inputId = optionName + '-opt',
+            formGroup = $('<div>').addClass('form-group additionnal-group'),
+            input = null;
+
+        $('<label>')
+            .attr('for', inputId)
+            .text(option.label)
+            .appendTo($(formGroup));
+
+        switch(option.type) {
+            case "select":
+                input = $('<select>')
+                    .attr('id', inputId)
+                    .data('option-name', optionName)
+                    .addClass('form-control additionnal-option');
+
+                for(var value in option.values) {
+                    if(option.values.hasOwnProperty(value)) {
+                        $('<option>')
+                            .val(value)
+                            .text(option.values[value])
+                            .appendTo($(input));
+                    }
+                }
+        }
+
+        $(formGroup)
+            .append(input)
+            .insertBefore('#game-submit');
+    });
+}
+
 function buildPlayersSelect() {
     $('#game-players').prop('disabled', false);
     $('#game-players').select2({
@@ -23,7 +66,7 @@ function buildPlayersSelect() {
         tokenSeparators: [',', ' '],
         multiple: true
     });
-    
+
     $('#game-players').on('change', function(evt) {
         var min = $('#game-nbplayers').data('min'),
             max = $('#game-nbplayers').val(),
@@ -58,7 +101,7 @@ function buildNbPlayersInput(conf) {
         $('#game-nbplayers').prop('disabled', true);
         return;
     }
-    
+
     $('#game-nbplayers').prop('disabled', false);
     $('#game-nbplayers').on('change', function(evt) {
         if($(this).data('min') && $(this).val() < $(this).data('min')) {
@@ -119,6 +162,7 @@ function buildGameSelect() {
         };
         $('#game-variant').prop('disabled', false);
         buildVariantSelect();
+        buildAdditionnalOptions();
     });
 
     $('#game-select').trigger('change');
@@ -133,9 +177,16 @@ function toggleMenu() {
 function startGame() {
     var game = $('#game-select').val(),
         variant = $('#game-variant').val(),
-        players = $('#game-players').val();
+        players = $('#game-players').val(),
+        additionnalOptions = {};
 
     toggleMenu();
+
+    $('.additionnal-option').each(function() {
+        var value = $(this).val(),
+            option = $(this).data('option-name');
+        additionnalOptions[option] = value;
+    });
 
     if(window.g) {
         $('#dartboard').empty();
@@ -144,7 +195,7 @@ function startGame() {
     }
     var GameClass = getGameClass(game, variant);
     if(GameClass != null) {
-        window.g = new GameClass(players, 'dartboard', 'scoreboard');
+        window.g = new GameClass(players, 'dartboard', 'scoreboard', additionnalOptions);
     } else {
         console.error("No class found for game '" + game + "' with variant '" + variant + "'");
     }
