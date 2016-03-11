@@ -16,19 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
-    var getTemplate = function(name, context) {
-        return $.ajax({
-            url: 'templates/' + name + '.hbs',
-            method: 'GET',
-            dataType: 'text'
-        }).then(function(src) {
-            return Handlebars.compile(src)(context);
-        });
-    };
-
-
     var BaseGame = function(type, variant, players, dartboardId, scoreboardId) {
-        this.type = type;
+       this.type = type;
         this.variant = variant;
         this.players = players.map(function(player) {
             return {
@@ -42,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.players[0].active = true;
         this.turnNumber = 1;
         this.gameEnded = false;
+        this.winner = null;
 
         var onClickAction = (function(game) {
             return function(evt) {
@@ -59,10 +49,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.dartboard = $('#' + dartboardId).DartBoard({
             onClick: onClickAction
         });
-
         this.scoreboard = $('#' + scoreboardId);
 
-        this.buildScoreTable();
+        this.updateView();
 
         (function(game) {
             Handlebars.registerHelper('activePlayer', function() {
@@ -70,10 +59,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             });
         })(this);
     };
-    BaseGame.prototype = {
-        buildScoreTable: function() { return; },
-        processNewScore: function(score) { return; }
+    BaseGame.prototype.updateView = function(additionalContext) {
+        var context = $.extend(
+            {},
+            {
+                players: this.players,
+                turn: this.turnNumber,
+                gameEnded: this.gameEnded,
+                winner: this.winner
+            },
+            additionalContext
+        );
+
+        (function(game, context) {
+            $.ajax({
+                url: 'templates/' + game.type + '.' + game.variant + '.hbs',
+                method: 'GET',
+                dataType: 'text'
+            }).then(function(src) {
+                return Handlebars.compile(src)(context);
+            }).done(function(html) {
+                game.scoreboard.html(html);
+            });
+        })(this, context);
     };
+    BaseGame.prototype.processNewScore = function() { return; };
 
     /*
      * Cricket
@@ -113,21 +123,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         });
     };
     Cricket.prototype = Object.create(BaseGame.prototype, {
-        buildScoreTable: {
-            value: function() {
-                var context = {
-                    players: this.players,
-                    turn: this.turnNumber,
-                    gameEnded: this.gameEnded,
-                    winner: this.winner
-                };
-                (function(game) {
-                    getTemplate('cricket.normal', context).done(function(html) {
-                        game.scoreboard.html(html);
-                    });
-                })(this);
-            }
-        },
         _addScore: {
             value: function(score) {
                 this.players[this.currentPlayer].score += score.factor * score.value;
@@ -210,7 +205,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         }
                     }
                 }
-                this.buildScoreTable();
+                this.updateView();
             }
         },
         endOfGame: {
@@ -227,7 +222,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
 
                 this.winner = winner;
-                this.buildScoreTable();
+                this.updateView();
             }
         }
     });
@@ -264,7 +259,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
 
                 this.winner = winner;
-                this.buildScoreTable();
+                this.updateView();
             }
         }
     });
@@ -281,20 +276,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     };
     AroundTheClock.prototype = Object.create(BaseGame.prototype, {
-        buildScoreTable: {
-            value: function() {
-                var context = {
-                    players: this.players,
-                    turn: this.turnNumber,
-                    gameEnded: this.gameEnded
-                };
-                (function(game) {
-                    getTemplate('clock.normal', context).done(function(html) {
-                        game.scoreboard.html(html);
-                    });
-                })(this);
-            }
-        },
         _isGameOver: {
             enumerable: false,
             value: function() {
@@ -344,7 +325,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     if(this._isGameOver()) {
                         player.active = false;
                         this.gameEnded = true;
-                        this.buildScoreTable();
+                        this.updateView();
                         return;
                     } else {
                         this._nextPlayer();
@@ -358,7 +339,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     player.throwsLeft = 3;
                     this._nextPlayer();
                 }
-                this.buildScoreTable();
+                this.updateView();
             }
         }
     });
@@ -380,21 +361,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     };
     X01.prototype = Object.create(BaseGame.prototype, {
-        buildScoreTable: {
-            value: function() {
-                var context = {
-                    players: this.players,
-                    turn: this.turnNumber,
-                    gameEnded: this.gameEnded,
-                    winner: this.winner
-                };
-                (function(game) {
-                    getTemplate('x01.normal', context).done(function(html) {
-                        game.scoreboard.html(html);
-                    });
-                })(this);
-            }
-        },
         _nextPlayer: {
             value: function() {
                 var player = this.players[this.currentPlayer],
@@ -445,14 +411,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 if(player.throwsLeft === 0) {
                     this._nextPlayer();
                 }
-                this.buildScoreTable();
+                this.updateView();
             }
         },
         endOfGame: {
             value: function(winner) {
                 this.gameEnded = true;
                 this.winner = winner;
-                this.buildScoreTable();
+                this.updateView();
             }
         }
     });
@@ -485,7 +451,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 if(player.throwsLeft === 0) {
                     this._nextPlayer();
                 }
-                this.buildScoreTable();
+                this.updateView();
             }
         },
     });
