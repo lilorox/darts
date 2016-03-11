@@ -1,0 +1,21 @@
+<div class="container-fluid">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Turn</th>
+                <th colspan="3">Throws</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {{#each throws as |throw|}}
+            <tr>
+                <td>{{throw.turn}}</td>
+                {{#each throw.throws}}
+                <td>{{this}}</td>
+                {{/each}}
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>

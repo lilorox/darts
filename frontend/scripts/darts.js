@@ -210,6 +210,9 @@ $(function() {
     var GameClass = getGameClass('clock', 'normal');
     window.g = new GameClass(["player1", "player2", "player3"], 'dartboard', 'scoreboard');
     */
+    var GameClass = getGameClass('cricket', 'normal');
+    window.g = new GameClass(["player1", "player2"], 'dartboard', 'scoreboard');
+    toggleMenu();
 
     $('#menu form').on('submit', function(evt) {
         evt.preventDefault();

@@ -17,19 +17,23 @@
 
         <tbody>
             {{#each players as |player playerId|}}
-                <tr data-playerid="{{playerId}}"
-                    {{#if player.active}}
-                        class="info"
-                    {{/if}}
-                    >
+            <tr data-playerid="{{playerId}}"
+                {{#if player.active}}
+                    class="info"
+                {{/if}}
+                >
                 <td class="player-name">
                     {{player.name}}
                     {{#if player.active}}
                         <span class="badge">{{player.throwsLeft}}</span>
                     {{/if}}
                 </td>
-                {{#each player.targets}}
+                {{#each player.targets as |target targetId|}}
+                    {{#if (lookup ../../allowedTargets targetId)}}
                 <td>{{targetFormat}}</td>
+                    {{else}}
+                <td><span class="label label-closed">{{this}}</span></td>
+                    {{/if}}
                 {{/each}}
                 <td class="player-score">{{player.score}}</td>
             </tr>

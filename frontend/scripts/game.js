@@ -16,15 +16,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
+    var loadTemplate = function(url, context, target) {
+        $.ajax({
+            url: url,
+            method: 'GET',
+            dataType: 'text',
+            cache: false // debug
+        }).then(function(src) {
+            return Handlebars.compile(src)(context);
+        }).done(function(html) {
+            $(target).html(html);
+        });
+    };
+
+    var scoreToString = function(score) {
+        var factorToString = {
+                1: "",
+                2: "D",
+                3: "T"
+            },
+            value = (score.bull ? "B" : score.value);
+        return factorToString[score.factor] + value;
+    };
+
     var BaseGame = function(type, variant, players, dartboardId, scoreboardId) {
-       this.type = type;
+        this.type = type;
         this.variant = variant;
         this.players = players.map(function(player) {
             return {
                 name: player,
                 score: 0,
                 throwsLeft: 3,
-                active: false
+                active: false,
+                throws: []
             };
         });
         this.currentPlayer = 0;
@@ -42,7 +66,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         evt.clientX - rect.left,
                         evt.clientY - rect.top
                     );
-                game.processNewScore(score);
+                game.registerNewScore(score);
             }
         })(this);
 
@@ -51,8 +75,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         });
         this.scoreboard = $('#' + scoreboardId);
 
-        this.updateView();
-
         (function(game) {
             Handlebars.registerHelper('activePlayer', function() {
                 return game.players[game.currentPlayer].name;
@@ -60,30 +82,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         })(this);
     };
     BaseGame.prototype.updateView = function(additionalContext) {
-        var context = $.extend(
-            {},
-            {
+        var initialContext = {
                 players: this.players,
                 turn: this.turnNumber,
                 gameEnded: this.gameEnded,
                 winner: this.winner
             },
-            additionalContext
-        );
+            context = $.extend(true, {}, initialContext,
+                    this.additionalContext, additionalContext);
 
         (function(game, context) {
-            $.ajax({
-                url: 'templates/' + game.type + '.' + game.variant + '.hbs',
-                method: 'GET',
-                dataType: 'text'
-            }).then(function(src) {
-                return Handlebars.compile(src)(context);
-            }).done(function(html) {
-                game.scoreboard.html(html);
-            });
+            // Game template
+            loadTemplate(
+                'templates/' + game.type + '.' + game.variant + '.hbs',
+                context,
+                game.scoreboard
+            );
+
+            /*
+            // Throws details template
+            loadTemplate(
+                'templates/throws-details.hbs',
+                context,
+                '#throws-details'
+            );
+            */
         })(this, context);
     };
-    BaseGame.prototype.processNewScore = function() { return; };
+    BaseGame.prototype.registerNewScore = function(score) {
+        // Add the throw to the current player
+        var player = this.players[this.currentPlayer];
+
+        if(player.throws.length < this.turnNumber) {
+            player.throws.push([]);
+        }
+        player.throws[this.turnNumber - 1].push(score);
+
+        // Run specific game logic
+        this.processNewScore(score);
+    };
+    BaseGame.prototype.processNewScore = function(score) { return; };
 
     /*
      * Cricket
@@ -112,15 +150,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             _B: true
         };
 
+        this.additionalContext = {
+            allowedTargets: this.allowedTargets
+        };
+
         Handlebars.registerHelper('targetFormat', function() {
-            var labelClass = "default";
-            if(this >= 3) {
-                labelClass = "success";
-            }
+            // See css for color definitions
+            var labelClass = "throw" + this;
             return new Handlebars.SafeString(
                 '<span class="label label-' + labelClass + '">' + this + '</span>'
             );
         });
+
+        this.updateView();
     };
     Cricket.prototype = Object.create(BaseGame.prototype, {
         _addScore: {
@@ -172,7 +214,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     return;
                 }
 
-                var player = this.players[this.currentPlayer];
+                var player = this.players[this.currentPlayer],
+                    additionalContext = {
+                        allowedTargets: this.allowTargets
+                    };
 
                 var targetName = (score.bull ? '_B' : '_' + score.value);
                 if(this.allowedTargets.hasOwnProperty(targetName) &&
@@ -205,7 +250,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         }
                     }
                 }
-                this.updateView();
+                this.updateView(additionalContext);
             }
         },
         endOfGame: {
@@ -233,6 +278,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      */
     var CutThroatCricket = function(players, dartboardId, scoreboardId) {
         Cricket.call(this, players, dartboardId, scoreboardId);
+        this.updateView();
     }
     CutThroatCricket.prototype = Object.create(Cricket.prototype, {
         _addScore: {
@@ -274,6 +320,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this.players[i].won = false;
             this.players[i].winningTurn = 0;
         }
+        this.updateView();
     };
     AroundTheClock.prototype = Object.create(BaseGame.prototype, {
         _isGameOver: {
@@ -359,6 +406,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this.players[i].score = this.startingScore;
             this.players[i].startedTurnAt = this.startingScore;
         }
+
+        this.updateView();
     };
     X01.prototype = Object.create(BaseGame.prototype, {
         _nextPlayer: {
