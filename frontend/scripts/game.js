@@ -48,11 +48,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 score: 0,
                 throwsLeft: 3,
                 active: false,
-                throws: []
+                throws: [],
+                showScoreTab: false
             };
         });
         this.currentPlayer = 0;
         this.players[0].active = true;
+        this.players[0].showScoreTab = true;
         this.turnNumber = 1;
         this.gameEnded = false;
         this.winner = null;
@@ -76,8 +78,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.scoreboard = $('#' + scoreboardId);
 
         (function(game) {
-            Handlebars.registerHelper('activePlayer', function() {
-                return game.players[game.currentPlayer].name;
+            Handlebars.registerHelper({
+                activePlayer: function() {
+                    return game.players[game.currentPlayer].name;
+                },
+                throwsTable: function(playerId) {
+                    console.log(playerId);
+                    if(this.throws.length == 0) {
+                        return new Handlebars.SafeString('<tr><td colspan="4">No throws yet</td></tr>');
+                    }
+
+                    var html = '',
+                        lastTurn = true;
+                    for(var i = this.throws.length - 1; i >= 0; i--) {
+                        var turn = this.throws[i],
+                            editableClass = '';
+
+                        if(lastTurn) {
+                            editableClass = 'class="editable-score"';
+                        }
+                        html += '<tr ' + editableClass + '><td>' + (i + 1) + '</td>';
+
+                        for(var j = 0; j < turn.length; j++) {
+                            var data = '';
+
+                            if(lastTurn) {
+                                data = 'data-playerid="' + playerId + '" ' +
+                                    'data-turnid="' + i + '" '+
+                                    'data-throwid="' + j + '"';
+                            }
+                            html += '<td class="score" ' + data + '>' + scoreToString(turn[j]) + '</td>';
+                        }
+
+                        html += '</tr>';
+                        lastTurn = false;
+                    }
+                    return new Handlebars.SafeString(html);
+                }
             });
         })(this);
     };
@@ -90,6 +127,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             },
             context = $.extend(true, {}, initialContext,
                     this.additionalContext, additionalContext);
+        console.log(context);
 
         (function(game, context) {
             // Game template
@@ -100,18 +138,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             );
 
             /*
+            */
             // Throws details template
             loadTemplate(
                 'templates/throws-details.hbs',
                 context,
                 '#throws-details'
             );
-            */
         })(this, context);
     };
     BaseGame.prototype.registerNewScore = function(score) {
         // Add the throw to the current player
         var player = this.players[this.currentPlayer];
+
+        player.showScoreTab = true;
 
         if(player.throws.length < this.turnNumber) {
             player.throws.push([]);
@@ -120,6 +160,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         // Run specific game logic
         this.processNewScore(score);
+
+        player.showScoreTab = false;
     };
     BaseGame.prototype.processNewScore = function(score) { return; };
 

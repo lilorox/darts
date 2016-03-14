@@ -1,21 +1,48 @@
 <div class="container-fluid">
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Turn</th>
-                <th colspan="3">Throws</th>
-            </tr>
-        </thead>
+    <ul class="nav nav-tabs" role="tablist">
+        {{#each players as |player playerId|}}
+        <li role="presentation"
+                {{#if player.showScoreTab}}
+                class="active"
+                {{/if}}
+                >
+                <a href="#tab-player{{playerId}}" aria-controls="tab-player{{playerId}}" role="tab" data-toggle="tab">{{player.name}}</a>
+        </li>
+        {{/each}}
+    </ul>
 
-        <tbody>
-            {{#each throws as |throw|}}
-            <tr>
-                <td>{{throw.turn}}</td>
-                {{#each throw.throws}}
-                <td>{{this}}</td>
-                {{/each}}
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
+    <div class="tab-content">
+        {{#each players as |player playerId|}}
+        <div role="tabpanel"
+                id="tab-player{{playerId}}"
+                class="tab-pane
+                {{#if player.showScoreTab}}
+                    active
+                {{/if}}
+                ">
+            <table class="table table-bordered scoretable">
+                <thead>
+                    <tr>
+                        <th>Turn</th>
+                        <th colspan="3">Throws</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {{throwsTable playerId}}
+                    {{!--
+                    {{#each player.throws as |throw|}}
+                    <tr>
+                        <td>{{throw.turn}}</td>
+                        {{#each throw.throws}}
+                        <td>{{this}}</td>
+                        {{/each}}
+                    </tr>
+                    {{/each}}
+                    --}}
+                </tbody>
+            </table>
+        </div>
+        {{/each}}
+    </div>
 </div>

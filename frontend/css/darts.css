@@ -35,6 +35,10 @@ body {
   cursor: url("images/dart.png"), auto;
 }
 
+.scoretable td {
+  width: 25%;
+}
+
 span.label-throw0 {
   background-color: #777;
 }
