@@ -83,7 +83,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     return game.players[game.currentPlayer].name;
                 },
                 throwsTable: function(playerId) {
-                    console.log(playerId);
                     if(this.throws.length == 0) {
                         return new Handlebars.SafeString('<tr><td colspan="4">No throws yet</td></tr>');
                     }
@@ -91,23 +90,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     var html = '',
                         lastTurn = true;
                     for(var i = this.throws.length - 1; i >= 0; i--) {
-                        var turn = this.throws[i],
-                            editableClass = '';
+                        var turn = this.throws[i];
 
-                        if(lastTurn) {
-                            editableClass = 'class="editable-score"';
-                        }
-                        html += '<tr ' + editableClass + '><td>' + (i + 1) + '</td>';
-
+                        html += '<tr><td>' + (i + 1) + '</td>';
                         for(var j = 0; j < turn.length; j++) {
-                            var data = '';
+                            var undo = '';
 
-                            if(lastTurn) {
-                                data = 'data-playerid="' + playerId + '" ' +
+                            if(lastTurn && j == turn.length - 1 && (
+                                    this.active || turn.length == 3
+                            )) {
+                                // Last dart of the last turn can be undone
+                                undo = ' <span class="undo glyphicon glyphicon-remove-circle" ' +
+                                    'data-playerid="' + playerId + '" ' +
                                     'data-turnid="' + i + '" '+
-                                    'data-throwid="' + j + '"';
+                                    'data-throwid="' + j + '">' +
+                                    '</span>';
                             }
-                            html += '<td class="score" ' + data + '>' + scoreToString(turn[j]) + '</td>';
+                            html += '<td>' + scoreToString(turn[j]) + undo + '</td>';
                         }
 
                         html += '</tr>';
@@ -127,7 +126,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             },
             context = $.extend(true, {}, initialContext,
                     this.additionalContext, additionalContext);
-        console.log(context);
 
         (function(game, context) {
             // Game template

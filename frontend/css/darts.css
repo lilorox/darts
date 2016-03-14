@@ -39,6 +39,10 @@ body {
   width: 25%;
 }
 
+.undo {
+  color: #f06060;
+}
+
 span.label-throw0 {
   background-color: #777;
 }
