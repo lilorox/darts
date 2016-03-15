@@ -53,12 +53,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             };
         });
         this.currentPlayer = 0;
-        this.previousPlayer = null;
         this.players[0].active = true;
         this.players[0].showScoreTab = true;
         this.turnNumber = 1;
         this.gameEnded = false;
         this.winner = null;
+
+        // Undo actions
+        this.undo = [];
+        this.undoSize = 10;
+
+        // Properties to save and restore in the game object
+        this.gameStateProperties = [
+            "players",
+            "currentPlayer",
+            "turnNumber",
+            "gameEnded",
+            "winner"
+        ];
+        this.additionalProps = [];
+
+        // Additional context properties
+        this.additionalContextProps = [];
 
         var onClickAction = (function(game) {
             return function(evt) {
@@ -106,15 +122,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             });
         })(this);
     };
-    BaseGame.prototype.updateView = function(additionalContext) {
+    BaseGame.prototype.updateView = function() {
         var initialContext = {
                 players: this.players,
                 turn: this.turnNumber,
                 gameEnded: this.gameEnded,
                 winner: this.winner
             },
-            context = $.extend(true, {}, initialContext,
-                    this.additionalContext, additionalContext);
+            context = $.extend(true, {}, initialContext, this.additionalContext);
 
         (function(game, context) {
             // Game template
@@ -133,12 +148,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 '#throws-details'
             );
         })(this, context);
+
+        // Enable-disable undo button in function of the undo queue length
+        $('#undo-btn').toggleClass('disabled', (this.undo.length <= 0));
     };
     BaseGame.prototype.registerNewScore = function(score) {
         // Add the throw to the current player
         var player = this.players[this.currentPlayer];
-
         player.showScoreTab = true;
+
+        // Save current state to the undo queue
+        this.saveState();
 
         if(player.throws.length < this.turnNumber) {
             player.throws.push([]);
@@ -151,6 +171,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         player.showScoreTab = false;
     };
     BaseGame.prototype.processNewScore = function(score) { return; };
+    BaseGame.prototype.saveState = function() {
+        var props = [].concat(this.gameStateProperties).concat(this.additionalProps),
+            state = {};
+
+        for(var i = 0; i < props.length; i ++) {
+            state[props[i]] = this[props[i]];
+        }
+
+        this.undo.push(JSON.stringify(state));
+        if(this.undo.length > this.undoSize) {
+            this.undo.shift();
+        }
+    };
+    BaseGame.prototype.restoreState = function() {
+        if(this.undo.length <= 0) {
+            return;
+        }
+        var state = JSON.parse(this.undo.pop());
+
+        for(var prop in state) {
+            if(state.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
+                this[prop] = state[prop];
+            }
+        }
+
+        this.updateView();
+    };
 
     /*
      * Cricket
@@ -243,10 +290,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     return;
                 }
 
-                var player = this.players[this.currentPlayer],
-                    additionalContext = {
-                        allowedTargets: this.allowTargets
-                    };
+                var player = this.players[this.currentPlayer];
 
                 var targetName = (score.bull ? '_B' : '_' + score.value);
                 if(this.allowedTargets.hasOwnProperty(targetName) &&
@@ -279,7 +323,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         }
                     }
                 }
-                this.updateView(additionalContext);
+                this.updateView();
             }
         },
         endOfGame: {

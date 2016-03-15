@@ -15,10 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-function buildAdditionnalOptions() {
+function buildadditionalOptions() {
     var game = $('#game-select').val();
 
-    $('.additionnal-group').remove();
+    $('.additional-group').remove();
 
     if(! games[game].hasOwnProperty('options')) {
         return;
@@ -27,7 +27,7 @@ function buildAdditionnalOptions() {
     Object.keys(games[game].options).forEach(function(optionName) {
         var option = games[game].options[optionName],
             inputId = optionName + '-opt',
-            formGroup = $('<div>').addClass('form-group additionnal-group'),
+            formGroup = $('<div>').addClass('form-group additional-group'),
             input = null;
 
         $('<label>')
@@ -40,7 +40,7 @@ function buildAdditionnalOptions() {
                 input = $('<select>')
                     .attr('id', inputId)
                     .data('option-name', optionName)
-                    .addClass('form-control additionnal-option');
+                    .addClass('form-control additional-option');
 
                 for(var value in option.values) {
                     if(option.values.hasOwnProperty(value)) {
@@ -54,7 +54,7 @@ function buildAdditionnalOptions() {
 
         $(formGroup)
             .append(input)
-            .insertBefore('#additionnal-games-anchor');
+            .insertBefore('#additional-games-anchor');
     });
 }
 
@@ -163,7 +163,7 @@ function buildGameSelect() {
         };
         $('#game-variant').prop('disabled', false);
         buildVariantSelect();
-        buildAdditionnalOptions();
+        buildadditionalOptions();
     });
 
     $('#game-select').trigger('change');
@@ -173,12 +173,12 @@ function startGame() {
     var game = $('#game-select').val(),
         variant = $('#game-variant').val(),
         players = $('#game-players').val(),
-        additionnalOptions = {};
+        additionalOptions = {};
 
-    $('.additionnal-option').each(function() {
+    $('.additional-option').each(function() {
         var value = $(this).val(),
             option = $(this).data('option-name');
-        additionnalOptions[option] = value;
+        additionalOptions[option] = value;
     });
 
     if(window.g) {
@@ -188,10 +188,15 @@ function startGame() {
     }
     var GameClass = getGameClass(game, variant);
     if(GameClass != null) {
-        window.g = new GameClass(players, 'dartboard', 'scoreboard', additionnalOptions);
+        window.g = new GameClass(players, 'dartboard', 'scoreboard', additionalOptions);
     } else {
         console.error("No class found for game '" + game + "' with variant '" + variant + "'");
     }
+
+    $('#undo-btn a').on('click', function(evt) {
+        evt.preventDefault();
+        window.g.restoreState();
+    });
 }
 
 $(function() {
@@ -203,6 +208,10 @@ $(function() {
     window.g = new GameClass(["player1", "player2", "player3"], 'dartboard', 'scoreboard');
     var GameClass = getGameClass('cricket', 'normal');
     window.g = new GameClass(["player1", "player2"], 'dartboard', 'scoreboard');
+    $('#undo-btn a').on('click', function(evt) {
+        evt.preventDefault();
+        window.g.restoreState();
+    });
     */
 
    $('#game-submit').on('click', function(evt) {
