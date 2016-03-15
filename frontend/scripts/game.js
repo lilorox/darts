@@ -53,6 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             };
         });
         this.currentPlayer = 0;
+        this.previousPlayer = null;
         this.players[0].active = true;
         this.players[0].showScoreTab = true;
         this.turnNumber = 1;
@@ -94,19 +95,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
                         html += '<tr><td>' + (i + 1) + '</td>';
                         for(var j = 0; j < turn.length; j++) {
-                            var undo = '';
-
-                            if(lastTurn && j == turn.length - 1 && (
-                                    this.active || turn.length == 3
-                            )) {
-                                // Last dart of the last turn can be undone
-                                undo = ' <span class="undo glyphicon glyphicon-remove-circle" ' +
-                                    'data-playerid="' + playerId + '" ' +
-                                    'data-turnid="' + i + '" '+
-                                    'data-throwid="' + j + '">' +
-                                    '</span>';
-                            }
-                            html += '<td>' + scoreToString(turn[j]) + undo + '</td>';
+                            html += '<td>' + scoreToString(turn[j]) + '</td>';
                         }
 
                         html += '</tr>';
