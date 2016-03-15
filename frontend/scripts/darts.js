@@ -54,7 +54,7 @@ function buildAdditionnalOptions() {
 
         $(formGroup)
             .append(input)
-            .insertBefore('#game-submit');
+            .insertBefore('#additionnal-games-anchor');
     });
 }
 
@@ -169,19 +169,11 @@ function buildGameSelect() {
     $('#game-select').trigger('change');
 }
 
-function toggleMenu() {
-    $('#menu').toggle(200);
-    $(".fold span").toggleClass("glyphicon-chevron-up");
-    $(".fold span").toggleClass("glyphicon-chevron-down");
-}
-
 function startGame() {
     var game = $('#game-select').val(),
         variant = $('#game-variant').val(),
         players = $('#game-players').val(),
         additionnalOptions = {};
-
-    toggleMenu();
 
     $('.additionnal-option').each(function() {
         var value = $(this).val(),
@@ -209,18 +201,13 @@ $(function() {
     /* For test purposes
     var GameClass = getGameClass('clock', 'normal');
     window.g = new GameClass(["player1", "player2", "player3"], 'dartboard', 'scoreboard');
-    */
     var GameClass = getGameClass('cricket', 'normal');
     window.g = new GameClass(["player1", "player2"], 'dartboard', 'scoreboard');
-    toggleMenu();
+    */
 
-    $('#menu form').on('submit', function(evt) {
+   $('#game-submit').on('click', function(evt) {
         evt.preventDefault();
+        $('#new-game-modal').modal('hide');
         startGame();
-    });
-
-    $('#fold-menu').on('click', function(evt) {
-        evt.preventDefault();
-        toggleMenu();
-    });
+   });
 });
