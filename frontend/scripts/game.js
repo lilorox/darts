@@ -75,6 +75,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         // Additional context properties
         this.additionalContextProps = [];
 
+        this.dartboardId = dartboardId;
+        this.scoreboardId = scoreboardId;
+
+        this.setup();
+    };
+    BaseGame.prototype.setup = function() {
         var onClickAction = (function(game) {
             return function(evt) {
                 var rect = this.getBoundingClientRect(),
@@ -88,12 +94,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
         })(this);
 
-        this.dartboardId = dartboardId;
         $('#' + this.dartboardId).DartBoard({
             onClick: onClickAction
         });
-        this.scoreboardId = scoreboardId;
-
         this.initHelpers();
     };
     BaseGame.prototype.initHelpers = function() {

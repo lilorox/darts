@@ -205,8 +205,10 @@ function saveGame() {
 
 function loadGame() {
     if(Save.exists("darts")) {
+        $('#dartboard').empty();
+        $('#scoreboard').empty();
         window.g = window.Save.load("darts");
-        window.g.initHelpers();
+        window.g.setup();
         window.g.updateView();
     }
 }
