@@ -190,13 +190,21 @@ function startGame() {
     if(GameClass != null) {
         window.g = new GameClass(players, 'dartboard', 'scoreboard', additionalOptions);
     } else {
-        console.error("No class found for game '" + game + "' with variant '" + variant + "'");
+        throw new Error("No class found for game '" + game + "' with variant '" + variant + "'");
     }
 
-    $('#undo-btn a').on('click', function(evt) {
-        evt.preventDefault();
-        window.g.restoreState();
-    });
+    $('#save-btn').toggleClass("disabled", false);
+}
+
+function saveGame() {
+    if(window.g) {
+        window.Save.save("dartsSave", window.g);
+    }
+}
+
+function loadGame() {
+    window.g = window.Save.load("dartsSave");
+    $('#load-btn').toggleClass("disabled", false);
 }
 
 $(function() {
@@ -208,10 +216,6 @@ $(function() {
     window.g = new GameClass(["player1", "player2", "player3"], 'dartboard', 'scoreboard');
     var GameClass = getGameClass('cricket', 'normal');
     window.g = new GameClass(["player1", "player2"], 'dartboard', 'scoreboard');
-    $('#undo-btn a').on('click', function(evt) {
-        evt.preventDefault();
-        window.g.restoreState();
-    });
     */
 
    $('#game-submit').on('click', function(evt) {
@@ -219,4 +223,21 @@ $(function() {
         $('#new-game-modal').modal('hide');
         startGame();
    });
+
+   $('#undo-btn a').on('click', function(evt) {
+       evt.preventDefault();
+       window.g.restoreState();
+   });
+
+   $('#save-btn a').on('click', function(evt) {
+       saveGame();
+   });
+
+   $('#load-btn a').on('click', function(evt) {
+       loadGame();
+   });
+
+   if('saveDarts' in localStorage) {
+       $('#load-btn').toggleClass("disabled", false);
+   }
 });
