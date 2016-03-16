@@ -198,13 +198,17 @@ function startGame() {
 
 function saveGame() {
     if(window.g) {
-        window.Save.save("dartsSave", window.g);
+        window.Save.save("darts", window.g);
+        $('#load-btn').toggleClass("disabled", false);
     }
 }
 
 function loadGame() {
-    window.g = window.Save.load("dartsSave");
-    $('#load-btn').toggleClass("disabled", false);
+    if(Save.exists("darts")) {
+        window.g = window.Save.load("darts");
+        window.g.initHelpers();
+        window.g.updateView();
+    }
 }
 
 $(function() {
@@ -237,7 +241,8 @@ $(function() {
        loadGame();
    });
 
-   if('saveDarts' in localStorage) {
+   if(Save.exists("darts")) {
+       console.log('hooray');
        $('#load-btn').toggleClass("disabled", false);
    }
 });

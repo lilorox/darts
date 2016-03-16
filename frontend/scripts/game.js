@@ -20,8 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         $.ajax({
             url: url,
             method: 'GET',
-            dataType: 'text',
-            cache: false // debug
+            dataType: 'text'
         }).then(function(src) {
             return Handlebars.compile(src)(context);
         }).done(function(html) {
@@ -89,11 +88,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
         })(this);
 
-        this.dartboard = $('#' + dartboardId).DartBoard({
+        this.dartboardId = dartboardId;
+        $('#' + this.dartboardId).DartBoard({
             onClick: onClickAction
         });
-        this.scoreboard = $('#' + scoreboardId);
+        this.scoreboardId = scoreboardId;
 
+        this.initHelpers();
+    };
+    BaseGame.prototype.initHelpers = function() {
         (function(game) {
             Handlebars.registerHelper({
                 activePlayer: function() {
@@ -121,7 +124,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             });
         })(this);
+
+        this.initAdditionalHelpers();
     };
+    BaseGame.prototype.initAdditionalHelpers = function() { return; };
     BaseGame.prototype.updateView = function() {
         var initialContext = {
                 players: this.players,
@@ -136,7 +142,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             loadTemplate(
                 'templates/' + game.type + '.' + game.variant + '.hbs',
                 context,
-                game.scoreboard
+                '#' + game.scoreboardId
             );
 
             /*
@@ -230,6 +236,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             allowedTargets: this.allowedTargets
         };
 
+        this.updateView();
+    };
+    Cricket.prototype.initAdditionalHelpers = function() {
         Handlebars.registerHelper('targetFormat', function() {
             // See css for color definitions
             var labelClass = "throw" + this;
@@ -237,8 +246,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 '<span class="label label-' + labelClass + '">' + this + '</span>'
             );
         });
-
-        this.updateView();
     };
     Cricket.prototype = Object.create(BaseGame.prototype, {
         _addScore: {
