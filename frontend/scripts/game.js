@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         return factorToString[score.factor] + value;
     };
 
-    var BaseGame = function(type, variant, players, dartboardId, scoreboardId) {
+    function BaseGame(type, variant, players, dartboardId, scoreboardId) {
         this.type = type;
         this.variant = variant;
         this.players = players.map(function(player) {
@@ -202,7 +202,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     /*
      * Cricket
      */
-    var Cricket = function(players, dartboardId, scoreboardId) {
+    function Cricket(players, dartboardId, scoreboardId) {
         BaseGame.call(this, 'cricket', 'normal', players, dartboardId, scoreboardId);
         for(var i = 0; i < this.players.length; i++) {
             this.players[i].targets = {
@@ -349,7 +349,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     /*
      * Cut-Throat Cricket
      */
-    var CutThroatCricket = function(players, dartboardId, scoreboardId) {
+    function CutThroatCricket(players, dartboardId, scoreboardId) {
         Cricket.call(this, players, dartboardId, scoreboardId);
         this.updateView();
     }
@@ -387,7 +387,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     /*
      * Around the clock
      */
-    var AroundTheClock = function(players, dartboardId, scoreboardId) {
+    function AroundTheClock(players, dartboardId, scoreboardId) {
         BaseGame.call(this, 'clock', 'normal', players, dartboardId, scoreboardId);
         for(var i = 0; i < this.players.length; i++) {
             this.players[i].won = false;
@@ -468,7 +468,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     /*
      * x01
      */
-    var X01 = function(players, dartboardId, scoreboardId, options) {
+    function X01(players, dartboardId, scoreboardId, options) {
         BaseGame.call(this, 'x01', 'normal', players, dartboardId, scoreboardId);
 
         options = options || {};
@@ -546,7 +546,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     });
     X01.prototype.constructor = X01;
 
-    var NoDoubleStartX01 = function(players, dartboardId, scoreboardId, options) {
+    function NoDoubleStartX01(players, dartboardId, scoreboardId, options) {
         X01.call(this, players, dartboardId, scoreboardId, options);
     }
     NoDoubleStartX01.prototype = Object.create(X01.prototype, {
@@ -664,5 +664,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         return GameClass;
     };
 
+
     window.games = games;
+    window.BaseGame = BaseGame;
+    window.Cricket = Cricket;
+    window.CutThroatCricket = Cricket;
+    window.AroundTheClock = AroundTheClock;
+    window.X01 = X01;
+    window.NoDoubleStartX01 = NoDoubleStartX01;
 })(window);
