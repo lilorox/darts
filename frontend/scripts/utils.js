@@ -17,25 +17,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;(function(window) {
     /*
-     * Dispatcher object for communication between model, view and controller
+     * General utility functions
      */
-    function Dispatcher(sender) {
-        this._sender = sender;
-        this._listeners = [];
-    };
-    Dispatcher.prototype.attach = function(callback) {
-        this._listeners.push(callback);
-    };
-    Dispatcher.prototype.dispatch = function(args) {
-        for(var i = 0; i < this._listeners.length; i++) {
-            this.listeners[index](this._sender, args);
+    var Utils = {
+        loadTemplate = function(url, context, $target) {
+            $.ajax({
+                url: url,
+                method: 'GET',
+                dataType: 'text'
+            }).then(function(src) {
+                return Handlebars.compile(src)(context);
+            }).done(function(html) {
+                $target.html(html);
+            });
         }
     };
 
-
-    /*
-     * Save objects to the global scope
-     */
-    window.Dispatcher = Dispatcher;
+    window.Utils = Utils;
 })(window);
-

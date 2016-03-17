@@ -142,7 +142,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     };
 
-    function BaseGame(type, variant, players, dartboardId, scoreboardId) {
+
+    /*
+     * Parent game object
+     */
+    function BaseGame(type, variant, players) {
         this._type = type;
         this._variant = variant;
         this._players = players.map(function(player) {
@@ -160,7 +164,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._players[0].showScoreTab = true;
         this._turnNumber = 1;
         this._gameEnded = false;
-        this._winner = null;
 
         this._context = {};
 
@@ -180,93 +183,101 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         // Additional context properties
         this.additionalContextProps = [];
+
+        // Events
+        this.undoListChanged = new Dispatch(this);
+        this.gameHasEnded = new Dispatch(this);
     };
+    BaseGame.prototype = {
+        /*
+         * Public methods
+         */
+        getActivePlayer: function() {
+            return this._players[this._currentPlayer];
+        },
+        getUndoQueueLength: function() {
+            return this._undo.length;
+        },
+        getContext: function() {
+            return $.extend(
+                {},
+                this._context,
+                this.getSpecificContext();
+            );
+        },
+        getType: function() {
+            return this._type;
+        },
+        getVariant: function() {
+            return this._variant;
+        },
+        registerScore: function(score) {
+            // Add the throw to the current player
+            var player = this.getActivePlayer();
+            player.showScoreTab = true;
 
-    /*
-     * Public methods
-     */
-    BaseGame.prototype.getActivePlayer = function() {
-        return this._players[this._currentPlayer];
-    };
-    BaseGame.prototype.getUndoQueueLength = function() {
-        return this._undo.length;
-    };
-    BaseGame.prototype.getContext = function() {
-        return $.extend(
-            {},
-            this._context,
-            this.getSpecificContext();
-        );
-    };
+            // Save current state to the undo queue
+            this._saveState();
 
-    BaseGame.prototype.registerScore = function(score) {
-        // Add the throw to the current player
-        var player = this.getActivePlayer();
-        player.showScoreTab = true;
-
-        // Save current state to the undo queue
-        this._saveState();
-
-        if(player.throws.length < this._turnNumber) {
-            player.throws.push([]);
-        }
-        player.throws[this._turnNumber - 1].push(score);
-
-        // Run specific game logic
-        this.processNewScore(score);
-
-        player.showScoreTab = false;
-    };
-
-    BaseGame.prototype.undo = function() {
-        if(this._undo.length <= 0) {
-            return;
-        }
-        var state = JSON.parse(this._undo.pop());
-
-        for(var prop in state) {
-            if(state.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
-                this[prop] = state[prop];
+            if(player.throws.length < this._turnNumber) {
+                player.throws.push([]);
             }
-        }
-    };
+            player.throws[this._turnNumber - 1].push(score);
 
-    BaseGame.prototype.gameOver = function(winnerId) {
+            // Run specific game logic
+            this.processNewScore(score);
+
+            player.showScoreTab = false;
+        },
+        undo: function() {
+            if(this.getUndoQueueLength() <= 0) {
+                return;
+            }
+            var state = JSON.parse(this._undo.pop());
+
+            for(var prop in state) {
+                if(state.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
+                    this[prop] = state[prop];
+                }
+            }
+        },
+        gameOver: function(winnerId) {
             this._gameEnded = true;
+            this.gameHasEnded.notify({ player: this._players[winnerId] });
+        },
 
-            this._winner = winner;
-            this.updateView();
+        /*
+         * "Protected" methods that may be overridden
+         */
+        getSpecificContext: function() { return {}; },
+        processNewScore: function(score) { return; },
+
+        /*
+         * "Private" methods that must not be called outside the object itself
+         *  and must not be overridden by inherited objects
+         */
+        _saveState: function() {
+            var props = [].concat(this._gameStateProperties).concat(this.additionalProps),
+                state = {};
+
+            for(var i = 0; i < props.length; i ++) {
+                state[props[i]] = this[props[i]];
+            }
+
+            this._undo.push(JSON.stringify(state));
+            if(this._undo.length > this._undoMaxSize) {
+                this._undo.shift();
+            }
+            this.undoListChanged.notify();
         }
     };
 
-    /*
-     * "Protected" methods that may be overriden
-     */
-    BaseGame.prototype.getSpecificContext = function() { return {}; };
-    BaseGame.prototype.processNewScore = function(score) { return; };
-
-    /*
-     * "Private" methods that must not be called outside the object itself
-     */
-    BaseGame.prototype._saveState = function() {
-        var props = [].concat(this._gameStateProperties).concat(this.additionalProps),
-            state = {};
-
-        for(var i = 0; i < props.length; i ++) {
-            state[props[i]] = this[props[i]];
-        }
-
-        this._undo.push(JSON.stringify(state));
-        if(this._undo.length > this._undoMaxSize) {
-            this._undo.shift();
-        }
-    };
 
     /*
      * Cricket
      */
-    function Cricket(players, dartboardId, scoreboardId) {
-        BaseGame.call(this, 'cricket', 'normal', players, dartboardId, scoreboardId);
+    function Cricket(players) {
+        BaseGame.call(this, 'cricket', 'normal', players);
         for(var i = 0; i < this._players.length; i++) {
             this._players[i].targets = {
                 _15: 0,
@@ -333,13 +344,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     this.getActivePlayer().active = true;
                     if(this._currentPlayer === 0) {
                         if(this._checkAllTargetsClosed()) {
-                            this.gameOver(this._getHighestScorePlayer());
+                            this.gameOver(this._getWinningPlayer());
                         } else {
                             this._turnNumber ++;
                         }
                     }
                 }
-                this.updateView();
             }
         },
         /*
@@ -389,9 +399,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 return false;
             }
         },
-        _getHighestScorePlayer: {
+        _getWinningPlayer: {
             enumerable: false,
             value: function() {
+                // Returns the id of the player with the highest score
                 var leaderId = 0;
 
                 for(var i = 1; i < this._players.length; i++) {
@@ -405,15 +416,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     });
     Cricket.prototype.constructor = Cricket;
 
+
     /*
      * Cut-Throat Cricket
      */
-    function CutThroatCricket(players, dartboardId, scoreboardId) {
-        Cricket.call(this, players, dartboardId, scoreboardId);
-        this.updateView();
+    function CutThroatCricket(players) {
+        Cricket.call(this, players);
     }
     CutThroatCricket.prototype = Object.create(Cricket.prototype, {
+        /*
+         * Overriden private methods from Cricket
+         */
         _addScore: {
+            enumerable: false,
             value: function(score) {
                 var targetName = (score.bull ? '_B' : '_' + score.value);
                 for(var i = 0; i < this._players.length; i ++) {
@@ -423,38 +438,72 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         },
-        endOfGame: {
+        _getWinningPlayer: {
+            enumerable: false,
             value: function() {
-                this._gameEnded = true;
-                var winner = this._players[0].name,
-                    winnerScore = this._players[0].score;
+                // Returns the id of the player with the lowest score
+                var leaderId = 0;
 
                 for(var i = 1; i < this._players.length; i++) {
-                    if(this._players[i].score < winnerScore) {
-                        winner = this._players[i].name;
-                        winnerScore = this._players[i].score;
+                    if(this._players[i].score < this._players[leaderId].score) {
+                        leaderId = i;
                     }
                 }
-
-                this._winner = winner;
-                this.updateView();
+                return leaderId;
             }
         }
     });
     CutThroatCricket.prototype.constructor = Cricket;
 
+
     /*
      * Around the clock
      */
-    function AroundTheClock(players, dartboardId, scoreboardId) {
-        BaseGame.call(this, 'clock', 'normal', players, dartboardId, scoreboardId);
+    function AroundTheClock(players) {
+        BaseGame.call(this, 'clock', 'normal');
         for(var i = 0; i < this._players.length; i++) {
             this._players[i].won = false;
             this._players[i].winningTurn = 0;
         }
-        this.updateView();
     };
     AroundTheClock.prototype = Object.create(BaseGame.prototype, {
+        /*
+         * Overriden "protected" methods
+         */
+        processNewScore: {
+            value: function(score) {
+                if(this._gameEnded) {
+                    return;
+                }
+
+                var player = this.getActivePlayer();
+
+                if(player.score == 20 && score.bull) {
+                    player.won = true;
+                    player.winningTurn = this._turnNumber;
+                    player.throwsLeft = 0;
+
+                    if(this._isGameOver()) {
+                        player.active = false;
+                        this.gameOver() = true;
+                        return;
+                    } else {
+                        this._nextPlayer();
+                    }
+                } else if(score.value == player.score + 1) {
+                    player.score ++;
+                }
+                player.throwsLeft --;
+
+                if(player.throwsLeft === 0) {
+                    player.throwsLeft = 3;
+                    this._nextPlayer();
+                }
+            }
+        },
+        /*
+         * "Private" methods
+         */
         _isGameOver: {
             enumerable: false,
             value: function() {
@@ -466,8 +515,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
         },
         _nextPlayer: {
+            enumerable: false,
             value: function() {
-                var player = this._players[this._currentPlayer],
+                var player = this.getActivePlayer(),
                     nextPlayerId = (this._currentPlayer + 1) % this._players.length,
                     nextPlayer = this._players[nextPlayerId];
 
@@ -487,86 +537,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this._currentPlayer = nextPlayerId;
                 nextPlayer.active = true;
             }
-        },
-        processNewScore: {
-            value: function(score) {
-                if(this._gameEnded) {
-                    return;
-                }
-
-                var player = this._players[this._currentPlayer];
-
-                if(player.score == 20 && score.bull) {
-                    player.won = true;
-                    player.winningTurn = this._turnNumber;
-                    player.throwsLeft = 0;
-
-                    if(this._isGameOver()) {
-                        player.active = false;
-                        this._gameEnded = true;
-                        this.updateView();
-                        return;
-                    } else {
-                        this._nextPlayer();
-                    }
-                } else if(score.value == player.score + 1) {
-                    player.score ++;
-                }
-                player.throwsLeft --;
-
-                if(player.throwsLeft === 0) {
-                    player.throwsLeft = 3;
-                    this._nextPlayer();
-                }
-                this.updateView();
-            }
         }
     });
     AroundTheClock.prototype.constructor = AroundTheClock;
 
+
     /*
      * x01
      */
-    function X01(players, dartboardId, scoreboardId, options) {
-        BaseGame.call(this, 'x01', 'normal', players, dartboardId, scoreboardId);
+    function X01(players, options) {
+        BaseGame.call(this, 'x01', 'normal', players);
 
         options = options || {};
-        this.startingScore = parseInt(options.startingScore) || 301;
+        this._startingScore = parseInt(options._startingScore) || 301;
 
         for(var i = 0; i < this._players.length; i++) {
             this._players[i].startingDouble = false;
-            this._players[i].score = this.startingScore;
-            this._players[i].startedTurnAt = this.startingScore;
+            this._players[i].score = this._startingScore;
+            this._players[i].startedTurnAt = this._startingScore;
         }
 
-        this.updateView();
     };
     X01.prototype = Object.create(BaseGame.prototype, {
-        _nextPlayer: {
-            value: function() {
-                var player = this._players[this._currentPlayer],
-                    nextPlayerId = (this._currentPlayer + 1) % this._players.length,
-                    nextPlayer = this._players[nextPlayerId];
-
-                player.throwsLeft = 3;
-                player.active = false;
-                player.startedTurnAt = player.score;
-
-                this._currentPlayer = nextPlayerId;
-                nextPlayer.active = true;
-
-                if(nextPlayerId <= this._currentPlayer) {
-                    this._turnNumber ++;
-                }
-            }
-        },
+        /*
+         * Overriden "protected" methods
+         */
         processNewScore: {
             value: function(score) {
                 if(this._gameEnded) {
                     return;
                 }
 
-                var player = this._players[this._currentPlayer];
+                var player = this.getActivePlayer();
                 player.throwsLeft --;
 
                 if(! player.startingDouble && score.factor == 2) {
@@ -584,7 +586,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     }
 
                     if(player.score == 0 && score.factor == 2) {
-                        this.endOfGame(player.name);
+                        this.gameOver(player.name);
                         return;
                     }
                 }
@@ -592,23 +594,44 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 if(player.throwsLeft === 0) {
                     this._nextPlayer();
                 }
-                this.updateView();
             }
         },
-        endOfGame: {
-            value: function(winner) {
-                this._gameEnded = true;
-                this._winner = winner;
-                this.updateView();
+        /*
+         * "Private" methods
+         */
+        _nextPlayer: {
+            enumerable: false,
+            value: function() {
+                var player = this.getActivePlayer(),
+                    nextPlayerId = (this._currentPlayer + 1) % this._players.length,
+                    nextPlayer = this._players[nextPlayerId];
+
+                player.throwsLeft = 3;
+                player.active = false;
+                player.startedTurnAt = player.score;
+
+                this._currentPlayer = nextPlayerId;
+                nextPlayer.active = true;
+
+                if(nextPlayerId <= this._currentPlayer) {
+                    this._turnNumber ++;
+                }
             }
         }
     });
     X01.prototype.constructor = X01;
 
-    function NoDoubleStartX01(players, dartboardId, scoreboardId, options) {
-        X01.call(this, players, dartboardId, scoreboardId, options);
+
+    /*
+     * x01 without starting double
+     */
+    function NoDoubleStartX01(players, options) {
+        X01.call(this, players, options);
     }
     NoDoubleStartX01.prototype = Object.create(X01.prototype, {
+        /*
+         * Overriden "protected" methods
+         */
         processNewScore: {
             value: function(score) {
                 if(this._gameEnded) {
@@ -625,107 +648,116 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
 
                 if(player.score == 0) {
-                    this.endOfGame(player.name);
+                    this.gameOver(player.name);
                     return;
                 }
 
                 if(player.throwsLeft === 0) {
                     this._nextPlayer();
                 }
-                this.updateView();
             }
-        },
+        }
     });
     NoDoubleStartX01.prototype.constructor = X01;
 
-    /*
-     * Games catalog object
-     */
-    var games = {
-        cricket:  {
-            desc: "Cricket",
-            variants: {
-                normal: {
-                    desc: "Normal (2 players)",
-                    nbPlayers: { min: 2, max: 2 }
-                },
-                cutThroat: {
-                    desc: "Cut throat (2+ players)",
-                    nbPlayers: { min: 2 },
-                    obj: CutThroatCricket
-                }
-            },
-            obj: Cricket
-        },
 
-        x01: {
-            desc: "x01",
-            variants: {
-                normal: {
-                    desc: "Normal"
+    /*
+     * Games library object
+     */
+    function GamesLibrary() {
+        this._games = {
+            cricket:  {
+                desc: "Cricket",
+                variants: {
+                    normal: {
+                        desc: "Normal (2 players)",
+                        nbPlayers: { min: 2, max: 2 }
+                    },
+                    cutThroat: {
+                        desc: "Cut throat (2+ players)",
+                        nbPlayers: { min: 2 },
+                        _obj: CutThroatCricket
+                    }
                 },
-                noDoubleStart: {
-                    desc: "Start without double",
-                    obj: NoDoubleStartX01
-                }
+                _obj: Cricket
             },
-            options: {
-                startingScore: {
-                    label: "Starting score",
-                    type: "select",
-                    values: {
-                        301: "301",
-                        501: "501",
-                        701: "701",
-                        1001: "1001",
+
+            x01: {
+                desc: "x01",
+                variants: {
+                    normal: {
+                        desc: "Normal"
+                    },
+                    noDoubleStart: {
+                        desc: "Start without double",
+                        _obj: NoDoubleStartX01
+                    }
+                },
+                options: {
+                    startingScore: {
+                        label: "Starting score",
+                        type: "select",
+                        values: {
+                            301: "301",
+                            501: "501",
+                            701: "701",
+                            1001: "1001",
+                        }
+                    }
+                },
+                _obj: X01
+            },
+
+            clock: {
+                desc: "Around the clock",
+                variants: {
+                    normal: {
+                        desc: "No variant"
+                    }
+                },
+                _obj: AroundTheClock
+            },
+
+            /*
+            killer: {
+                desc: "Killer",
+                variants: {
+                    normal: {
+                        desc: "No variant",
+                        nbPlayers: { min: 4 }
                     }
                 }
-            },
-            obj: X01
-        },
-
-        clock: {
-            desc: "Around the clock",
-            variants: {
-                normal: {
-                    desc: "No variant"
-                }
-            },
-            obj: AroundTheClock
-        },
-
-        /*
-        killer: {
-            desc: "Killer",
-            variants: {
-                normal: {
-                    desc: "No variant",
-                    nbPlayers: { min: 4 }
-                }
             }
+            */
+        };
+    };
+    GamesLibrary.prototype = {
+        getRules: function() {
+            return this._games;
+        },
+        create: function(type, variant, players, options) {
+            if(! this._games.hasOwnProperty(type) ||
+                    ! this._games.[type].variants.hasOwnProperty(variant)) {
+                return null;
+            }
+
+            var GameClass = null;
+            if(variant === 'normal') {
+                GameClass = this._games[type]._obj
+            } else {
+                GameClass = this._games[type].variants[variant]._obj;
+            }
+
+            return GameClass(players, options);
         }
-        */
     };
 
-    window.getGameClass = function(type, variant) {
-        if(! games.hasOwnProperty(type) ||
-                ! games[type].variants.hasOwnProperty(variant)) {
-            return null;
-        }
 
-        var GameClass = null;
-        if(variant === 'normal') {
-            GameClass = games[type].obj
-        } else {
-            GameClass = games[type].variants[variant].obj;
-        }
-
-        return GameClass;
-    };
-
-
+    /*
+     * Save objects to the global scope
+     */
     window.Save = Save;
-    window.games = games;
+    window.GamesLibrary = GamesLibrary;
     window.BaseGame = BaseGame;
     window.Cricket = Cricket;
     window.CutThroatCricket = Cricket;

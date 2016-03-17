@@ -16,9 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
-    /*
-     * Dispatcher object for communication between model, view and controller
-     */
     function Dispatcher(sender) {
         this._sender = sender;
         this._listeners = [];
@@ -32,10 +29,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     };
 
-
-    /*
-     * Save objects to the global scope
-     */
     window.Dispatcher = Dispatcher;
 })(window);
 
