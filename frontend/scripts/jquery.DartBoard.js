@@ -77,7 +77,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     $(this).addClass("dartboard");
 
                     // Set element's handlers
-                    $(this).on('click', dartboard._options.onClick);
+                    $(this).on('click', function(evt) {
+                        dartboard._options.onClick();
+
+                        var rect = this.getBoundingClientRect();
+                        evt.score = this.getScore(
+                            evt.clientX - rect.left,
+                            evt.clientY - rect.top
+                        );
+                        $(this).trigger(evt);
+                    });
 
                     // Set the data attribute to the jQuery instance
                     $(this).data('dartboard', dartboard);

@@ -143,9 +143,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     };
 
     function BaseGame(type, variant, players, dartboardId, scoreboardId) {
-        this.type = type;
-        this.variant = variant;
-        this.players = players.map(function(player) {
+        this._type = type;
+        this._variant = variant;
+        this._players = players.map(function(player) {
             return {
                 name: player,
                 score: 0,
@@ -155,19 +155,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 showScoreTab: false
             };
         });
-        this.currentPlayer = 0;
-        this.players[0].active = true;
-        this.players[0].showScoreTab = true;
-        this.turnNumber = 1;
-        this.gameEnded = false;
-        this.winner = null;
+        this._currentPlayer = 0;
+        this._players[0].active = true;
+        this._players[0].showScoreTab = true;
+        this._turnNumber = 1;
+        this._gameEnded = false;
+        this._winner = null;
+
+        this._context = {};
 
         // Undo actions
-        this.undo = [];
-        this.undoSize = 10;
+        this._undo = [];
+        this._undoMaxSize = 10;
 
         // Properties to save and restore in the game object
-        this.gameStateProperties = [
+        this._gameStateProperties = [
             "players",
             "currentPlayer",
             "turnNumber",
@@ -178,138 +180,86 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         // Additional context properties
         this.additionalContextProps = [];
-
-        this.dartboardId = dartboardId;
-        this.scoreboardId = scoreboardId;
-
-        this.setup();
     };
-    BaseGame.prototype.setup = function() {
-        var onClickAction = (function(game) {
-            return function(evt) {
-                var rect = this.getBoundingClientRect(),
-                    dartboard =  $(this).data('dartboard'),
-                    score = dartboard.DartBoard(
-                        'getScore',
-                        evt.clientX - rect.left,
-                        evt.clientY - rect.top
-                    );
-                game.registerNewScore(score);
-            }
-        })(this);
 
-        $('#' + this.dartboardId).DartBoard({
-            onClick: onClickAction
-        });
-        this.initHelpers();
+    /*
+     * Public methods
+     */
+    BaseGame.prototype.getActivePlayer = function() {
+        return this._players[this._currentPlayer];
     };
-    BaseGame.prototype.initHelpers = function() {
-        (function(game) {
-            Handlebars.registerHelper({
-                activePlayer: function() {
-                    return game.players[game.currentPlayer].name;
-                },
-                throwsTable: function(playerId) {
-                    if(this.throws.length == 0) {
-                        return new Handlebars.SafeString('<tr><td colspan="4">No throws yet</td></tr>');
-                    }
-
-                    var html = '',
-                        lastTurn = true;
-                    for(var i = this.throws.length - 1; i >= 0; i--) {
-                        var turn = this.throws[i];
-
-                        html += '<tr><td>' + (i + 1) + '</td>';
-                        for(var j = 0; j < turn.length; j++) {
-                            html += '<td>' + scoreToString(turn[j]) + '</td>';
-                        }
-
-                        html += '</tr>';
-                        lastTurn = false;
-                    }
-                    return new Handlebars.SafeString(html);
-                }
-            });
-        })(this);
-
-        this.initAdditionalHelpers();
+    BaseGame.prototype.getUndoQueueLength = function() {
+        return this._undo.length;
     };
-    BaseGame.prototype.initAdditionalHelpers = function() { return; };
-    BaseGame.prototype.updateView = function() {
-        var initialContext = {
-                players: this.players,
-                turn: this.turnNumber,
-                gameEnded: this.gameEnded,
-                winner: this.winner
-            },
-            context = $.extend(true, {}, initialContext, this.additionalContext);
-
-        (function(game, context) {
-            // Game template
-            loadTemplate(
-                'templates/' + game.type + '.' + game.variant + '.hbs',
-                context,
-                '#' + game.scoreboardId
-            );
-
-            /*
-            */
-            // Throws details template
-            loadTemplate(
-                'templates/throws-details.hbs',
-                context,
-                '#throws-details'
-            );
-        })(this, context);
-
-        // Enable-disable undo button in function of the undo queue length
-        $('#undo-btn').toggleClass('disabled', (this.undo.length <= 0));
+    BaseGame.prototype.getContext = function() {
+        return $.extend(
+            {},
+            this._context,
+            this.getSpecificContext();
+        );
     };
-    BaseGame.prototype.registerNewScore = function(score) {
+
+    BaseGame.prototype.registerScore = function(score) {
         // Add the throw to the current player
-        var player = this.players[this.currentPlayer];
+        var player = this.getActivePlayer();
         player.showScoreTab = true;
 
         // Save current state to the undo queue
-        this.saveState();
+        this._saveState();
 
-        if(player.throws.length < this.turnNumber) {
+        if(player.throws.length < this._turnNumber) {
             player.throws.push([]);
         }
-        player.throws[this.turnNumber - 1].push(score);
+        player.throws[this._turnNumber - 1].push(score);
 
         // Run specific game logic
         this.processNewScore(score);
 
         player.showScoreTab = false;
     };
-    BaseGame.prototype.processNewScore = function(score) { return; };
-    BaseGame.prototype.saveState = function() {
-        var props = [].concat(this.gameStateProperties).concat(this.additionalProps),
-            state = {};
 
-        for(var i = 0; i < props.length; i ++) {
-            state[props[i]] = this[props[i]];
-        }
-
-        this.undo.push(JSON.stringify(state));
-        if(this.undo.length > this.undoSize) {
-            this.undo.shift();
-        }
-    };
-    BaseGame.prototype.restoreState = function() {
-        if(this.undo.length <= 0) {
+    BaseGame.prototype.undo = function() {
+        if(this._undo.length <= 0) {
             return;
         }
-        var state = JSON.parse(this.undo.pop());
+        var state = JSON.parse(this._undo.pop());
 
         for(var prop in state) {
             if(state.hasOwnProperty(prop) && this.hasOwnProperty(prop)) {
                 this[prop] = state[prop];
             }
         }
+    };
 
-        this.updateView();
+    BaseGame.prototype.gameOver = function(winnerId) {
+            this._gameEnded = true;
+
+            this._winner = winner;
+            this.updateView();
+        }
+    };
+
+    /*
+     * "Protected" methods that may be overriden
+     */
+    BaseGame.prototype.getSpecificContext = function() { return {}; };
+    BaseGame.prototype.processNewScore = function(score) { return; };
+
+    /*
+     * "Private" methods that must not be called outside the object itself
+     */
+    BaseGame.prototype._saveState = function() {
+        var props = [].concat(this._gameStateProperties).concat(this.additionalProps),
+            state = {};
+
+        for(var i = 0; i < props.length; i ++) {
+            state[props[i]] = this[props[i]];
+        }
+
+        this._undo.push(JSON.stringify(state));
+        if(this._undo.length > this._undoMaxSize) {
+            this._undo.shift();
+        }
     };
 
     /*
@@ -317,8 +267,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      */
     function Cricket(players, dartboardId, scoreboardId) {
         BaseGame.call(this, 'cricket', 'normal', players, dartboardId, scoreboardId);
-        for(var i = 0; i < this.players.length; i++) {
-            this.players[i].targets = {
+        for(var i = 0; i < this._players.length; i++) {
+            this._players[i].targets = {
                 _15: 0,
                 _16: 0,
                 _17: 0,
@@ -329,7 +279,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             };
         }
 
-        this.allowedTargets = {
+        this._allowedTargets = {
             _15: true,
             _16: true,
             _17: true,
@@ -338,77 +288,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             _20: true,
             _B: true
         };
-
-        this.additionalContext = {
-            allowedTargets: this.allowedTargets
-        };
-
-        this.updateView();
-    };
-    Cricket.prototype.initAdditionalHelpers = function() {
-        Handlebars.registerHelper('targetFormat', function() {
-            // See css for color definitions
-            var labelClass = "throw" + this;
-            return new Handlebars.SafeString(
-                '<span class="label label-' + labelClass + '">' + this + '</span>'
-            );
-        });
     };
     Cricket.prototype = Object.create(BaseGame.prototype, {
-        _addScore: {
-            value: function(score) {
-                this.players[this.currentPlayer].score += score.factor * score.value;
-            }
-        },
-        _checkTargetIsClosed: {
-            enumerable: false,
-            value: function(target) {
-                var playersClosed = 0;
-                for(var i = 0; i < this.players.length; i++) {
-                    if(this.players[i].targets[target] >= 3) {
-                        playersClosed ++;
-                    }
-                }
-
-                return (playersClosed === this.players.length);
-            }
-        },
-        _playerClosedAllTargets: {
-            enumerable: false,
-            value: function(playerId) {
-                var targets = Object.keys(this.allowedTargets),
-                    playerClosed = true,
-                    j = 0;
-                while(playerClosed && j < targets.length) {
-                    playerClosed = (playerClosed && this.players[playerId].targets[targets[j]] >= 3);
-                    j ++;
-                }
-
-                return playerClosed;
-            }
-        },
-        _checkAllTargetsClosed: {
-            enumerable: false,
+        /*
+         * Overriden "protected" methods
+         */
+        getSpecificContext: {
             value: function() {
-                for(var i = 0; i < this.players.length; i++) {
-                    if(this._playerClosedAllTargets(i)) {
-                        return true;
-                    }
-                }
-                return false;
+                return {
+                    allowedTargets: this._allowedTargets
+                };
             }
         },
         processNewScore: {
             value: function(score) {
-                if(this.gameEnded) {
+                if(this._gameEnded) {
                     return;
                 }
 
-                var player = this.players[this.currentPlayer];
+                var player = this.getActivePlayer();
 
                 var targetName = (score.bull ? '_B' : '_' + score.value);
-                if(this.allowedTargets.hasOwnProperty(targetName) &&
-                        this.allowedTargets[targetName]) {
+                if(this._allowedTargets.hasOwnProperty(targetName) &&
+                        this._allowedTargets[targetName]) {
                     if(player.targets[targetName] < 3) {
                         player.targets[targetName] = Math.min(
                             3,
@@ -420,41 +322,84 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
 
                 if(this._checkTargetIsClosed(targetName)) {
-                    this.allowedTargets[targetName] = false;
+                    this._allowedTargets[targetName] = false;
                 }
 
                 player.throwsLeft --;
                 if(player.throwsLeft === 0) {
                     player.throwsLeft = 3;
                     player.active = false;
-                    this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
-                    this.players[this.currentPlayer].active = true;
-                    if(this.currentPlayer === 0) {
+                    this._currentPlayer = (this._currentPlayer + 1) % this._players.length;
+                    this.getActivePlayer().active = true;
+                    if(this._currentPlayer === 0) {
                         if(this._checkAllTargetsClosed()) {
-                            this.endOfGame();
+                            this.gameOver(this._getHighestScorePlayer());
                         } else {
-                            this.turnNumber ++;
+                            this._turnNumber ++;
                         }
                     }
                 }
                 this.updateView();
             }
         },
-        endOfGame: {
-            value: function() {
-                this.gameEnded = true;
-                var winner = this.players[0].name,
-                    winnerScore = this.players[0].score;
-
-                for(var i = 1; i < this.players.length; i++) {
-                    if(this.players[i].score > winnerScore) {
-                        winner = this.players[i].name;
-                        winnerScore = this.players[i].score;
+        /*
+         * "Private" methods
+         */
+        _addScore: {
+            enumerable: false,
+            value: function(score) {
+                this.getActivePlayer().score += score.factor * score.value;
+            }
+        },
+        _checkTargetIsClosed: {
+            enumerable: false,
+            value: function(target) {
+                var playersClosed = 0;
+                for(var i = 0; i < this._players.length; i++) {
+                    if(this._players[i].targets[target] >= 3) {
+                        playersClosed ++;
                     }
                 }
 
-                this.winner = winner;
-                this.updateView();
+                return (playersClosed === this._players.length);
+            }
+        },
+        _playerClosedAllTargets: {
+            enumerable: false,
+            value: function(playerId) {
+                var targets = Object.keys(this._allowedTargets),
+                    playerClosed = true,
+                    j = 0;
+                while(playerClosed && j < targets.length) {
+                    playerClosed = (playerClosed && this._players[playerId].targets[targets[j]] >= 3);
+                    j ++;
+                }
+
+                return playerClosed;
+            }
+        },
+        _checkAllTargetsClosed: {
+            enumerable: false,
+            value: function() {
+                for(var i = 0; i < this._players.length; i++) {
+                    if(this._playerClosedAllTargets(i)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        },
+        _getHighestScorePlayer: {
+            enumerable: false,
+            value: function() {
+                var leaderId = 0;
+
+                for(var i = 1; i < this._players.length; i++) {
+                    if(this._players[i].score > this._players[leaderId].score) {
+                        leaderId = i;
+                    }
+                }
+                return leaderId;
             }
         }
     });
@@ -471,27 +416,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         _addScore: {
             value: function(score) {
                 var targetName = (score.bull ? '_B' : '_' + score.value);
-                for(var i = 0; i < this.players.length; i ++) {
-                    if(i != this.currentPlayer && this.players[i].targets[targetName] < 3) {
-                        this.players[i].score += score.factor * score.value;
+                for(var i = 0; i < this._players.length; i ++) {
+                    if(i != this._currentPlayer && this._players[i].targets[targetName] < 3) {
+                        this._players[i].score += score.factor * score.value;
                     }
                 }
             }
         },
         endOfGame: {
             value: function() {
-                this.gameEnded = true;
-                var winner = this.players[0].name,
-                    winnerScore = this.players[0].score;
+                this._gameEnded = true;
+                var winner = this._players[0].name,
+                    winnerScore = this._players[0].score;
 
-                for(var i = 1; i < this.players.length; i++) {
-                    if(this.players[i].score < winnerScore) {
-                        winner = this.players[i].name;
-                        winnerScore = this.players[i].score;
+                for(var i = 1; i < this._players.length; i++) {
+                    if(this._players[i].score < winnerScore) {
+                        winner = this._players[i].name;
+                        winnerScore = this._players[i].score;
                     }
                 }
 
-                this.winner = winner;
+                this._winner = winner;
                 this.updateView();
             }
         }
@@ -503,9 +448,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      */
     function AroundTheClock(players, dartboardId, scoreboardId) {
         BaseGame.call(this, 'clock', 'normal', players, dartboardId, scoreboardId);
-        for(var i = 0; i < this.players.length; i++) {
-            this.players[i].won = false;
-            this.players[i].winningTurn = 0;
+        for(var i = 0; i < this._players.length; i++) {
+            this._players[i].won = false;
+            this._players[i].winningTurn = 0;
         }
         this.updateView();
     };
@@ -514,51 +459,51 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             enumerable: false,
             value: function() {
                 var gameIsOver = true;
-                for(var i = 0; i < this.players.length; i++) {
-                    gameIsOver = gameIsOver && this.players[i].won;
+                for(var i = 0; i < this._players.length; i++) {
+                    gameIsOver = gameIsOver && this._players[i].won;
                 }
                 return gameIsOver;
             }
         },
         _nextPlayer: {
             value: function() {
-                var player = this.players[this.currentPlayer],
-                    nextPlayerId = (this.currentPlayer + 1) % this.players.length,
-                    nextPlayer = this.players[nextPlayerId];
+                var player = this._players[this._currentPlayer],
+                    nextPlayerId = (this._currentPlayer + 1) % this._players.length,
+                    nextPlayer = this._players[nextPlayerId];
 
                 while(nextPlayer.won) {
-                    nextPlayerId = (nextPlayerId + 1) % this.players.length;
-                    nextPlayer = this.players[nextPlayerId];
+                    nextPlayerId = (nextPlayerId + 1) % this._players.length;
+                    nextPlayer = this._players[nextPlayerId];
                 }
 
-                if(this.currentPlayer != nextPlayerId) {
+                if(this._currentPlayer != nextPlayerId) {
                     player.active = false;
                 }
 
-                if(nextPlayerId <= this.currentPlayer) {
-                    this.turnNumber ++;
+                if(nextPlayerId <= this._currentPlayer) {
+                    this._turnNumber ++;
                 }
 
-                this.currentPlayer = nextPlayerId;
+                this._currentPlayer = nextPlayerId;
                 nextPlayer.active = true;
             }
         },
         processNewScore: {
             value: function(score) {
-                if(this.gameEnded) {
+                if(this._gameEnded) {
                     return;
                 }
 
-                var player = this.players[this.currentPlayer];
+                var player = this._players[this._currentPlayer];
 
                 if(player.score == 20 && score.bull) {
                     player.won = true;
-                    player.winningTurn = this.turnNumber;
+                    player.winningTurn = this._turnNumber;
                     player.throwsLeft = 0;
 
                     if(this._isGameOver()) {
                         player.active = false;
-                        this.gameEnded = true;
+                        this._gameEnded = true;
                         this.updateView();
                         return;
                     } else {
@@ -588,10 +533,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         options = options || {};
         this.startingScore = parseInt(options.startingScore) || 301;
 
-        for(var i = 0; i < this.players.length; i++) {
-            this.players[i].startingDouble = false;
-            this.players[i].score = this.startingScore;
-            this.players[i].startedTurnAt = this.startingScore;
+        for(var i = 0; i < this._players.length; i++) {
+            this._players[i].startingDouble = false;
+            this._players[i].score = this.startingScore;
+            this._players[i].startedTurnAt = this.startingScore;
         }
 
         this.updateView();
@@ -599,29 +544,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     X01.prototype = Object.create(BaseGame.prototype, {
         _nextPlayer: {
             value: function() {
-                var player = this.players[this.currentPlayer],
-                    nextPlayerId = (this.currentPlayer + 1) % this.players.length,
-                    nextPlayer = this.players[nextPlayerId];
+                var player = this._players[this._currentPlayer],
+                    nextPlayerId = (this._currentPlayer + 1) % this._players.length,
+                    nextPlayer = this._players[nextPlayerId];
 
                 player.throwsLeft = 3;
                 player.active = false;
                 player.startedTurnAt = player.score;
 
-                this.currentPlayer = nextPlayerId;
+                this._currentPlayer = nextPlayerId;
                 nextPlayer.active = true;
 
-                if(nextPlayerId <= this.currentPlayer) {
-                    this.turnNumber ++;
+                if(nextPlayerId <= this._currentPlayer) {
+                    this._turnNumber ++;
                 }
             }
         },
         processNewScore: {
             value: function(score) {
-                if(this.gameEnded) {
+                if(this._gameEnded) {
                     return;
                 }
 
-                var player = this.players[this.currentPlayer];
+                var player = this._players[this._currentPlayer];
                 player.throwsLeft --;
 
                 if(! player.startingDouble && score.factor == 2) {
@@ -652,8 +597,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         endOfGame: {
             value: function(winner) {
-                this.gameEnded = true;
-                this.winner = winner;
+                this._gameEnded = true;
+                this._winner = winner;
                 this.updateView();
             }
         }
@@ -666,11 +611,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     NoDoubleStartX01.prototype = Object.create(X01.prototype, {
         processNewScore: {
             value: function(score) {
-                if(this.gameEnded) {
+                if(this._gameEnded) {
                     return;
                 }
 
-                var player = this.players[this.currentPlayer];
+                var player = this._players[this._currentPlayer];
                 player.throwsLeft --;
 
                 player.score -= score.factor * score.value;
