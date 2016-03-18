@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         (function(controller) {
             // Attach to the scoreboard events
-            controller._scoreboard.dartboardClicked.attach(function(data) {
+            controller._scoreboard.dartThrown.attach(function(sender, data) {
                 controller.registerScore(data.score);
             });
             controller._scoreboard.undoButtonClicked.attach(function() {
@@ -42,7 +42,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     GameController.prototype = {
         registerScore: function(score) {
             this._game.registerScore(score);
-            this._scoreboard.update();
         },
         undo: function() {
             if(this._game.getUndoQueueLength() != 0) {

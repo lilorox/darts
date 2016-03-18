@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._elements = elements;
 
         // Dispatchers for events emitted from the scoreboard
-        this.dartboardClicked = new Dispatcher(this);
+        this.dartThrown = new Dispatcher(this);
         this.undoButtonClicked = new Dispatcher(this);
         this.loadGameButtonClicked = new Dispatcher(this);
         this.saveGameButtonClicked = new Dispatcher(this);
@@ -44,8 +44,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         
         // Dispatch events on element changes
         (function(scoreboard) {
-            scoreboard._elements.dartboard.on('click', function(evt) {
-                scoreboard.dartboardClicked.dispatch({ score: evt.score });
+            scoreboard._elements.dartboard.on('dartThrown', function(evt) {
+                scoreboard.dartThrown.dispatch({ score: evt.score });
             });
             scoreboard._elements.undoButton.on('click', function(evt) {
                 scoreboard.undoButtonClicked.dispatch();
@@ -64,6 +64,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     'disabled',
                     (scoreboard._model.getUndoQueueLength() <= 0)
                 );
+            });
+            scoreboard._model.scoreChanged.attach(function() {
+                scoreboard.update();
             });
             scoreboard._model.gameHasEnded.attach(function(winner) {
                 console.log('game over, winner: ', winner.name);
@@ -93,7 +96,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
                             html += '<tr><td>' + (i + 1) + '</td>';
                             for(var j = 0; j < turn.length; j++) {
-                                html += '<td>' + scoreToString(turn[j]) + '</td>';
+                                html += '<td>' + Utils.scoreToString(turn[j]) + '</td>';
                             }
 
                             html += '</tr>';

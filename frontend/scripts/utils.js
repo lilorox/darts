@@ -31,6 +31,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }).done(function(html) {
                 $target.html(html);
             });
+        },
+        scoreToString: function(score) {
+            var factorToString = {
+                1: "",
+                2: "D",
+                3: "T"
+            },
+            value = (score.bull ? "B" : score.value);
+            return factorToString[score.factor] + value;
         }
     };
 

@@ -185,6 +185,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         // Events
         this.undoListChanged = new Dispatcher(this);
         this.gameHasEnded = new Dispatcher(this);
+        this.scoreChanged = new Dispatcher(this);
     };
     BaseGame.prototype = {
         /*
@@ -227,6 +228,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
             // Run specific game logic
             this.processNewScore(score);
+            this.scoreChanged.dispatch();
 
             player.showScoreTab = false;
         },

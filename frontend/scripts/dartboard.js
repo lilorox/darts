@@ -227,12 +227,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 evt.preventDefault();
                 dartboard._options.onClick();
 
-                var rect = this.getBoundingClientRect();
-                evt.score = dartboard.getScore(
-                    evt.clientX - rect.left,
-                    evt.clientY - rect.top
-                );
-                $(this).trigger(evt);
+                var rect = this.getBoundingClientRect(),
+                    event = new jQuery.Event('dartThrown', {
+                        score: dartboard.getScore(
+                            evt.clientX - rect.left,
+                            evt.clientY - rect.top
+                        )
+                    });
+                $(this).trigger(event);
             });
         })(this);
 
