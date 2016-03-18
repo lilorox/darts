@@ -39,17 +39,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         // Dispatch events on element changes
         (function(scoreboard) {
-            this._elements.dartboard.on('click', function(evt) {
-                scoreboard.dartboardClicked.notify({ score: evt.score });
+            scoreboard._elements.dartboard.on('click', function(evt) {
+                scoreboard.dartboardClicked.dispatch({ score: evt.score });
             });
-            this._elements.undoButton.on('click', function(evt) {
-                scoreboard.undoButtonClicked.notify();
+            scoreboard._elements.undoButton.on('click', function(evt) {
+                scoreboard.undoButtonClicked.dispatch();
             });
-            this._elements.loadGameButton.on('click', function(evt) {
-                scoreboard.loadGameButtonClicked.notify();
+            scoreboard._elements.loadGameButton.on('click', function(evt) {
+                scoreboard.loadGameButtonClicked.dispatch();
             });
-            this._elements.saveGameButton.on('click', function(evt) {
-                scoreboard.saveGameButtonClicked.notify();
+            scoreboard._elements.saveGameButton.on('click', function(evt) {
+                scoreboard.saveGameButtonClicked.dispatch();
             });
         })(this);
 
@@ -123,7 +123,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     /*
      * Modal box for the new game form
      */
-    function NewGameModal = function(gameLibrary, elements) {
+    function NewGameModal(gameLibrary, elements) {
         this._gameLibrary = gameLibrary;
         /*
          * elements = {
@@ -132,6 +132,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          *      variantSelect: $('#variantSelectId'),
          *      nbPlayersInput: $('#nbPlayersInputId'),
          *      playersInput: $('#playersInputId'),
+         *      additionalOptionsDiv: $('#additionalOptionsDiv'),
          *      goButton: $('#goButtonId')
          * }
          */
@@ -150,40 +151,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._options = {};
 
         // Dispatchers for events emitted from the form
-        this.goButtonClicked = new Dispatch(this);
+        this.goButtonClicked = new Dispatcher(this);
 
         // Dispatch events on element changes
         (function(modal) {
-            this._elements.goButton.on('click', function(evt) {
-                modal.goButtonClicked.notify({
+            modal._elements.goButton.on('click', function(evt) {
+                modal.goButtonClicked.dispatch({
                     game: this._game,
                     variant: this._variant,
                     nbPlayers: this._nbPlayers,
                     players: this._players,
                     options: this._options
                 });
+                modal._elements.modal('hide');
             });
         })(this);
 
         // Other events
         (function(modal) {
-            this._elements.gameSelect.on('change', function(evt) {
+            modal._elements.gameSelect.on('change', function(evt) {
                 modal.setGame($(this).val());
             });
-            this._elements.variantSelect.on('change', function(evt) {
+            modal._elements.variantSelect.on('change', function(evt) {
                 modal.setVariant($(this).val());
             });
-            this._elements.nbPlayersInput.on('change', function(evt) {
+            modal._elements.nbPlayersInput.on('change', function(evt) {
                 modal.validateNbPlayers();
                 modal.setNbPlayers($(this).val());
             });
-            this._elements.playersInput.on('change', function(evt) {
+            modal._elements.playersInput.on('change', function(evt) {
+                modal.validatePlayers();
                 modal.setPlayers($(this).val());
             });
         })(this);
-
-        this._buildGameSelect();
-        this._buildPlayersSelect();
     };
     NewGameModal.prototype = {
         /*
@@ -198,11 +198,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             };
             this._elements.variantSelect.prop('disabled', false);
             this._buildVariantSelect();
-            this._buildadditionalOptions();
+            this._buildAdditionalOptions();
         },
         setVariant: function(selectedVariant) {
             this._variant = selectedVariant;
-            var variant = this._rules[this._games].variants[this._selectedVariant];
+            var variant = this._rules[this._game].variants[selectedVariant];
 
             if(variant.hasOwnProperty('variant')) {
                 if(variant.nbPlayers.hasOwnProperty('min')) {
@@ -222,6 +222,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             } else if(this._nbPlayersConf.max && this._elements.nbPlayersInput.val() > this._nbPlayersConf.max) {
                 this._elements.nbPlayersInput.val(max);
             }
+            this.validateForm();
         },
         setNbPlayers: function(nbPlayers) {
             this._nbPlayers = nbPlayers;
@@ -229,50 +230,73 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         validatePlayers: function() {
             var values = this._elements.playersInput.val();
 
-            while(values.length > this._nbPlayersConf.max) {
-                $('option:last-child', this._elements.playersInput).remove();
-                this._elements.playersInput.trigger('change');
-                values = this._elements.playersInput.val();
+            if(values && this._nbPlayersConf.max) {
+                while(values.length > this._nbPlayersConf.max) {
+                    console.log('trim players');
+                    $('option:last-child', this._elements.playersInput).remove();
+                    this._elements.playersInput.trigger('change');
+                    values = this._elements.playersInput.val();
+                }
             }
-        };
+
+            this.validateForm();
+        },
         setPlayers: function(players) {
             this._players = players;
         },
-        validateForm: function() {
-            var disableSubmit = true;
-            this._elements.goButton.toggle('disabled', disableSubmit);
+        setAdditionalOption: function(option, value) {
+            this._options[option] = value;
         },
-        update: function() {
+        validateForm: function() {
+            (function(modal) {
+                modal._elements.goButton.prop('disabled', function() {
+                    return (! modal._players ||
+                        modal._nbPlayersConf.min && modal._players.length < modal._nbPlayersConf.min ||
+                        modal._nbPlayersConf.max && modal._players.length > modal._nbPlayersConf.max
+                    );
+                });
+            })(this);
+        },
+        show: function() {
+            this._elements.additionalOptionsDiv.hide();
+            this._buildGameSelect();
+            this._buildPlayersSelect();
+            this._elements.modal.modal('show');
         },
         /*
          * Private methods
          */
         _buildGameSelect: function() {
-            Object.keys(this._rules).forEach(function(key) {
+            var rules = this._rules,
+                elements = this._elements;
+
+            Object.keys(rules).forEach(function(key) {
                 $('<option>')
                     .val(key)
-                    .text(this._rules[key].desc)
-                    .appendTo(this._elements.gameSelect);
+                    .text(rules[key].desc)
+                    .appendTo(elements.gameSelect);
             });
 
             this._elements.gameSelect.trigger('change');
         },
         _buildVariantSelect: function() {
-            this._elements.variantSelect.empty();
+            var variants = this._rules[this._game].variants,
+                elements = this._elements;
+            elements.variantSelect.empty();
 
-            Object.keys(this._rules[this._game].variants).forEach(function(key) {
+            Object.keys(variants).forEach(function(key) {
                 $('<option>')
                     .val(key)
-                    .text(this._rules[this._game].variants[key].desc)
-                    .appendTo(this._elements.variantSelect);
+                    .text(variants[key].desc)
+                    .appendTo(elements.variantSelect);
             });
 
-            this._elements.variantSelect.trigger('change');
+            elements.variantSelect.trigger('change');
         },
         _buildNbPlayersInput: function() {
             this._elements.nbPlayersInput.val(this._nbPlayersConf.value);
 
-            if(min === max) {
+            if(this._nbPlayersConf.min === this._nbPlayersConf.max) {
                 // Disable the input since there is no possible choice
                 this._elements.nbPlayersInput.prop('disabled', true);
                 return;
@@ -290,46 +314,53 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             });
         },
         _buildAdditionalOptions: function() {
-            var game = $('#game-select').val();
+            var elements = this._elements;
+            elements.additionalOptionsDiv.empty();
 
-            $('.additional-group').remove();
-
-            if(! games[game].hasOwnProperty('options')) {
+            if(! this._rules[this._game].hasOwnProperty('options')) {
                 return;
             }
+            var options = this._rules[this._game].options;
 
-            Object.keys(games[game].options).forEach(function(optionName) {
-                var option = games[game].options[optionName],
+            Object.keys(options).forEach(function(optionName) {
+                var option = options[optionName],
                     inputId = optionName + '-opt',
                     formGroup = $('<div>').addClass('form-group additional-group'),
                     input = null;
 
                 $('<label>')
-                .attr('for', inputId)
-                .text(option.label)
-                .appendTo($(formGroup));
+                    .attr('for', inputId)
+                    .text(option.label)
+                    .appendTo($(formGroup));
 
                 switch(option.type) {
                     case "select":
                         input = $('<select>')
-                    .attr('id', inputId)
-                    .data('option-name', optionName)
-                    .addClass('form-control additional-option');
+                            .attr('id', inputId)
+                            .data('option-name', optionName)
+                            .addClass('form-control additional-option');
 
-                    for(var value in option.values) {
-                        if(option.values.hasOwnProperty(value)) {
-                            $('<option>')
-                            .val(value)
-                            .text(option.values[value])
-                            .appendTo($(input));
+                        (function(modal) {
+                            input.on('change', function() {
+                                modal.setAdditionalOption(optionName, $(this).val());
+                            });
+                        })(this);
+
+                        for(var value in option.values) {
+                            if(option.values.hasOwnProperty(value)) {
+                                $('<option>')
+                                .val(value)
+                                .text(option.values[value])
+                                .appendTo($(input));
+                            }
                         }
-                    }
                 }
 
                 $(formGroup)
-                .append(input)
-                .insertBefore('#additional-games-anchor');
+                    .append(input)
+                    .appendTo(elements.additionalOptionsDiv);
             });
+            elements.additionalOptionsDiv.show();
         }
     };
 

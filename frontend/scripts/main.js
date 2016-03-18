@@ -14,28 +14,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-;(function(window) {
-    /*
-     * Dispatcher object for communication between model, view and controller
-     */
-    function Dispatcher(sender) {
-        this._sender = sender;
-        this._listeners = [];
-    };
-    Dispatcher.prototype.attach = function(callback) {
-        this._listeners.push(callback);
-    };
-    Dispatcher.prototype.dispatch = function(args) {
-        for(var i = 0; i < this._listeners.length; i++) {
-            this.listeners[index](this._sender, args);
-        }
-    };
-
-
-    /*
-     * Save objects to the global scope
-     */
-    window.Dispatcher = Dispatcher;
-})(window);
-
+$(function() {
+    var gamesLibrary = new GamesLibrary(),
+        newGameModal = new NewGameModal(
+            gamesLibrary,
+            {
+                modal: $('#new-game-modal'),
+                gameSelect: $('#game-select'),
+                variantSelect: $('#variant-select'),
+                nbPlayersInput: $('#nbplayers-input'),
+                playersInput: $('#players-input'),
+                additionalOptionsDiv: $('#additional-options'),
+                goButton: $('#game-submit')
+            }
+        ),
+        newGameController = new NewGameController(gamesLibrary, newGameModal);
+    newGameModal.show();
+});

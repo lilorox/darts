@@ -25,16 +25,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         (function(controller) {
             // Attach to the scoreboard events
-            this._scoreboard.dartboardClicked.attach(function(data) {
+            controller._scoreboard.dartboardClicked.attach(function(data) {
                 controller.registerScore(data.score);
             });
-            this._scoreboard.undoButtonClicked.attach(function() {
+            controller._scoreboard.undoButtonClicked.attach(function() {
                 controller.undo();
             });
-            this._scoreboard.loadButtonClicked.attach(function() {
+            controller._scoreboard.loadButtonClicked.attach(function() {
                 controller.loadGame();
             });
-            this._scoreboard.saveButtonClicked.attach(function() {
+            controller._scoreboard.saveButtonClicked.attach(function() {
                 controller.saveGame();
             });
         })(this);
@@ -63,25 +63,34 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     /*
      * Controller for the new game modal
      */
-    function NewGameController(gameLibrary, modalView) {
-        this._gameLibray = gameLibrary;
+    function NewGameController(gamesLibrary, modalView) {
+        this._gamesLibrary = gamesLibrary;
         this._view = modalView;
+        this._gameController = null;
 
         (function(controller) {
-            this._view.goButtonClicked.attach(function(data) {
-                controller.runGame(data);
+            controller._view.goButtonClicked.attach(function(data) {
+                this._gameInstance = controller.runGame(data);
             });
         })(this);
     };
     NewGameController.prototype = {
-        runGame: function(data) {
-            return;
-        };
+        runGame: function(game) {
+            var game = this._gamesLibrary.create(
+                game.type,
+                game.variant,
+                game.players,
+                game.options
+            );
+        },
+        getGameInstance: function() {
+            return this._gameController;
+        }
     };
 
     /*
      * Save objects to the global scope
      */
-    window.Controller = Controller;
+    window.GameController = GameController;
     window.NewGameController = NewGameController;
 })(window);

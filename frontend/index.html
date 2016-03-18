@@ -49,18 +49,19 @@
                 <select id="game-select" class="form-control"></select>
               </div>
               <div class="form-group">
-                <label for"game-variant">Variant</label>
-                <select id="game-variant" class="form-control" disabled="disabled"></select>
+                <label for"variant-select">Variant</label>
+                <select id="variant-select" class="form-control" disabled="disabled"></select>
               </div>
               <div class="form-group">
-                <label for"game-nbplayers">Nb. of players</label>
-                <input id="game-nbplayers" class="form-control" type="number" disabled="disabled" value="0"></input>
+                <label for"nbplayers-input">Nb. of players</label>
+                <input id="nbplayers-input" class="form-control" type="number" disabled="disabled" value="0"></input>
               </div>
               <div class="form-group">
-                <label for"game-players">Players</label>
-                <select id="game-players" class="form-control" disabled="disabled" aria-hidden="true" multiple="" style="width:100%"></select>
+                <label for"players-input">Players</label>
+                <select id="players-input" class="form-control" disabled="disabled" aria-hidden="true" multiple="" style="width:100%"></select>
               </div>
-              <div id="additional-games-anchor" style="display:none"></div>
+              <div id="additional-options" style="display:none">
+              </div>
             </form>
           </div>
           <div class="modal-footer">
@@ -91,13 +92,18 @@
         </div>
       </div>
     </div>
+
     <script type="text/javascript" src="scripts/libs/jquery/jquery.min.js"></script>
     <script type="text/javascript" src="scripts/libs/bootstrap/bootstrap.min.js"></script>
     <script type="text/javascript" src="scripts/libs/select2/select2.min.js"></script>
     <script type="text/javascript" src="scripts/libs/handlebars/handlebars.min.js"></script>
+
     <script type="text/javascript" src="scripts/jquery.DartBoard.js"></script>
-    <script type="text/javascript" src="scripts/save.js"></script>
-    <script type="text/javascript" src="scripts/game.js"></script>
-    <script type="text/javascript" src="scripts/darts.js"></script>
+    <script type="text/javascript" src="scripts/utils.js"></script>
+    <script type="text/javascript" src="scripts/dispatcher.js"></script>
+    <script type="text/javascript" src="scripts/models.js"></script>
+    <script type="text/javascript" src="scripts/controllers.js"></script>
+    <script type="text/javascript" src="scripts/views.js"></script>
+    <script type="text/javascript" src="scripts/main.js"></script>
   </body>
 </html>

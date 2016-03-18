@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      * General utility functions
      */
     var Utils = {
-        loadTemplate = function(url, context, $target) {
+        loadTemplate: function(url, context, $target) {
             $.ajax({
                 url: url,
                 method: 'GET',

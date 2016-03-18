@@ -16,19 +16,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
+    /*
+     * Dispatcher object for communication between model, view and controller
+     */
     function Dispatcher(sender) {
         this._sender = sender;
         this._listeners = [];
     };
-    Dispatcher.prototype.attach = function(callback) {
-        this._listeners.push(callback);
-    };
-    Dispatcher.prototype.dispatch = function(args) {
-        for(var i = 0; i < this._listeners.length; i++) {
-            this.listeners[index](this._sender, args);
+    Dispatcher.prototype = {
+        attach: function(callback) {
+            this._listeners.push(callback);
+        },
+        dispatch: function(args) {
+            for(var i = 0; i < this._listeners.length; i++) {
+                this._listeners[i](this._sender, args);
+            }
         }
     };
 
+
+    /*
+     * Save objects to the global scope
+     */
     window.Dispatcher = Dispatcher;
 })(window);
 

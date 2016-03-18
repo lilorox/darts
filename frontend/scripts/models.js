@@ -202,7 +202,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             return $.extend(
                 {},
                 this._context,
-                this.getSpecificContext();
+                this.getSpecificContext()
             );
         },
         getType: function() {
@@ -243,7 +243,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         gameOver: function(winnerId) {
             this._gameEnded = true;
-            this.gameHasEnded.notify({ player: this._players[winnerId] });
+            this.gameHasEnded.dispatch({ player: this._players[winnerId] });
         },
 
         /*
@@ -268,7 +268,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             if(this._undo.length > this._undoMaxSize) {
                 this._undo.shift();
             }
-            this.undoListChanged.notify();
+            this.undoListChanged.dispatch();
         }
     };
 
@@ -737,7 +737,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         create: function(type, variant, players, options) {
             if(! this._games.hasOwnProperty(type) ||
-                    ! this._games.[type].variants.hasOwnProperty(variant)) {
+                    ! this._games[type].variants.hasOwnProperty(variant)) {
                 return null;
             }
 
