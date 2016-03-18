@@ -68,13 +68,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._view = modalView;
 
         (function(controller) {
-            this._view.gameSelectChanged.attach(function(data) {
-                controller.setGame(data.game);
+            this._view.goButtonClicked.attach(function(data) {
+                controller.runGame(data);
             });
         })(this);
     };
     NewGameController.prototype = {
-        setGame: function(game) {
+        runGame: function(data) {
             return;
         };
     };
