@@ -165,8 +165,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._turnNumber = 1;
         this._gameEnded = false;
 
-        this._context = {};
-
         // Undo actions
         this._undo = [];
         this._undoMaxSize = 10;
@@ -185,8 +183,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.additionalContextProps = [];
 
         // Events
-        this.undoListChanged = new Dispatch(this);
-        this.gameHasEnded = new Dispatch(this);
+        this.undoListChanged = new Dispatcher(this);
+        this.gameHasEnded = new Dispatcher(this);
     };
     BaseGame.prototype = {
         /*
@@ -200,8 +198,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         getContext: function() {
             return $.extend(
-                {},
-                this._context,
+                {
+                    players: this._players,
+                    turn: this._turnNumber,
+                    gameEnded: this._gameEnded
+                },
                 this.getSpecificContext()
             );
         },
@@ -748,7 +749,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 GameClass = this._games[type].variants[variant]._obj;
             }
 
-            return GameClass(players, options);
+            return new GameClass(players, options);
         }
     };
 

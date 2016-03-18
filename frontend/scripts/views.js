@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         /*
          * elements = {
          *      dartboard: $('#dartboardId'),
+         *      scoreboard: $('#scoreboardId'),
+         *      throwsDetails: $('#throwsDetailsId'),
          *      undoButton: $('#undoButtonId'),
          *      loadGameButton: $('#loadGameButtonId'),
          *      saveGameButton: $('#saveGameButtonId')
@@ -32,11 +34,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._elements = elements;
 
         // Dispatchers for events emitted from the scoreboard
-        this.dartboardClicked = new Dispatch(this);
-        this.undoButtonClicked = new Dispatch(this);
-        this.loadGameButtonClicked = new Dispatch(this);
-        this.saveGameButtonClicked = new Dispatch(this);
+        this.dartboardClicked = new Dispatcher(this);
+        this.undoButtonClicked = new Dispatcher(this);
+        this.loadGameButtonClicked = new Dispatcher(this);
+        this.saveGameButtonClicked = new Dispatcher(this);
 
+        // Create the DartBoard Object
+        this._elements.dartboard.DartBoard();
+        
         // Dispatch events on element changes
         (function(scoreboard) {
             scoreboard._elements.dartboard.on('click', function(evt) {
@@ -51,21 +56,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             scoreboard._elements.saveGameButton.on('click', function(evt) {
                 scoreboard.saveGameButtonClicked.dispatch();
             });
-        })(this);
 
-        // Attach to the models events
-        this._model.undoListChanged.attach(function() {
-            // Enable-disable undo button in function of the undo queue length
-            this._elements.undoButton.toggleClass(
-                'disabled',
-                (this._model.getUndoQueueLength() <= 0)
-            );
-        });
-        this._model.gameHasEnded.attach(function(winner) {
-            console.log('game over, winner: ', winner.name);
-        });
+            // Attach to the models events
+            scoreboard._model.undoListChanged.attach(function() {
+                // Enable-disable undo button in function of the undo queue length
+                scoreboard._elements.undoButton.toggleClass(
+                    'disabled',
+                    (scoreboard._model.getUndoQueueLength() <= 0)
+                );
+            });
+            scoreboard._model.gameHasEnded.attach(function(winner) {
+                console.log('game over, winner: ', winner.name);
+            });
+        })(this);
     };
     Scoreboard.prototype = {
+        init: function() {
+            this.registerHelpers();
+            this.update();
+        },
         registerHelpers: function() {
             (function(scoreboard) {
                 Handlebars.registerHelper({
@@ -104,14 +113,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         update: function() {
             // Game template
-            loadTemplate(
-                'templates/' + this._template + '.hbs',
-                this._model.getType() + '.' + this._model.getVariant(),
+            Utils.loadTemplate(
+                'templates/' + this._model.getType() + '.' + this._model.getVariant() + '.hbs',
+                this._model.getContext(),
                 this._elements.scoreboard
             );
 
             // Throws details template
-            loadTemplate(
+            Utils.loadTemplate(
                 'templates/throws-details.hbs',
                 this._model.getContext(),
                 this._elements.throwsDetails
@@ -155,12 +164,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         (function(modal) {
             modal._elements.goButton.on('click', function(evt) {
                 modal.goButtonClicked.dispatch({
-                    game: this._game,
-                    variant: this._variant,
-                    players: this._players,
-                    options: this._options
+                    type: modal._game,
+                    variant: modal._variant,
+                    players: modal._players,
+                    options: modal._options
                 });
-                modal._elements.modal('hide');
+                modal._elements.modal.modal('hide');
             });
         })(this);
 

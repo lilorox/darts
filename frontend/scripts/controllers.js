@@ -31,10 +31,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             controller._scoreboard.undoButtonClicked.attach(function() {
                 controller.undo();
             });
-            controller._scoreboard.loadButtonClicked.attach(function() {
+            controller._scoreboard.loadGameButtonClicked.attach(function() {
                 controller.loadGame();
             });
-            controller._scoreboard.saveButtonClicked.attach(function() {
+            controller._scoreboard.saveGameButtonClicked.attach(function() {
                 controller.saveGame();
             });
         })(this);
@@ -66,22 +66,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     function NewGameController(gamesLibrary, modalView) {
         this._gamesLibrary = gamesLibrary;
         this._view = modalView;
+        this._game = null;
+        this._scoreboard = null;
         this._gameController = null;
 
         (function(controller) {
-            controller._view.goButtonClicked.attach(function(data) {
-                this._gameInstance = controller.runGame(data);
+            controller._view.goButtonClicked.attach(function(sender, data) {
+                this._gameController = controller.runGame(data);
             });
         })(this);
     };
     NewGameController.prototype = {
         runGame: function(game) {
-            var game = this._gamesLibrary.create(
+            delete this._game;
+            delete this._scoreboard;
+            delete this._gameController;
+
+            this._game = this._gamesLibrary.create(
                 game.type,
                 game.variant,
                 game.players,
                 game.options
             );
+
+            this._scoreboard = new Scoreboard(
+                this._game,
+                {
+                    dartboard: $('#dartboard'),
+                    scoreboard: $('#scoreboard'),
+                    throwsDetails: $('#throws-details'),
+                    undoButton: $('#undo-btn'),
+                    loadGameButton: $('#load-btn'),
+                    saveGameButton: $('#save-btn')
+                }
+            );
+
+            this._gameController = new GameController(
+                this._game,
+                this._scoreboard
+            );
+            this._scoreboard.init();
         },
         getGameInstance: function() {
             return this._gameController;
