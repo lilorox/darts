@@ -130,7 +130,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          *      modal: $('#modalId'),
          *      gameSelect: $('#gameSelectId'),
          *      variantSelect: $('#variantSelectId'),
-         *      nbPlayersInput: $('#nbPlayersInputId'),
          *      playersInput: $('#playersInputId'),
          *      additionalOptionsDiv: $('#additionalOptionsDiv'),
          *      goButton: $('#goButtonId')
@@ -143,7 +142,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._game = null;
         this._variant = null;
         this._nbPlayersConf = {
-            value: 2,
             min: 1,
             max: null
         };
@@ -159,7 +157,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 modal.goButtonClicked.dispatch({
                     game: this._game,
                     variant: this._variant,
-                    nbPlayers: this._nbPlayers,
                     players: this._players,
                     options: this._options
                 });
@@ -171,17 +168,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         (function(modal) {
             modal._elements.gameSelect.on('change', function(evt) {
                 modal.setGame($(this).val());
+                modal.validateForm();
             });
             modal._elements.variantSelect.on('change', function(evt) {
                 modal.setVariant($(this).val());
-            });
-            modal._elements.nbPlayersInput.on('change', function(evt) {
-                modal.validateNbPlayers();
-                modal.setNbPlayers($(this).val());
+                modal.validateForm();
             });
             modal._elements.playersInput.on('change', function(evt) {
-                modal.validatePlayers();
                 modal.setPlayers($(this).val());
+                modal.validateForm();
             });
         })(this);
     };
@@ -204,7 +199,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this._variant = selectedVariant;
             var variant = this._rules[this._game].variants[selectedVariant];
 
-            if(variant.hasOwnProperty('variant')) {
+            // Restore defaults before applying specific rules
+            this._nbPlayersConf = {
+                min: 1,
+                max: null
+            };
+
+            if(variant.hasOwnProperty('nbPlayers')) {
                 if(variant.nbPlayers.hasOwnProperty('min')) {
                     this._nbPlayersConf.min = variant.nbPlayers.min;
                 }
@@ -213,33 +214,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     this._nbPlayersConf.max = variant.nbPlayers.max;
                 }
             }
-
-            this._buildNbPlayersInput();
-        },
-        validateNbPlayers: function() {
-            if(this._nbPlayersConf.min && this._elements.nbPlayersInput.val() < this._nbPlayersConf.min) {
-                this._elements.nbPlayersInput.val(min);
-            } else if(this._nbPlayersConf.max && this._elements.nbPlayersInput.val() > this._nbPlayersConf.max) {
-                this._elements.nbPlayersInput.val(max);
-            }
-            this.validateForm();
-        },
-        setNbPlayers: function(nbPlayers) {
-            this._nbPlayers = nbPlayers;
         },
         validatePlayers: function() {
             var values = this._elements.playersInput.val();
 
             if(values && this._nbPlayersConf.max) {
                 while(values.length > this._nbPlayersConf.max) {
-                    console.log('trim players');
                     $('option:last-child', this._elements.playersInput).remove();
                     this._elements.playersInput.trigger('change');
                     values = this._elements.playersInput.val();
                 }
             }
-
-            this.validateForm();
+            this.setPlayers(values);
         },
         setPlayers: function(players) {
             this._players = players;
@@ -248,11 +234,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this._options[option] = value;
         },
         validateForm: function() {
+            this.validatePlayers();
             (function(modal) {
                 modal._elements.goButton.prop('disabled', function() {
-                    return (! modal._players ||
-                        modal._nbPlayersConf.min && modal._players.length < modal._nbPlayersConf.min ||
-                        modal._nbPlayersConf.max && modal._players.length > modal._nbPlayersConf.max
+                    return (modal._players == null ||
+                        modal._nbPlayersConf.min != null && modal._players.length < modal._nbPlayersConf.min ||
+                        modal._nbPlayersConf.max != null && modal._players.length > modal._nbPlayersConf.max
                     );
                 });
             })(this);
@@ -292,17 +279,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             });
 
             elements.variantSelect.trigger('change');
-        },
-        _buildNbPlayersInput: function() {
-            this._elements.nbPlayersInput.val(this._nbPlayersConf.value);
-
-            if(this._nbPlayersConf.min === this._nbPlayersConf.max) {
-                // Disable the input since there is no possible choice
-                this._elements.nbPlayersInput.prop('disabled', true);
-                return;
-            }
-
-            this._elements.nbPlayersInput.prop('disabled', false);
         },
         _buildPlayersSelect: function() {
             this._elements.playersInput.prop('disabled', false);

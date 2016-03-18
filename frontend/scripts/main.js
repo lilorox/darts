@@ -22,7 +22,6 @@ $(function() {
                 modal: $('#new-game-modal'),
                 gameSelect: $('#game-select'),
                 variantSelect: $('#variant-select'),
-                nbPlayersInput: $('#nbplayers-input'),
                 playersInput: $('#players-input'),
                 additionalOptionsDiv: $('#additional-options'),
                 goButton: $('#game-submit')
