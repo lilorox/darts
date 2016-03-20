@@ -160,6 +160,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             };
         });
         this._currentPlayer = 0;
+        this._previousPlayer = 0;
         this._players[0].active = true;
         this._players[0].showScoreTab = true;
         this._turnNumber = 1;
@@ -171,16 +172,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         // Properties to save and restore in the game object
         this._gameStateProperties = [
-            "players",
-            "currentPlayer",
-            "turnNumber",
-            "gameEnded",
-            "winner"
+            "_players",
+            "_currentPlayer",
+            "_turnNumber",
+            "_gameEnded",
+            "_winner"
         ];
         this.additionalProps = [];
-
-        // Additional context properties
-        this.additionalContextProps = [];
 
         // Events
         this.undoListChanged = new Dispatcher(this);
@@ -191,6 +189,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         /*
          * Public methods
          */
+        getPlayer: function(playerId) {
+            return this._players[playerId];
+        },
         getActivePlayer: function() {
             return this._players[this._currentPlayer];
         },
@@ -201,8 +202,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             return $.extend(
                 {
                     players: this._players,
-                    turn: this._turnNumber,
-                    gameEnded: this._gameEnded
+                    turn: this._turnNumber
                 },
                 this.getSpecificContext()
             );
@@ -214,6 +214,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             return this._variant;
         },
         registerScore: function(score) {
+            if(this._gameEnded) {
+                return;
+            }
+
+            // Hide previous player tab
+            this.getPlayer(this._previousPlayer).showScoreTab = false;
+
             // Add the throw to the current player
             var player = this.getActivePlayer();
             player.showScoreTab = true;
@@ -226,11 +233,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
             player.throws[this._turnNumber - 1].push(score);
 
+            // Save previous player
+            this._previousPlayer = this._currentPlayer;
+
             // Run specific game logic
             this.processNewScore(score);
             this.scoreChanged.dispatch();
-
-            player.showScoreTab = false;
         },
         undo: function() {
             if(this.getUndoQueueLength() <= 0) {
@@ -246,7 +254,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         gameOver: function(winnerId) {
             this._gameEnded = true;
-            this.gameHasEnded.dispatch({ player: this._players[winnerId] });
+
+            // Disable all players
+            for(var i = 0; i < this._players.length; i++) {
+                this._players[i].active = false;
+            }
+
+            // Dispatch an event for the end of the game
+            // If the winnerId is null, send null
+            this.gameHasEnded.dispatch((
+                winnerId == null ?
+                null :
+                { player: this._players[winnerId].name }
+            ));
         },
 
         /*
@@ -316,10 +336,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         processNewScore: {
             value: function(score) {
-                if(this._gameEnded) {
-                    return;
-                }
-
                 var player = this.getActivePlayer();
 
                 var targetName = (score.bull ? '_B' : '_' + score.value);
@@ -463,7 +479,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      * Around the clock
      */
     function AroundTheClock(players) {
-        BaseGame.call(this, 'clock', 'normal');
+        BaseGame.call(this, 'clock', 'normal', players);
         for(var i = 0; i < this._players.length; i++) {
             this._players[i].won = false;
             this._players[i].winningTurn = 0;
@@ -475,10 +491,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          */
         processNewScore: {
             value: function(score) {
-                if(this._gameEnded) {
-                    return;
-                }
-
                 var player = this.getActivePlayer();
 
                 if(player.score == 20 && score.bull) {
@@ -487,8 +499,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     player.throwsLeft = 0;
 
                     if(this._isGameOver()) {
-                        player.active = false;
-                        this.gameOver() = true;
+                        this.gameOver();
                         return;
                     } else {
                         this._nextPlayer();
@@ -567,10 +578,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          */
         processNewScore: {
             value: function(score) {
-                if(this._gameEnded) {
-                    return;
-                }
-
                 var player = this.getActivePlayer();
                 player.throwsLeft --;
 

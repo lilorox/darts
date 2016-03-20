@@ -68,13 +68,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             scoreboard._model.scoreChanged.attach(function() {
                 scoreboard.update();
             });
-            scoreboard._model.gameHasEnded.attach(function(winner) {
-                console.log('game over, winner: ', winner.name);
+            scoreboard._model.gameHasEnded.attach(function(sender, winner) {
+                if(winner && winner.hasOwnProperty('player') && winner.player) {
+                    $('#winner').text(winner.player);
+                    $('#winner-info').show();
+                }
             });
         })(this);
     };
     Scoreboard.prototype = {
         init: function() {
+            // Hide the winner info div
+            $('#winner-info').hide();
+
             this.registerHelpers();
             this.update();
         },
