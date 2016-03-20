@@ -251,6 +251,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     this[prop] = state[prop];
                 }
             }
+
+            this.undoListChanged.dispatch();
         },
         gameOver: function(winnerId) {
             this._gameEnded = true;
@@ -596,7 +598,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     }
 
                     if(player.score == 0 && score.factor == 2) {
-                        this.gameOver(player.name);
+                        this.gameOver(this._currentPlayer);
                         return;
                     }
                 }
@@ -613,6 +615,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             enumerable: false,
             value: function() {
                 var player = this.getActivePlayer(),
+                    playerId = this._currentPlayer,
                     nextPlayerId = (this._currentPlayer + 1) % this._players.length,
                     nextPlayer = this._players[nextPlayerId];
 
@@ -623,7 +626,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this._currentPlayer = nextPlayerId;
                 nextPlayer.active = true;
 
-                if(nextPlayerId <= this._currentPlayer) {
+                if(nextPlayerId < playerId) {
                     this._turnNumber ++;
                 }
             }
@@ -658,7 +661,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
 
                 if(player.score == 0) {
-                    this.gameOver(player.name);
+                    this.gameOver(this._currentPlayer);
                     return;
                 }
 

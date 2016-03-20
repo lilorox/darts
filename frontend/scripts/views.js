@@ -64,6 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     'disabled',
                     (scoreboard._model.getUndoQueueLength() <= 0)
                 );
+                $('#winner-info').hide();
             });
             scoreboard._model.scoreChanged.attach(function() {
                 scoreboard.update();
