@@ -180,6 +180,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     options: modal._options
                 });
                 modal._elements.modal.modal('hide');
+
+                // Enable the save button
+                $('#save-btn').toggleClass('disabled', false);
             });
         })(this);
 

@@ -50,12 +50,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             };
         },
         loadGame: function() {
-            console.log('todo loadGame');
-            this._scoreboard.update();
+            if(Save.exists("darts")) {
+                $('#dartboard').empty();
+                $('#scoreboard').empty();
+                this._game = window.Save.load("darts");
+                this._scoreboard.init();
+            }
         },
         saveGame: function() {
-            console.log('todo saveGame');
-            this._scoreboard.update();
+            Save.save("darts", this._game);
+            $('#load-btn').toggleClass("disabled", false);
         }
     };
 
