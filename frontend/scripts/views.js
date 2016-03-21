@@ -33,49 +33,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          */
         this._elements = elements;
 
-        // Dispatchers for events emitted from the scoreboard
-        this.dartThrown = new Dispatcher(this);
-        this.undoButtonClicked = new Dispatcher(this);
-        this.loadGameButtonClicked = new Dispatcher(this);
-        this.saveGameButtonClicked = new Dispatcher(this);
-
         // Create the DartBoard Object
         this._elements.dartboard.DartBoard();
-        
-        // Dispatch events on element changes
-        (function(scoreboard) {
-            scoreboard._elements.dartboard.on('dartThrown', function(evt) {
-                scoreboard.dartThrown.dispatch({ score: evt.score });
-            });
-            scoreboard._elements.undoButton.on('click', function(evt) {
-                scoreboard.undoButtonClicked.dispatch();
-            });
-            scoreboard._elements.loadGameButton.on('click', function(evt) {
-                scoreboard.loadGameButtonClicked.dispatch();
-            });
-            scoreboard._elements.saveGameButton.on('click', function(evt) {
-                scoreboard.saveGameButtonClicked.dispatch();
-            });
-
-            // Attach to the models events
-            scoreboard._model.undoListChanged.attach(function() {
-                // Enable-disable undo button in function of the undo queue length
-                scoreboard._elements.undoButton.toggleClass(
-                    'disabled',
-                    (scoreboard._model.getUndoQueueLength() <= 0)
-                );
-                $('#winner-info').hide();
-            });
-            scoreboard._model.scoreChanged.attach(function() {
-                scoreboard.update();
-            });
-            scoreboard._model.gameHasEnded.attach(function(sender, winner) {
-                if(winner && winner.hasOwnProperty('player') && winner.player) {
-                    $('#winner').text(winner.player);
-                    $('#winner-info').show();
-                }
-            });
-        })(this);
     };
     Scoreboard.prototype = {
         init: function() {
@@ -83,7 +42,50 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             $('#winner-info').hide();
 
             this.registerHelpers();
+            this.setupEvents();
             this.update();
+        },
+        setupEvents: function() {
+            // Dispatchers for events emitted from the scoreboard
+            this.dartThrown = new Dispatcher();
+            this.undoButtonClicked = new Dispatcher();
+            this.loadGameButtonClicked = new Dispatcher();
+            this.saveGameButtonClicked = new Dispatcher();
+
+            // Dispatch events on element changes
+            (function(scoreboard) {
+                scoreboard._elements.dartboard.on('dartThrown', function(evt) {
+                    scoreboard.dartThrown.dispatch({ score: evt.score });
+                });
+                scoreboard._elements.undoButton.on('click', function(evt) {
+                    scoreboard.undoButtonClicked.dispatch();
+                });
+                scoreboard._elements.loadGameButton.on('click', function(evt) {
+                    scoreboard.loadGameButtonClicked.dispatch();
+                });
+                scoreboard._elements.saveGameButton.on('click', function(evt) {
+                    scoreboard.saveGameButtonClicked.dispatch();
+                });
+
+                // Attach to the models events
+                scoreboard._model.undoListChanged.attach(function() {
+                    // Enable-disable undo button in function of the undo queue length
+                    scoreboard._elements.undoButton.toggleClass(
+                        'disabled',
+                        (scoreboard._model.getUndoQueueLength() <= 0)
+                    );
+                    $('#winner-info').hide();
+                });
+                scoreboard._model.scoreChanged.attach(function() {
+                    scoreboard.update();
+                });
+                scoreboard._model.gameHasEnded.attach(function(winner) {
+                    if(winner && winner.hasOwnProperty('player') && winner.player) {
+                        $('#winner').text(winner.player);
+                        $('#winner-info').show();
+                    }
+                });
+            })(this);
         },
         registerHelpers: function() {
             (function(scoreboard) {
@@ -167,45 +169,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._players = [];
         this._options = {};
 
-        // Dispatchers for events emitted from the form
-        this.goButtonClicked = new Dispatcher(this);
-
-        // Dispatch events on element changes
-        (function(modal) {
-            modal._elements.goButton.on('click', function(evt) {
-                modal.goButtonClicked.dispatch({
-                    type: modal._game,
-                    variant: modal._variant,
-                    players: modal._players,
-                    options: modal._options
-                });
-                modal._elements.modal.modal('hide');
-
-                // Enable the save button
-                $('#save-btn').toggleClass('disabled', false);
-            });
-        })(this);
-
-        // Other events
-        (function(modal) {
-            modal._elements.gameSelect.on('change', function(evt) {
-                modal.setGame($(this).val());
-                modal.validateForm();
-            });
-            modal._elements.variantSelect.on('change', function(evt) {
-                modal.setVariant($(this).val());
-                modal.validateForm();
-            });
-            modal._elements.playersInput.on('change', function(evt) {
-                modal.setPlayers($(this).val());
-                modal.validateForm();
-            });
-        })(this);
+        this.setupEvents();
     };
     NewGameModal.prototype = {
         /*
          * Public methods
          */
+        setupEvents: function() {
+            // Dispatchers for events emitted from the form
+            this.goButtonClicked = new Dispatcher();
+
+            // Dispatch events on element changes
+            (function(modal) {
+                modal._elements.goButton.on('click', function(evt) {
+                    modal.goButtonClicked.dispatch({
+                        type: modal._game,
+                        variant: modal._variant,
+                        players: modal._players,
+                        options: modal._options
+                    });
+                    modal._elements.modal.modal('hide');
+
+                    // Enable the save button
+                    $('#save-btn').toggleClass('disabled', false);
+                });
+            })(this);
+
+            // Other events
+            (function(modal) {
+                modal._elements.gameSelect.on('change', function(evt) {
+                    modal.setGame($(this).val());
+                    modal.validateForm();
+                });
+                modal._elements.variantSelect.on('change', function(evt) {
+                    modal.setVariant($(this).val());
+                    modal.validateForm();
+                });
+                modal._elements.playersInput.on('change', function(evt) {
+                    modal.setPlayers($(this).val());
+                    modal.validateForm();
+                });
+            })(this);
+        },
         setGame: function(game){
             this._game = game;
 

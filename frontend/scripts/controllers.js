@@ -23,23 +23,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._game = game;
         this._scoreboard = scoreboard;
 
-        (function(controller) {
-            // Attach to the scoreboard events
-            controller._scoreboard.dartThrown.attach(function(sender, data) {
-                controller.registerScore(data.score);
-            });
-            controller._scoreboard.undoButtonClicked.attach(function() {
-                controller.undo();
-            });
-            controller._scoreboard.loadGameButtonClicked.attach(function() {
-                controller.loadGame();
-            });
-            controller._scoreboard.saveGameButtonClicked.attach(function() {
-                controller.saveGame();
-            });
-        })(this);
+        this.setupEvents();
     };
     GameController.prototype = {
+        setupEvents: function() {
+            (function(controller) {
+                // Attach to the scoreboard events
+                controller._scoreboard.dartThrown.attach(function(data) {
+                    controller.registerScore(data.score);
+                });
+                controller._scoreboard.undoButtonClicked.attach(function() {
+                    controller.undo();
+                });
+                controller._scoreboard.loadGameButtonClicked.attach(function() {
+                    controller.loadGame();
+                });
+                controller._scoreboard.saveGameButtonClicked.attach(function() {
+                    controller.saveGame();
+                });
+            })(this);
+        },
         registerScore: function(score) {
             this._game.registerScore(score);
         },
@@ -55,11 +58,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 $('#scoreboard').empty();
                 this._game = window.Save.load("darts");
                 this._scoreboard.init();
+                this._game.setupEvents();
+                this.setupEvents();
             }
         },
         saveGame: function() {
             Save.save("darts", this._game);
+            this._game.setupEvents();
+            this.setupEvents();
             $('#load-btn').toggleClass("disabled", false);
+            console.log(this._game);
         }
     };
 
@@ -74,7 +82,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._gameController = null;
 
         (function(controller) {
-            controller._view.goButtonClicked.attach(function(sender, data) {
+            controller._view.goButtonClicked.attach(function(data) {
                 this._gameController = controller.runGame(data);
             });
         })(this);
@@ -103,12 +111,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     saveGameButton: $('#save-btn')
                 }
             );
+            this._scoreboard.init();
 
             this._gameController = new GameController(
                 this._game,
                 this._scoreboard
             );
-            this._scoreboard.init();
         },
         getGameInstance: function() {
             return this._gameController;

@@ -66,8 +66,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             } else if (this.isFunction(object)) {
                 throw new Error("Can't serialize functions.");
             } else {
+                if ('doNotSave' in object) {
+                    return null;
+                }
+
                 if (!('#' in object)) {
                     var constructor = object.constructor.name;
+                    console.log('decorate', constructor, object);
                     if (constructor === '') {
                         throw new Error("Can't serialize with anonymous constructors.");
                     } else if (constructor !== 'Object') {
@@ -180,15 +185,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         ];
         this.additionalProps = [];
 
-        // Events
-        this.undoListChanged = new Dispatcher(this);
-        this.gameHasEnded = new Dispatcher(this);
-        this.scoreChanged = new Dispatcher(this);
+        this.setupEvents();
     };
     BaseGame.prototype = {
         /*
          * Public methods
          */
+        setupEvents: function() {
+            this.undoListChanged = new Dispatcher();
+            this.gameHasEnded = new Dispatcher();
+            this.scoreChanged = new Dispatcher();
+        },
         getPlayer: function(playerId) {
             return this._players[playerId];
         },

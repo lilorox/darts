@@ -19,9 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     /*
      * Dispatcher object for communication between model, view and controller
      */
-    function Dispatcher(sender) {
-        this._sender = sender;
+    function Dispatcher() {
         this._listeners = [];
+
+        // Do not save this object
+        this.doNotSave = true;
     };
     Dispatcher.prototype = {
         attach: function(callback) {
@@ -29,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         dispatch: function(args) {
             for(var i = 0; i < this._listeners.length; i++) {
-                this._listeners[i](this._sender, args);
+                this._listeners[i](args);
             }
         }
     };
