@@ -67,12 +67,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         loadGame: function() {
             if(Save.exists("darts")) {
-                this._scoreboard = null;
-                $('#dartboard').empty();
-                $('#scoreboard').empty();
+                // Clear events before loading
+                this.detachAllDispatchers();
+                this._scoreboard.removeElementsEvents();
+
+                // Load the save and setup events
                 this._game = Save.load("darts");
                 this._game.setupEvents();
 
+                // Re-create the scoreboard
                 this._scoreboard = new Scoreboard(
                     this._game,
                     {
@@ -86,7 +89,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 );
                 this._scoreboard.init();
 
+                // Reset the controllers's events
                 this.setupGameEvents();
+                this.setupLoadSaveEvents();
             }
         },
         saveGame: function() {
@@ -99,10 +104,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             // Rebuild events after saving
             this._game.setupEvents();
             this._scoreboard.setupEvents();
-            this.setupGameEvents();
 
-            $('#load-btn').toggleClass("disabled", false);
+            // Reset the controllers's events
+            this.setupGameEvents();
             this.setupLoadSaveEvents();
+            $('#load-btn').toggleClass("disabled", false);
         }
     };
 

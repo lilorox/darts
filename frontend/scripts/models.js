@@ -114,9 +114,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         stringify: function(object, deferred) {
             object = this.decorate(object);
-            var json = JSON.stringify(object);
-            deferred.resolve();
-            return json;
+            return JSON.stringify(object);
         },
 
         parse: function(string) {
@@ -124,10 +122,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
 
         save: function(variable, value) {
-            var deferred = $.Deferred();
             if (arguments.length === 1) value = window[variable];
-            localStorage[variable] = this.stringify(value, deferred);
-            return deferred.promise();
+            localStorage[variable] = this.stringify(value);
+            return variable;
         },
 
         load: function(variable) {
