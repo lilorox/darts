@@ -33,6 +33,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             for(var i = 0; i < this._listeners.length; i++) {
                 this._listeners[i](args);
             }
+        },
+        detachAll: function() {
+            this._listeners = [];
         }
     };
 

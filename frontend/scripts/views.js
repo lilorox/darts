@@ -32,12 +32,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          * }
          */
         this._elements = elements;
-
-        // Create the DartBoard Object
-        this._elements.dartboard.DartBoard();
     };
     Scoreboard.prototype = {
         init: function() {
+            // Create the DartBoard Object
+            this._elements.dartboard.DartBoard();
+
             // Hide the winner info div
             $('#winner-info').hide();
 
@@ -46,12 +46,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this.update();
         },
         setupEvents: function() {
-            // Dispatchers for events emitted from the scoreboard
-            this.dartThrown = new Dispatcher();
-            this.undoButtonClicked = new Dispatcher();
-            this.loadGameButtonClicked = new Dispatcher();
-            this.saveGameButtonClicked = new Dispatcher();
-
+            this.setupDisptacherEvents();
+            this.setupElementsEvents();
+        },
+        removeElementsEvents: function() {
+            this._elements.dartboard.off('dartThrown');
+            this._elements.undoButton.off('click');
+            this._elements.loadGameButton.off('click');
+        },
+        setupElementsEvents: function() {
             // Dispatch events on element changes
             (function(scoreboard) {
                 scoreboard._elements.dartboard.on('dartThrown', function(evt) {
@@ -66,8 +69,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 scoreboard._elements.saveGameButton.on('click', function(evt) {
                     scoreboard.saveGameButtonClicked.dispatch();
                 });
+            })(this);
+        },
+        setupDisptacherEvents: function() {
+            // Dispatchers for events emitted from the scoreboard
+            this.dartThrown = new Dispatcher();
+            this.undoButtonClicked = new Dispatcher();
+            this.loadGameButtonClicked = new Dispatcher();
+            this.saveGameButtonClicked = new Dispatcher();
 
-                // Attach to the models events
+            // Attach to the models events
+            (function(scoreboard) {
                 scoreboard._model.undoListChanged.attach(function() {
                     // Enable-disable undo button in function of the undo queue length
                     scoreboard._elements.undoButton.toggleClass(
@@ -86,6 +98,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     }
                 });
             })(this);
+        },
+        detachAllDispatchers: function() {
+            this.dartThrown.detachAll();
+            this.undoButtonClicked.detachAll();
+            this.loadGameButtonClicked.detachAll();
+            this.saveGameButtonClicked.detachAll();
         },
         registerHelpers: function() {
             (function(scoreboard) {

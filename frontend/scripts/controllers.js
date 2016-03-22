@@ -23,10 +23,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._game = game;
         this._scoreboard = scoreboard;
 
-        this.setupEvents();
+        this.init();
     };
     GameController.prototype = {
-        setupEvents: function() {
+        init: function() {
+            this.setupGameEvents();
+            this.setupLoadSaveEvents();
+        },
+        detachAllDispatchers: function() {
+            this._game.detachAllDispatchers();
+            this._scoreboard.detachAllDispatchers();
+        },
+        setupGameEvents: function() {
             (function(controller) {
                 // Attach to the scoreboard events
                 controller._scoreboard.dartThrown.attach(function(data) {
@@ -35,6 +43,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 controller._scoreboard.undoButtonClicked.attach(function() {
                     controller.undo();
                 });
+            })(this);
+        },
+        setupLoadSaveEvents: function() {
+            (function(controller) {
+                // Attach to the scoreboard events
                 controller._scoreboard.loadGameButtonClicked.attach(function() {
                     controller.loadGame();
                 });
@@ -54,20 +67,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         },
         loadGame: function() {
             if(Save.exists("darts")) {
+                this._scoreboard = null;
                 $('#dartboard').empty();
                 $('#scoreboard').empty();
-                this._game = window.Save.load("darts");
-                this._scoreboard.init();
+                this._game = Save.load("darts");
                 this._game.setupEvents();
-                this.setupEvents();
+
+                this._scoreboard = new Scoreboard(
+                    this._game,
+                    {
+                        dartboard: $('#dartboard'),
+                        scoreboard: $('#scoreboard'),
+                        throwsDetails: $('#throws-details'),
+                        undoButton: $('#undo-btn'),
+                        loadGameButton: $('#load-btn'),
+                        saveGameButton: $('#save-btn')
+                    }
+                );
+                this._scoreboard.init();
+
+                this.setupGameEvents();
             }
         },
         saveGame: function() {
+            // Clear events before saving
+            this.detachAllDispatchers();
+            this._scoreboard.removeElementsEvents();
+
             Save.save("darts", this._game);
+
+            // Rebuild events after saving
             this._game.setupEvents();
-            this.setupEvents();
+            this._scoreboard.setupEvents();
+            this.setupGameEvents();
+
             $('#load-btn').toggleClass("disabled", false);
-            console.log(this._game);
+            this.setupLoadSaveEvents();
         }
     };
 

@@ -21,19 +21,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
      */
     var Save = {
         isArray: function(object) {
-            return Object.prototype.toString.call(object) === '[object Array]';
+            return Object.prototype.toString.call(object) === "[object Array]";
         },
 
         isString: function(object) {
-            return Object.prototype.toString.call(object) === '[object String]';
+            return Object.prototype.toString.call(object) === "[object String]";
         },
 
         isBoolean: function(object) {
-            return Object.prototype.toString.call(object) === '[object Boolean]';
+            return Object.prototype.toString.call(object) === "[object Boolean]";
         },
 
         isNumber: function(object) {
-            return Object.prototype.toString.call(object) === '[object Number]';
+            return Object.prototype.toString.call(object) === "[object Number]";
         },
 
         isFunction: function(object) {
@@ -72,7 +72,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
                 if (!('#' in object)) {
                     var constructor = object.constructor.name;
-                    console.log('decorate', constructor, object);
+                    //console.log('decorate', constructor, object);
                     if (constructor === '') {
                         throw new Error("Can't serialize with anonymous constructors.");
                     } else if (constructor !== 'Object') {
@@ -112,21 +112,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             return object;
         },
 
-        stringify: function(object) {
+        stringify: function(object, deferred) {
             object = this.decorate(object);
-            return JSON.stringify(object);
+            var json = JSON.stringify(object);
+            deferred.resolve();
+            return json;
         },
 
         parse: function(string) {
             return this.fixPrototype(JSON.parse(string));
         },
 
-        /* Main API */
-
         save: function(variable, value) {
+            var deferred = $.Deferred();
             if (arguments.length === 1) value = window[variable];
-            localStorage[variable] = this.stringify(value);
-            return variable;
+            localStorage[variable] = this.stringify(value, deferred);
+            return deferred.promise();
         },
 
         load: function(variable) {
@@ -195,6 +196,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this.undoListChanged = new Dispatcher();
             this.gameHasEnded = new Dispatcher();
             this.scoreChanged = new Dispatcher();
+        },
+        detachAllDispatchers: function() {
+            this.undoListChanged.detachAll();
+            this.gameHasEnded.detachAll();
+            this.scoreChanged.detachAll();
         },
         getPlayer: function(playerId) {
             return this._players[playerId];
