@@ -215,7 +215,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         /**
          * Returns a player from its id.
          * @param {number} playerId - Id of the player to return.
-         * @returns {Object} Player object.
+         * @returns {Player} Player object.
          */
         getPlayer: function(playerId) {
             return this._players[playerId];
@@ -223,7 +223,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         /**
          * Returns the currently active player.
-         * @returns {Object} Active player object.
+         * @returns {Player} Active player object.
          */
         getActivePlayer: function() {
             return this._players[this._currentPlayer];
@@ -277,7 +277,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          * Adds the throw to the current player and calls a specific function
          * processNewScore that should be overriden by the child game class.
          * @see processNewScore
-         * @param {Object} score - Score object to register.
+         * @param {Score} score - Score object to register.
          */
         registerScore: function(score) {
             if(this._gameEnded) {
@@ -368,7 +368,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          * the specific rules of the game.
          * @see registerScore
          * @abstract
-         * @param {Object} score - The score that is being registered.
+         * @param {Score} score - The score that is being registered.
          */
         processNewScore: function(score) { return; },
 
@@ -491,15 +491,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
         /**********************************************************************
-         * "Private" methods that must not be called outside the object itself
-         * and must not be overridden by inherited objects
+         * "Protected" methods specific to the Cricket game
          *********************************************************************/
 
         /**
-         * Adds the score the to current player.
+         * Adds the score to the current player.
          * @function
-         * @private
-         * @param {Object} score - Score object
+         * @protected
+         * @param {Score} score - Score object
          */
         _addScore: {
             enumerable: false,
@@ -507,6 +506,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this.getActivePlayer().score += score.factor * score.value;
             }
         },
+
+        /**
+         * Gets the id of the player with the higher score.
+         * @function
+         * @protected
+         * @returns {number} Id of the player with the higher score.
+         */
+        _getWinningPlayer: {
+            enumerable: false,
+            value: function() {
+                // Returns the id of the player with the highest score
+                var leaderId = 0;
+
+                for(var i = 1; i < this._players.length; i++) {
+                    if(this._players[i].score > this._players[leaderId].score) {
+                        leaderId = i;
+                    }
+                }
+                return leaderId;
+            }
+        }
+
+
+        /**********************************************************************
+         * "Private" methods that must not be called outside the object itself
+         * and must not be overridden by inherited objects
+         *********************************************************************/
 
         /**
          * Checks if a certain target has been closed.
@@ -568,41 +594,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
                 return false;
             }
-        },
-
-        /**
-         * Gets the id of the player with the higher score.
-         * @function
-         * @private
-         * @returns {number} Id of the player with the higher score.
-         */
-        _getWinningPlayer: {
-            enumerable: false,
-            value: function() {
-                // Returns the id of the player with the highest score
-                var leaderId = 0;
-
-                for(var i = 1; i < this._players.length; i++) {
-                    if(this._players[i].score > this._players[leaderId].score) {
-                        leaderId = i;
-                    }
-                }
-                return leaderId;
-            }
         }
     });
     Cricket.prototype.constructor = Cricket;
 
 
-    /*
-     * Cut-Throat Cricket
+    /**
+     * Cricket game, cut-throat variant.
+     * @constructor
+     * @param {string[]} game.players - An array of strings containing the names of the players.
      */
     function CutThroatCricket(players) {
         Cricket.call(this, players);
     }
     CutThroatCricket.prototype = Object.create(Cricket.prototype, {
-        /*
-         * Overriden private methods from Cricket
+        /**********************************************************************
+         * "Protected" methods from Cricket that are overriden
+         *********************************************************************/
+
+        /**
+         * Adds the score to all the players except the current one.
+         * @function
+         * @protected
+         * @param {Score} score - Score object
          */
         _addScore: {
             enumerable: false,
@@ -615,6 +629,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         },
+
+        /**
+         * Gets the id of the player with the lower score.
+         * @function
+         * @protected
+         * @returns {number} Id of the player with the lower score.
+         */
         _getWinningPlayer: {
             enumerable: false,
             value: function() {
@@ -633,8 +654,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     CutThroatCricket.prototype.constructor = Cricket;
 
 
-    /*
-     * Around the clock
+    /**
+     * Around the clock game, without variant.
+     * @constructor
+     * @param {string[]} game.players - An array of strings containing the names of the players.
      */
     function AroundTheClock(players) {
         BaseGame.call(this, 'clock', 'normal', players);
@@ -644,8 +667,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     };
     AroundTheClock.prototype = Object.create(BaseGame.prototype, {
-        /*
-         * Overriden "protected" methods
+        /**********************************************************************
+         * "Abstract" methods from BaseGame that are overriden
+         *********************************************************************/
+
+        /**
+         * Overrides BaseGame's processNewScore abstract method.
+         * @see BaseGame.processNewScore
+         * @function
          */
         processNewScore: {
             value: function(score) {
@@ -673,8 +702,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         },
-        /*
-         * "Private" methods
+
+        /**********************************************************************
+         * "Private" methods that must not be called outside the object itself
+         * and must not be overridden by inherited objects
+         *********************************************************************/
+        /**
+         * Checks if the game is over.
+         * @function
+         * @private
+         * @returns {boolean} True if the game is over, false otherwise.
          */
         _isGameOver: {
             enumerable: false,
@@ -686,6 +723,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 return gameIsOver;
             }
         },
+
+        /**
+         * Switches to the next player that has not finished yet.
+         * @function
+         * @private
+         */
         _nextPlayer: {
             enumerable: false,
             value: function() {
@@ -714,25 +757,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     AroundTheClock.prototype.constructor = AroundTheClock;
 
 
-    /*
-     * x01
+    /**
+     * x01 type of game (301, 501, 701, ...)
+     * @constructor
+     * @param {string[]} game.players - An array of strings containing the names of the players.
+     * @param {Object} options - Object containing the starting score; eg. { startingScore: 501 }.
      */
     function X01(players, options) {
         BaseGame.call(this, 'x01', 'normal', players);
 
         options = options || {};
-        this._startingScore = parseInt(options._startingScore) || 301;
+        this._startingScore = parseInt(options.startingScore) || 301;
 
         for(var i = 0; i < this._players.length; i++) {
             this._players[i].startingDouble = false;
             this._players[i].score = this._startingScore;
             this._players[i].startedTurnAt = this._startingScore;
         }
-
     };
     X01.prototype = Object.create(BaseGame.prototype, {
-        /*
-         * Overriden "protected" methods
+        /**********************************************************************
+         * "Abstract" methods from BaseGame that are overriden
+         *********************************************************************/
+
+        /**
+         * Overrides BaseGame's processNewScore abstract method.
+         * @see BaseGame.processNewScore
+         * @function
          */
         processNewScore: {
             value: function(score) {
@@ -764,8 +815,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         },
-        /*
-         * "Private" methods
+
+        /**********************************************************************
+         * "Private" methods that must not be called outside the object itself
+         * and must not be overridden by inherited objects
+         *********************************************************************/
+
+        /**
+         * Switches to the next player.
+         * @function
+         * @private
          */
         _nextPlayer: {
             enumerable: false,
@@ -791,15 +850,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     X01.prototype.constructor = X01;
 
 
-    /*
-     * x01 without starting double
+    /**
+     * x01 type of game (301, 501, 701, ...), without the need to start with a double.
+     * @constructor
+     * @param {string[]} game.players - An array of strings containing the names of the players.
+     * @param {Object} options - Object containing the starting score; eg. { startingScore: 501 }.
      */
     function NoDoubleStartX01(players, options) {
         X01.call(this, players, options);
     }
     NoDoubleStartX01.prototype = Object.create(X01.prototype, {
-        /*
-         * Overriden "protected" methods
+        /**********************************************************************
+         * "Abstract" methods from X01 that are overriden
+         *********************************************************************/
+
+        /**
+         * Overrides BaseGame's processNewScore abstract method.
+         * @see BaseGame.processNewScore
+         * @function
          */
         processNewScore: {
             value: function(score) {
@@ -934,4 +1002,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     window.X01 = X01;
     window.NoDoubleStartX01 = NoDoubleStartX01;
 })(window);
+
+/*
+ * Custom typedef, for documentation only
+ */
+
+/**
+ @typedef Score
+ @type {Object}
+ @property {number} value - The base value (1..20, bull'eye = 25).
+ @property {number} factor - The factor of the score (single, double, triple).
+ @property {boolean} bull - Is the score a bull's eye?
+ /
+
+/**
+ @typedef Player
+ @type {Object}
+ @property {string} name - The player's name.
+ @property {number} score - The player's current score.
+ @property {number} throwsLeft - How many throws this player has left (in this turn).
+ @property {boolean} active - Is this the player's turn?
+ @property {Object[]} throws - An array of object describing each throw the player has made, turn by turn.
+ @property {boolean} showScoreTab - Should the player's score tab be up?
+ /
 
