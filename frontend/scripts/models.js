@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
-    /*
+    /**
      * Save object taken from https://github.com/skeeto/disc-rl
      */
     var Save = {
@@ -146,8 +146,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     };
 
 
-    /*
-     * Parent game object
+    /**
+     * Parent game object, cannot be used directly but the games inherit from it
+     * @constructor
+     * @param {string} type - The type of game.
+     * @param {string} variant - The variant of the game.
+     * @param {string[]} game.players - An array of strings containing the names of the players.
      */
     function BaseGame(type, variant, players) {
         this._type = type;
@@ -186,28 +190,60 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.setupEvents();
     };
     BaseGame.prototype = {
-        /*
+        /**********************************************************************
          * Public methods
+         *********************************************************************/
+
+        /**
+         * Creates the Dispatcher objects
          */
         setupEvents: function() {
             this.undoListChanged = new Dispatcher();
             this.gameHasEnded = new Dispatcher();
             this.scoreChanged = new Dispatcher();
         },
+
+        /**
+         * Detaches all the Dispatchers
+         */
         detachAllDispatchers: function() {
             this.undoListChanged.detachAll();
             this.gameHasEnded.detachAll();
             this.scoreChanged.detachAll();
         },
+
+        /**
+         * Returns a player from its id.
+         * @param {number} playerId - Id of the player to return.
+         * @returns {Object} Player object.
+         */
         getPlayer: function(playerId) {
             return this._players[playerId];
         },
+
+        /**
+         * Returns the currently active player.
+         * @returns {Object} Active player object.
+         */
         getActivePlayer: function() {
             return this._players[this._currentPlayer];
         },
+
+        /**
+         * Returns the length of the undo queue.
+         * @returns {number} Length of the undo queue.
+         */
         getUndoQueueLength: function() {
             return this._undo.length;
         },
+
+        /**
+         * Returns an object describing the context to use in the templates.
+         * By default, it returns an object as {players: [array of player objects], turn: turnNumber}.
+         * The context can be extended by the results of the getSpecificContext function.
+         * @see getSpecificContext
+         * @returns {Object} The context to use in templates.
+         */
         getContext: function() {
             return $.extend(
                 {
@@ -217,12 +253,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this.getSpecificContext()
             );
         },
+
+        /**
+         * Returns the type of this game.
+         * @returns {string} The type of game.
+         */
         getType: function() {
             return this._type;
         },
+
+        /**
+         * Returns the variant of this game.
+         * @returns {string} The variant of game.
+         */
         getVariant: function() {
             return this._variant;
         },
+
+        /**
+         * Registers a new score from a thrown dart.
+         * This function takes care of changing the player's showScoreTab
+         * property to control the display of the players score sheet.
+         * Adds the throw to the current player and calls a specific function
+         * processNewScore that should be overriden by the child game class.
+         * @see processNewScore
+         * @param {Object} score - Score object to register.
+         */
         registerScore: function(score) {
             if(this._gameEnded) {
                 return;
@@ -250,6 +306,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this.processNewScore(score);
             this.scoreChanged.dispatch();
         },
+
+        /**
+         * Pops the last saved state to undo the last move.
+         */
         undo: function() {
             if(this.getUndoQueueLength() <= 0) {
                 return;
@@ -264,6 +324,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
             this.undoListChanged.dispatch();
         },
+
+        /**
+         * Marks the game as over and deactivate all players.
+         * Dispatches the winner's id to the gameHasEnded dispatcher object.
+         * @see gameHasEnded
+         * @param {number} winnerId - Id of the player that won. null if not
+         * applicable to this game.
+         */
         gameOver: function(winnerId) {
             this._gameEnded = true;
 
@@ -281,15 +349,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             ));
         },
 
-        /*
-         * "Protected" methods that may be overridden
+
+        /**********************************************************************
+         * "Abstract" methods that may be overridden
+         *********************************************************************/
+
+        /**
+         * Returns the specific context of this game.
+         * If overriden, it must return an Object (even empty).
+         * @see getContext
+         * @abstract
+         * @returns {Object} Specific context object for the templates.
          */
         getSpecificContext: function() { return {}; },
+
+        /**
+         * Processes the score of the dart that has been thrown according to
+         * the specific rules of the game.
+         * @see registerScore
+         * @abstract
+         * @param {Object} score - The score that is being registered.
+         */
         processNewScore: function(score) { return; },
 
-        /*
+
+        /**********************************************************************
          * "Private" methods that must not be called outside the object itself
-         *  and must not be overridden by inherited objects
+         * and must not be overridden by inherited objects
+         *********************************************************************/
+
+        /**
+         * Saves the state of the game into the undo array.
+         * @private
          */
         _saveState: function() {
             var props = [].concat(this._gameStateProperties).concat(this.additionalProps),
@@ -308,8 +399,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     };
 
 
-    /*
-     * Cricket
+    /**
+     * Cricket game, without variant.
+     * @constructor
+     * @param {string[]} game.players - An array of strings containing the names of the players.
      */
     function Cricket(players) {
         BaseGame.call(this, 'cricket', 'normal', players);
@@ -336,8 +429,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         };
     };
     Cricket.prototype = Object.create(BaseGame.prototype, {
-        /*
-         * Overriden "protected" methods
+        /**********************************************************************
+         * "Abstract" methods from BaseGame that are overriden
+         *********************************************************************/
+
+        /**
+         * Overrides BaseGame's getSpecificContext abstract method.
+         * @see BaseGame.getSpecificContext
+         * @function
          */
         getSpecificContext: {
             value: function() {
@@ -346,6 +445,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 };
             }
         },
+
+        /**
+         * Overrides BaseGame's processNewScore abstract method.
+         * @see BaseGame.processNewScore
+         * @function
+         */
         processNewScore: {
             value: function(score) {
                 var player = this.getActivePlayer();
@@ -383,8 +488,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         },
-        /*
-         * "Private" methods
+
+
+        /**********************************************************************
+         * "Private" methods that must not be called outside the object itself
+         * and must not be overridden by inherited objects
+         *********************************************************************/
+
+        /**
+         * Adds the score the to current player.
+         * @function
+         * @private
+         * @param {Object} score - Score object
          */
         _addScore: {
             enumerable: false,
@@ -392,6 +507,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this.getActivePlayer().score += score.factor * score.value;
             }
         },
+
+        /**
+         * Checks if a certain target has been closed.
+         * @function
+         * @private
+         * @param {string} target - The target to check, preceded with an
+         * underscore; eg. "_10", "_3" or "_B"
+         * @returns {boolean} True if the target is closed, false otherwise.
+         */
         _checkTargetIsClosed: {
             enumerable: false,
             value: function(target) {
@@ -405,6 +529,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 return (playersClosed === this._players.length);
             }
         },
+
+        /**
+         * Checks if a player has closed all his targets
+         * @function
+         * @private
+         * @param {number} playerId - Id of the player to check
+         * @returns {boolean} True if the player has closed all targets, false otherwise.
+         */
         _playerClosedAllTargets: {
             enumerable: false,
             value: function(playerId) {
@@ -419,6 +551,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 return playerClosed;
             }
         },
+
+        /**
+         * Checks if all targets have been closed (thus leading to the end of the game).
+         * @function
+         * @private
+         * @returns {boolean} True if all targets are closed, false otherwise.
+         */
         _checkAllTargetsClosed: {
             enumerable: false,
             value: function() {
@@ -430,6 +569,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 return false;
             }
         },
+
+        /**
+         * Gets the id of the player with the higher score.
+         * @function
+         * @private
+         * @returns {number} Id of the player with the higher score.
+         */
         _getWinningPlayer: {
             enumerable: false,
             value: function() {

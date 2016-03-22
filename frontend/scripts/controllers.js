@@ -16,8 +16,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
-    /*
-     * Controller of the game
+    /**
+     * Controls the game.
+     * @constructor
+     * @param {BaseGame} game - The game (model) to control.
+     * @param {ScoreBoard} scoreboard - The scoreboard (view) that interacts with the model.
      */
     function GameController(game, scoreboard) {
         this._game = game;
@@ -26,14 +29,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.init();
     };
     GameController.prototype = {
+        /**
+         * Initializes the events of the controller.
+         */
         init: function() {
             this.setupGameEvents();
             this.setupLoadSaveEvents();
         },
+
+        /**
+         * Detaches all the Dispatcher objects of the game and scoreboard.
+         */
         detachAllDispatchers: function() {
             this._game.detachAllDispatchers();
             this._scoreboard.detachAllDispatchers();
         },
+
+        /**
+         * Attaches the game related scoreboard's dispatcher to the controller's methods.
+         */
         setupGameEvents: function() {
             (function(controller) {
                 // Attach to the scoreboard events
@@ -45,6 +59,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 });
             })(this);
         },
+
+        /**
+         * Attaches the scoreboard's load & save dispatcher to the controller's methods.
+         */
         setupLoadSaveEvents: function() {
             (function(controller) {
                 // Attach to the scoreboard events
@@ -56,15 +74,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 });
             })(this);
         },
+
+        /**
+         * Registers a new score in the model.
+         * @param {Object} score - The new score to register.
+         */
         registerScore: function(score) {
             this._game.registerScore(score);
         },
+
+        /**
+         * Calls the model's undo function.
+         */
         undo: function() {
             if(this._game.getUndoQueueLength() != 0) {
                 this._game.undo();
                 this._scoreboard.update();
             };
         },
+
+        /**
+         * Loads a previously saved state
+         */
         loadGame: function() {
             if(Save.exists("darts")) {
                 // Clear events before loading
@@ -94,6 +125,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this.setupLoadSaveEvents();
             }
         },
+
+        /**
+         * Saves (and overwrites) the game
+         */
         saveGame: function() {
             // Clear events before saving
             this.detachAllDispatchers();
@@ -112,8 +147,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     };
 
-    /*
-     * Controller for the new game modal
+
+    /**
+     * Controller for the new game modal.
+     * @constructor
+     * @param {GamesLibrary} gamesLibrary - The GameLibrary object (model) referencing the rules.
+     * @param {NewGameModal} modalView - The NewGameModal object (view) representing the modal box for a new game.
      */
     function NewGameController(gamesLibrary, modalView) {
         this._gamesLibrary = gamesLibrary;
@@ -129,6 +168,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         })(this);
     };
     NewGameController.prototype = {
+        /**
+         * Starts a new game
+         * @param {Object} game - The object containing the following game's parameters.
+         * @param {string} game.type - The type of game to start.
+         * @param {string} game.variant - The game variant.
+         * @param {string[]} game.players - An array of strings containing the names of the players.
+         * @param {Object} game.options - An extra object containing specific options for the selected game type/variant.
+         */
         runGame: function(game) {
             delete this._game;
             delete this._scoreboard;
@@ -158,11 +205,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this._game,
                 this._scoreboard
             );
-        },
-        getGameInstance: function() {
-            return this._gameController;
         }
     };
+
 
     /*
      * Save objects to the global scope

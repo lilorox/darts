@@ -15,6 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 $(function() {
+    /**
+     * Main entry point: creates a GameLibrary object, a NewGameModal
+     * and a NewGameController.
+     */
     var gamesLibrary = new GamesLibrary(),
         newGameModal = new NewGameModal(
             gamesLibrary,

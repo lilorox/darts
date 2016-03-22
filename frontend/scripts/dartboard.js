@@ -19,6 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     // Computed once and used everywhere
     var twoPI = 2 * Math.PI;
 
+    /**
+     * Displays the dartboard and enabled the user to interact with it by throwing darts.
+     * @constructor
+     */
     function DartBoard(element, options) {
         this._element = $(element);
 
@@ -242,7 +246,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._element.data('dartboard', dartboard);
     };
     DartBoard.prototype = {
-        // Returns the score under coordinates (x, y)
+        /**
+         * Returns the score under coordinates (x, y)
+         * @param {number} inputX - The X coordinates to lookup the score for.
+         * @param {number} inputY - The Y coordinates to lookup the score for.
+         * @returns {Object} Score object (eg. for a double 10: {value: 10, factor: 3, bull: false}).
+         */
         getScore: function(inputX, inputY) {
             var ctx = this._canvas.getContext('2d'),
                 x = this._center.x - inputX, // yes it is backwards because
@@ -298,6 +307,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         }
     };
 
+
+    /*
+     * Registers the jQuery Plugin
+     */
     $.fn.DartBoard = function(options) {
         return this.each(function() {
             var element = $(this);
