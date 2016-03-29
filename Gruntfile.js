@@ -50,11 +50,21 @@ module.exports = function(grunt) {
                 }
             },
             all: [ 'frontend/scripts/*.js' ]
+        },
+
+        jsdoc: {
+            dist: {
+                src: [ 'frontend/scripts/*.js' ],
+                options: {
+                    destination: 'docs'
+                }
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-bowercopy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-jsdoc');
 
-    grunt.registerTask('default', ['jshint', 'bowercopy' ]);
+    grunt.registerTask('default', ['jshint', 'bowercopy', 'jsdoc' ]);
 };
