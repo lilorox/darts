@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._scoreboard = scoreboard;
 
         this.init();
-    };
+    }
     GameController.prototype = {
         /**
          * Initializes the events of the controller.
@@ -87,10 +87,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
          * Calls the model's undo function.
          */
         undo: function() {
-            if(this._game.getUndoQueueLength() != 0) {
+            if(this._game.getUndoQueueLength() !== 0) {
                 this._game.undo();
                 this._scoreboard.update();
-            };
+            }
         },
 
         /**
@@ -166,7 +166,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 this._gameController = controller.runGame(data);
             });
         })(this);
-    };
+    }
     NewGameController.prototype = {
         /**
          * Starts a new game

@@ -188,7 +188,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.additionalProps = [];
 
         this.setupEvents();
-    };
+    }
     BaseGame.prototype = {
         /**********************************************************************
          * Public methods
@@ -427,7 +427,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             _20: true,
             _B: true
         };
-    };
+    }
     Cricket.prototype = Object.create(BaseGame.prototype, {
         /**********************************************************************
          * "Abstract" methods from BaseGame that are overriden
@@ -665,7 +665,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this._players[i].won = false;
             this._players[i].winningTurn = 0;
         }
-    };
+    }
     AroundTheClock.prototype = Object.create(BaseGame.prototype, {
         /**********************************************************************
          * "Abstract" methods from BaseGame that are overriden
@@ -774,7 +774,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this._players[i].score = this._startingScore;
             this._players[i].startedTurnAt = this._startingScore;
         }
-    };
+    }
     X01.prototype = Object.create(BaseGame.prototype, {
         /**********************************************************************
          * "Abstract" methods from BaseGame that are overriden
@@ -790,21 +790,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 var player = this.getActivePlayer();
                 player.throwsLeft --;
 
-                if(! player.startingDouble && score.factor == 2) {
+                if(! player.startingDouble && score.factor === 2) {
                     player.startingDouble = true;
                 }
 
                 if(player.startingDouble) {
                     player.score -= score.factor * score.value;
                     if(player.score < 0 ||
-                            (player.score == 0 && score.factor != 2) ||
-                            player.score == 1) {
+                            (player.score === 0 && score.factor !== 2) ||
+                            player.score === 1) {
 
                         player.score = player.startedTurnAt;
                         this._nextPlayer();
                     }
 
-                    if(player.score == 0 && score.factor == 2) {
+                    if(player.score === 0 && score.factor === 2) {
                         this.gameOver(this._currentPlayer);
                         return;
                     }
@@ -884,7 +884,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     this._nextPlayer();
                 }
 
-                if(player.score == 0) {
+                if(player.score === 0) {
                     this.gameOver(this._currentPlayer);
                     return;
                 }
@@ -967,7 +967,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
             */
         };
-    };
+    }
     GamesLibrary.prototype = {
         getRules: function() {
             return this._games;
@@ -980,7 +980,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
             var GameClass = null;
             if(variant === 'normal') {
-                GameClass = this._games[type]._obj
+                GameClass = this._games[type]._obj;
             } else {
                 GameClass = this._games[type].variants[variant]._obj;
             }

@@ -38,10 +38,23 @@ module.exports = function(grunt) {
                     'glyphicons-halflings-regular.woff2': 'bootstrap/dist/fonts/glyphicons-halflings-regular.woff2',
                 }
             }
+        },
+
+        jshint: {
+            options: {
+                eqnull: true,
+                browser: true,
+                proto: true,
+                globals: {
+                    jQuery: true
+                }
+            },
+            all: [ 'frontend/scripts/*.js' ]
         }
     });
 
     grunt.loadNpmTasks('grunt-bowercopy');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
 
-    grunt.registerTask('default', ['bowercopy']);
+    grunt.registerTask('default', ['jshint', 'bowercopy' ]);
 };

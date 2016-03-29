@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     function Scoreboard(model, elements) {
         this._model = model;
         this._elements = elements;
-    };
+    }
     Scoreboard.prototype = {
         /**********************************************************************
          * Public methods
@@ -145,7 +145,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         return scoreboard._model.getActivePlayer().name;
                     },
                     throwsTable: function(playerId) {
-                        if(this.throws.length == 0) {
+                        if(this.throws.length === 0) {
                             return new Handlebars.SafeString('<tr><td colspan="4">No throws yet</td></tr>');
                         }
 
@@ -225,7 +225,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this._options = {};
 
         this.setupEvents();
-    };
+    }
     NewGameModal.prototype = {
         /**********************************************************************
          * Public methods
@@ -282,7 +282,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             if(game.length === 0 || !('variants' in this._rules[game])) {
                 this._elements.variantSelect.prop('disabled', true);
                 return;
-            };
+            }
             this._elements.variantSelect.prop('disabled', false);
             this._buildVariantSelect();
             this._buildAdditionalOptions();

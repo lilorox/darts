@@ -109,7 +109,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         var startAngle = - Math.PI / 20;
 
         // Point line separators and color stripes
-        for(var i = 0; i < 20; i++) {
+        var i, j;
+        for(i = 0; i < 20; i++) {
             var endAngle = startAngle + Math.PI / 10,
                 single = this._options.boardColors.single[i % 2],
                 multiple = this._options.boardColors.multiple[i % 2],
@@ -123,7 +124,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             // Text
             ctx.fillStyle = 'rgb(255, 255, 255)';
             ctx.textAlign = "center";
-            ctx.font = '12px Serif'
+            ctx.font = '12px Serif';
             ctx.fillText(
                 this._options.numberOrder[i],
                 center.x +
@@ -152,7 +153,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             ctx.closePath();
 
             // Fill the circle sectors, from the biggest to the smallest
-            for(var j = 0; j < sectors.length; j++) {
+            for(j = 0; j < sectors.length; j++) {
                 var sector = sectors[j],
                     r = sector[0] * radius,
                     color = sector[1];
@@ -184,7 +185,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this._options.marks.outerSingleBull,
             this._options.marks.outerDoubleBull
         ];
-        for(var j = 0; j < circlesMarks.length; j++) {
+        for(j = 0; j < circlesMarks.length; j++) {
             ctx.beginPath();
             ctx.arc(
                 center.x,
@@ -244,7 +245,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         // Set the data attribute to the jQuery instance
         this._element.data('dartboard', dartboard);
-    };
+    }
     DartBoard.prototype = {
         /**
          * Returns the score under coordinates (x, y)

@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
         // Do not save this object
         this.doNotSave = true;
-    };
+    }
     Dispatcher.prototype = {
         /**
          * Attaches a listener to this Dispatcher.
