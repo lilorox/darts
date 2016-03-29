@@ -16,24 +16,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ;(function(window) {
-    /*
-     * Scoreboard view object
+    /**
+     * Scoreboard view object.
+     * @constructor
+     * @param {BaseGame} model - Game object taht constitutes the model.
+     * @param {Object} elements - jQuery elements that constitutes the view.
+     * @param {Object} elements.dartboard - The dartboard div.
+     * @param {Object} elements.scoreboard - The scoreboard div.
+     * @param {Object} elements.throwsDetails - The div that will contain the
+     * throws details table.
+     * @param {Object} elements.undoButton - The undo button element.
+     * @param {Object} elements.loadGameButton - The load button element.
+     * @param {Object} elements.saveGameButton - The save button element.
      */
     function Scoreboard(model, elements) {
         this._model = model;
-        /*
-         * elements = {
-         *      dartboard: $('#dartboardId'),
-         *      scoreboard: $('#scoreboardId'),
-         *      throwsDetails: $('#throwsDetailsId'),
-         *      undoButton: $('#undoButtonId'),
-         *      loadGameButton: $('#loadGameButtonId'),
-         *      saveGameButton: $('#saveGameButtonId')
-         * }
-         */
         this._elements = elements;
     };
     Scoreboard.prototype = {
+        /**********************************************************************
+         * Public methods
+         *********************************************************************/
+
+        /**
+         * Init the scoreboard with the jQuery plugin, registers helpers and
+         * sets the event handlers.
+         */
         init: function() {
             // Create the DartBoard Object
             this._elements.dartboard.DartBoard();
@@ -45,15 +53,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this.setupEvents();
             this.update();
         },
+
+        /**
+         * Sets the dispatchers events and the elements events.
+         */
         setupEvents: function() {
             this.setupDisptacherEvents();
             this.setupElementsEvents();
         },
+
+        /**
+         * Removes the events on the different UI elements.
+         */
         removeElementsEvents: function() {
             this._elements.dartboard.off('dartThrown');
             this._elements.undoButton.off('click');
             this._elements.loadGameButton.off('click');
         },
+
+        /**
+         * Sets the event handlers on the different UI elements.
+         */
         setupElementsEvents: function() {
             // Dispatch events on element changes
             (function(scoreboard) {
@@ -71,6 +91,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 });
             })(this);
         },
+
+        /**
+         * Create the dispatcher of the view and attaches to the model's
+         * dispatchers.
+         */
         setupDisptacherEvents: function() {
             // Dispatchers for events emitted from the scoreboard
             this.dartThrown = new Dispatcher();
@@ -99,12 +124,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 });
             })(this);
         },
+
+        /**
+         * Detaches the scoreboard from the model's dispatchers.
+         */
         detachAllDispatchers: function() {
             this.dartThrown.detachAll();
             this.undoButtonClicked.detachAll();
             this.loadGameButtonClicked.detachAll();
             this.saveGameButtonClicked.detachAll();
         },
+
+        /**
+         * Registers the needed Handlebar helpers
+         */
         registerHelpers: function() {
             (function(scoreboard) {
                 Handlebars.registerHelper({
@@ -141,6 +174,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 });
             })(this);
         },
+        
+        /**
+         * Apply the templates of the specific scoretable and the throws table.
+         */
         update: function() {
             // Game template
             Utils.loadTemplate(
@@ -159,21 +196,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     };
 
 
-    /*
-     * Modal box for the new game form
+    /**
+     * Modal box for the new game form.
+     * @constructor
+     * @param {GameLibrary} gameLibrary - An instance of the GameLibrary object.
+     * @param {Object} elements - jQuery elements that constitutes the view.
+     * @param {Object} elements.modal - The modal div.
+     * @param {Object} elements.gameSelect - The game select element.
+     * @param {Object} elements.variantSelect - The variant select element.
+     * @param {Object} elements.playersInput - The players names input.
+     * @param {Object} elements.additionalOptionsDiv - The div containing the
+     * aditionnal options.
+     * @param {Object} elements.goButton - The submit button element.
      */
     function NewGameModal(gameLibrary, elements) {
         this._gameLibrary = gameLibrary;
-        /*
-         * elements = {
-         *      modal: $('#modalId'),
-         *      gameSelect: $('#gameSelectId'),
-         *      variantSelect: $('#variantSelectId'),
-         *      playersInput: $('#playersInputId'),
-         *      additionalOptionsDiv: $('#additionalOptionsDiv'),
-         *      goButton: $('#goButtonId')
-         * }
-         */
         this._elements = elements;
 
         // Private variables
@@ -190,8 +227,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         this.setupEvents();
     };
     NewGameModal.prototype = {
-        /*
+        /**********************************************************************
          * Public methods
+         *********************************************************************/
+
+        /**
+         * Create the dispatcher of the view and attaches to the model's
+         * dispatchers.
          */
         setupEvents: function() {
             // Dispatchers for events emitted from the form
@@ -229,6 +271,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 });
             })(this);
         },
+
+        /**
+         * Actions after a game has been chosen.
+         * @param {string} game - The chosen game.
+         */
         setGame: function(game){
             this._game = game;
 
@@ -240,6 +287,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             this._buildVariantSelect();
             this._buildAdditionalOptions();
         },
+        
+        /**
+         * Actions after a variant has been chosen.
+         * @param {string} selectedVariant - The chosen variant.
+         */
         setVariant: function(selectedVariant) {
             this._variant = selectedVariant;
             var variant = this._rules[this._game].variants[selectedVariant];
@@ -260,6 +312,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
             }
         },
+
+        /**
+         * Removes players from input if there are too many.
+         */
         validatePlayers: function() {
             var values = this._elements.playersInput.val();
 
@@ -272,12 +328,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             }
             this.setPlayers(values);
         },
+
+        /**
+         * Sets the players.
+         * @param {Player[]} players - The array of the participating players.
+         */
         setPlayers: function(players) {
             this._players = players;
         },
+
+        /**
+         * Sets an additional option.
+         * @param {string} option - The option name.
+         * @param {*} value - The option's value.
+         */
         setAdditionalOption: function(option, value) {
             this._options[option] = value;
         },
+
+        /**
+         * Makes sure the correct number of players are entered and enables
+         * or disables the submit button accordingly.
+         */
         validateForm: function() {
             this.validatePlayers();
             (function(modal) {
@@ -289,14 +361,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 });
             })(this);
         },
+
+        /**
+         * Builds the modal view.
+         */
         show: function() {
             this._elements.additionalOptionsDiv.hide();
             this._buildGameSelect();
             this._buildPlayersSelect();
             this._elements.modal.modal('show');
         },
-        /*
-         * Private methods
+
+
+        /**********************************************************************
+         * "Private" methods that must not be called outside the object itself
+         * and must not be overridden by inherited objects
+         *********************************************************************/
+
+        /**
+         * Builds the game select item according to the game library.
+         * @private
          */
         _buildGameSelect: function() {
             var rules = this._rules,
@@ -311,6 +395,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
             this._elements.gameSelect.trigger('change');
         },
+
+        /**
+         * Builds the variant select item according to the selected game's rules.
+         * @private
+         */
         _buildVariantSelect: function() {
             var variants = this._rules[this._game].variants,
                 elements = this._elements;
@@ -325,6 +414,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
             elements.variantSelect.trigger('change');
         },
+
+        /**
+         * Builds the players input with Select2.
+         * @private
+         */
         _buildPlayersSelect: function() {
             this._elements.playersInput.prop('disabled', false);
             this._elements.playersInput.select2({
@@ -334,6 +428,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 multiple: true
             });
         },
+
+        /**
+         * Builds the additional options div according to the selected game's
+         * rules.
+         * @private
+         */
         _buildAdditionalOptions: function() {
             var elements = this._elements;
             elements.additionalOptionsDiv.empty();
