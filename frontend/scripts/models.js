@@ -526,7 +526,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 }
                 return leaderId;
             }
-        }
+        },
 
 
         /**********************************************************************
@@ -1013,7 +1013,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  @property {number} value - The base value (1..20, bull'eye = 25).
  @property {number} factor - The factor of the score (single, double, triple).
  @property {boolean} bull - Is the score a bull's eye?
- /
+ */
 
 /**
  @typedef Player
@@ -1024,5 +1024,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  @property {boolean} active - Is this the player's turn?
  @property {Object[]} throws - An array of object describing each throw the player has made, turn by turn.
  @property {boolean} showScoreTab - Should the player's score tab be up?
- /
-
+ */
