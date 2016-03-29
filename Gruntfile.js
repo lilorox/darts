@@ -56,7 +56,8 @@ module.exports = function(grunt) {
             dist: {
                 src: [ 'frontend/scripts/*.js' ],
                 options: {
-                    destination: 'docs'
+                    destination: 'docs',
+                    package: 'package.json'
                 }
             }
         }
