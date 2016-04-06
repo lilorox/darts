@@ -11,6 +11,7 @@ module.exports = function(grunt) {
                     destPrefix: 'frontend/scripts/libs'
                 },
                 files: {
+                    'requirejs/require.js': 'requirejs/require.js',
                     'jquery/jquery.min.js': 'jquery/dist/jquery.min.js',
                     'bootstrap/bootstrap.min.js': 'bootstrap/dist/js/bootstrap.min.js',
                     'select2/select2.min.js': 'select2/dist/js/select2.min.js',
