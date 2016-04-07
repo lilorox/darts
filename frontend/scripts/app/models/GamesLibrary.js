@@ -1,5 +1,5 @@
 /**
- * @license models.js Copyright (C) 2016 Pierre Gaxatte
+ * @license GamesLibrary.js Copyright (C) 2016 Pierre Gaxatte
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
@@ -94,7 +94,9 @@ define(function() {
             return new GameClass(players, options);
         }
     };
-})
+
+    return GamesLibrary;
+});
 
 /*
  * Custom typedef, for documentation only

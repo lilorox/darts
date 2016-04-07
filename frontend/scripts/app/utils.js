@@ -1,9 +1,9 @@
 /**
- * @license utils.js Copyright (C) 2016 Pierre Gaxatte
+ * @license Utils.js Copyright (C) 2016 Pierre Gaxatte
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
-;(function(window) {
+define(function() {
     /*
      * General utility functions
      */
@@ -30,5 +30,5 @@
         }
     };
 
-    window.Utils = Utils;
-})(window);
+    return Utils;
+});

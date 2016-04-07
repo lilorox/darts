@@ -2,7 +2,7 @@
  * @license app.js Copyright (C) 2016 Pierre Gaxatte
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
-requirejs.config({
+require.config({
     shim: {
         bootstrap: { deps: ["jquery"] },
         select2: { deps: ["jquery"] }
@@ -16,4 +16,4 @@ requirejs.config({
     }
 });
 
-requirejs(["app/main"]);
+require(["app/main"]);

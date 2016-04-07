@@ -1,0 +1,12 @@
+/**
+ * @license #GAME#.js Copyright (C) 2016 Pierre Gaxatte
+ * Released under GPLv3 license, see the LICENSE file at the root of the project
+ */
+
+define([
+    './BaseGame'
+], function(BaseGame) {
+
+    return #GAME#;
+});
+

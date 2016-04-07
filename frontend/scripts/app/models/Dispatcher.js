@@ -1,9 +1,9 @@
 /**
- * @license dispatcher.js Copyright (C) 2016 Pierre Gaxatte
+ * @license Dispatcher.js Copyright (C) 2016 Pierre Gaxatte
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
-;(function(window) {
+define(function() {
     /**
      * Dispatches object/messages between model, view and controller or anyone
      * attaching to it.
@@ -43,10 +43,5 @@
         }
     };
 
-
-    /*
-     * Save objects to the global scope
-     */
-    window.Dispatcher = Dispatcher;
-})(window);
-
+    return Dispatcher;
+});

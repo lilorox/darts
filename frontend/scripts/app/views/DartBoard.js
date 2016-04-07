@@ -1,9 +1,9 @@
 /**
- * @license daretboard.js Copyright (C) 2016 Pierre Gaxatte
+ * @license Dartboard.js Copyright (C) 2016 Pierre Gaxatte
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
-;(function($) {
+define(['jquery'], function($) {
     // Computed once and used everywhere
     var twoPI = 2 * Math.PI;
 
@@ -313,4 +313,4 @@
             element.data('dartboard', dartboard);
         });
     };
-})(jQuery);
+});

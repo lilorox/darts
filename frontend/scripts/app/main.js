@@ -5,13 +5,10 @@
 
 define([
     'jquery',
-    'bootstrap',
-    'select2',
-    'handlebars',
-    './model/GamesLibrary',
-    './view/NewGameModal',
-    './controller/NewGameController',
-], function($) {
+    './models/GamesLibrary',
+    './views/NewGameModal',
+    './controllers/NewGameController',
+], function($, GamesLibrary, NewGameModal, NewGameController) {
     /**
      * Main entry point: creates a GameLibrary object, a NewGameModal
      * and a NewGameController.
@@ -21,12 +18,12 @@ define([
             newGameModal = new NewGameModal(
                 gamesLibrary,
                 {
-                    modal: $('#new-game-modal'),
-                    gameSelect: $('#game-select'),
-                    variantSelect: $('#variant-select'),
-                    playersInput: $('#players-input'),
-                    additionalOptionsDiv: $('#additional-options'),
-                    goButton: $('#game-submit')
+                    modal: '#new-game-modal',
+                    gameSelect: '#game-select',
+                    variantSelect: '#variant-select',
+                    playersInput: '#players-input',
+                    additionalOptionsDiv: '#additional-options',
+                    goButton: '#game-submit'
                 }
             ),
             newGameController = new NewGameController(gamesLibrary, newGameModal);
