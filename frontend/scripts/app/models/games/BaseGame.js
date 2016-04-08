@@ -189,10 +189,10 @@ define([
          * Marks the game as over and deactivate all players.
          * Dispatches the winner's id to the gameHasEnded dispatcher object.
          * @see gameHasEnded
-         * @param {number} winnerId - Id of the player that won. null if not
+         * @param {number[]} winners - Ids of the players that won. null if not
          * applicable to this game.
          */
-        gameOver: function(winnerId) {
+        gameOver: function(winners) {
             this._gameEnded = true;
 
             // Disable all players
@@ -200,12 +200,22 @@ define([
                 this._players[i].active = false;
             }
 
+            var winnersNames = [];
+            (function(game) {
+                winnersNames = winners.map(function(playerId) {
+                    return game._players[playerId].name;
+                }).join(', ');
+            })(this);
+
+
             // Dispatch an event for the end of the game
             // If the winnerId is null, send null
             this.gameHasEnded.dispatch((
-                winnerId == null ?
+                winners == null ?
                 null :
-                { player: this._players[winnerId].name }
+                {
+                    players: winnersNames
+                }
             ));
         },
 

@@ -21,35 +21,34 @@ define([
          *********************************************************************/
 
         /**
-         * Overrides BaseGame's processNewScore abstract method.
-         * @see BaseGame.processNewScore
+         * Overrides X01's registerStartingCondition abstract method. Does nothing
+         * as there is no rule in this game that a player must obey before the
+         * points are registered.
+         * @see X01.registerStartingCondition
          * @function
+         * @param {Player} player - The player who threw a dart.
+         * @param {Score} score - The resulting score of the throw.
          */
-        processNewScore: {
-            value: function(score) {
-                if(this._gameEnded) {
-                    return;
-                }
+        registerStartingCondition: { value: function(player, score) { return; }},
 
-                var player = this._players[this._currentPlayer];
-                player.throwsLeft --;
-
-                player.score -= score.factor * score.value;
-                if(player.score < 0) {
-                    player.score = player.startedTurnAt;
-                    this._nextPlayer();
-                }
-
-                if(player.score === 0) {
-                    this.gameOver(this._currentPlayer);
-                    return;
-                }
-
-                if(player.throwsLeft === 0) {
-                    this._nextPlayer();
-                }
+        /**
+         * Determines if the player can start registering the throws as score.
+         * In classic x01, the player must start with a double before points
+         * are counted.
+         * @function
+         * @param {Player} player - The player who threw a dart.
+         * Overrides X01's playerCanStartScoring abstract method. Always returns
+         * true as there is no rule in this game that a player must obey before
+         * the points are registered.
+         * @see X01.playerCanStartScoring
+         * @function
+         * @param {Player} player - The player who threw a dart.
+         */
+        playerCanStartScoring: {
+            value: function(player) {
+                return true;
             }
-        }
+        },
     });
     NoDoubleStartX01.prototype.constructor = X01;
 

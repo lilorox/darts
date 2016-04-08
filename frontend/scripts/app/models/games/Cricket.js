@@ -87,7 +87,7 @@ define([
                     this.getActivePlayer().active = true;
                     if(this._currentPlayer === 0) {
                         if(this._checkAllTargetsClosed()) {
-                            this.gameOver(this._getWinningPlayer());
+                            this.gameOver([this._getWinningPlayer()]);
                         } else {
                             this._turnNumber ++;
                         }

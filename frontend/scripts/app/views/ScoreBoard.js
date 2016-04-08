@@ -119,9 +119,9 @@ define([
                 scoreboard._model.scoreChanged.attach(function() {
                     scoreboard.update();
                 });
-                scoreboard._model.gameHasEnded.attach(function(winner) {
-                    if(winner && winner.hasOwnProperty('player') && winner.player) {
-                        $('#winner').text(winner.player);
+                scoreboard._model.gameHasEnded.attach(function(winners) {
+                    if(winners && winners.hasOwnProperty('players') && winners.players) {
+                        $('#winners').text(winners.players);
                         $('#winner-info').show();
                     }
                 });

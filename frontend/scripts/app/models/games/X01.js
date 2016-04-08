@@ -17,6 +17,7 @@ define([
 
         options = options || {};
         this._startingScore = parseInt(options.startingScore) || 301;
+        this._finishingPlayers = [];
 
         for(var i = 0; i < this._players.length; i++) {
             this._players[i].startingDouble = false;
@@ -39,11 +40,9 @@ define([
                 var player = this.getActivePlayer();
                 player.throwsLeft --;
 
-                if(! player.startingDouble && score.factor === 2) {
-                    player.startingDouble = true;
-                }
+                this.registerStartingCondition(player, score);
 
-                if(player.startingDouble) {
+                if(this.playerCanStartScoring(player)) {
                     player.score -= score.factor * score.value;
                     if(player.score < 0 ||
                             (player.score === 0 && score.factor !== 2) ||
@@ -54,7 +53,8 @@ define([
                     }
 
                     if(player.score === 0 && score.factor === 2) {
-                        this.gameOver(this._currentPlayer);
+                        this._finishingPlayers.push(this._currentPlayer);
+                        this._nextPlayer();
                         return;
                     }
                 }
@@ -62,6 +62,34 @@ define([
                 if(player.throwsLeft === 0) {
                     this._nextPlayer();
                 }
+            }
+        },
+
+        /**
+         * Registers if a player can start scoring according to the dart that he
+         * just threw.
+         * @function
+         * @param {Player} player - The player who threw a dart.
+         * @param {Score} score - The resulting score of the throw.
+         */
+        registerStartingCondition: {
+            value: function(player, score) {
+                if(! player.startingDouble && score.factor === 2) {
+                    player.startingDouble = true;
+                }
+            }
+        },
+
+        /**
+         * Determines if the player can start registering the throws as score.
+         * In classic x01, the player must start with a double before points
+         * are registered.
+         * @function
+         * @param {Player} player - The player who threw a dart.
+         */
+        playerCanStartScoring: {
+            value: function(player) {
+                return player.startingDouble;
             }
         },
 
@@ -92,6 +120,10 @@ define([
 
                 if(nextPlayerId < playerId) {
                     this._turnNumber ++;
+
+                    if(this._finishingPlayers.length > 0) {
+                        this.gameOver(this._finishingPlayers);
+                    }
                 }
             }
         }
