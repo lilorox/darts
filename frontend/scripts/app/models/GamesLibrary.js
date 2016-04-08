@@ -14,26 +14,27 @@ define(function() {
                 variants: {
                     normal: {
                         desc: "Normal (2 players)",
-                        nbPlayers: { min: 2, max: 2 }
+                        nbPlayers: { min: 2, max: 2 },
+                        _class: "Cricket"
                     },
                     cutThroat: {
                         desc: "Cut throat (2+ players)",
                         nbPlayers: { min: 2 },
-                        _obj: CutThroatCricket
+                        _class: "CutThroatCricket"
                     }
-                },
-                _obj: Cricket
+                }
             },
 
             x01: {
                 desc: "x01",
                 variants: {
                     normal: {
-                        desc: "Normal"
+                        desc: "Normal",
+                        _class: "X01"
                     },
                     noDoubleStart: {
                         desc: "Start without double",
-                        _obj: NoDoubleStartX01
+                        _class: "NoDoubleStartX01"
                     }
                 },
                 options: {
@@ -47,18 +48,17 @@ define(function() {
                             1001: "1001",
                         }
                     }
-                },
-                _obj: X01
+                }
             },
 
             clock: {
                 desc: "Around the clock",
                 variants: {
                     normal: {
-                        desc: "No variant"
+                        desc: "No variant",
+                        class: "AroundTheClock"
                     }
                 },
-                _obj: AroundTheClock
             },
 
             /*
@@ -78,20 +78,13 @@ define(function() {
         getRules: function() {
             return this._games;
         },
-        create: function(type, variant, players, options) {
+        getGameClassName: function(type, variant, players, options) {
             if(! this._games.hasOwnProperty(type) ||
                     ! this._games[type].variants.hasOwnProperty(variant)) {
                 return null;
             }
 
-            var GameClass = null;
-            if(variant === 'normal') {
-                GameClass = this._games[type]._obj;
-            } else {
-                GameClass = this._games[type].variants[variant]._obj;
-            }
-
-            return new GameClass(players, options);
+            return this._games[type].variants[variant]._class;
         }
     };
 

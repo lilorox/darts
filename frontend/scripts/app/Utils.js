@@ -3,7 +3,9 @@
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
-define(function() {
+define([
+    'handlebars'
+], function(Handlebars) {
     /*
      * General utility functions
      */

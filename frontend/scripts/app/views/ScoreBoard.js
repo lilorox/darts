@@ -30,10 +30,10 @@ define([
         this._elements = {
             dartboard: $(elements.dartboard),
             scoreboard: $(elements.scoreboard),
-            throwsDetails: $(elements.throws-details),
-            undoButton: $(elements.undo-btn),
-            loadGameButton: $(elements.load-btn),
-            saveGameButton: $(elements.save-btn),
+            throwsDetails: $(elements.throwsDetails),
+            undoButton: $(elements.undoButton),
+            loadGameButton: $(elements.loadGameButton),
+            saveGameButton: $(elements.saveGameButton),
         };
     }
     ScoreBoard.prototype = {

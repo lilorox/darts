@@ -305,4 +305,6 @@ define([
             elements.additionalOptionsDiv.show();
         }
     };
+
+    return NewGameModal;
 });

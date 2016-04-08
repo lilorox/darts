@@ -40,30 +40,36 @@ define([
             delete this._scoreboard;
             delete this._gameController;
 
-            this._game = this._gamesLibrary.create(
+            var className = this._gamesLibrary.getGameClassName(
                 game.type,
                 game.variant,
                 game.players,
                 game.options
             );
 
-            this._scoreboard = new ScoreBoard(
-                this._game,
-                {
-                    dartboard: '#dartboard',
-                    scoreboard: '#scoreboard',
-                    throwsDetails: '#throws-details',
-                    undoButton: '#undo-btn',
-                    loadGameButton: '#load-btn',
-                    saveGameButton: '#save-btn'
-                }
-            );
-            this._scoreboard.init();
+            (function(controller) {
+                require(["models/games/" + className], function(Game) {
+                    controller._game = new Game(game.players, game.options);
 
-            this._gameController = new GameController(
-                this._game,
-                this._scoreboard
-            );
+                    controller._scoreboard = new ScoreBoard(
+                        controller._game,
+                        {
+                            dartboard: '#dartboard',
+                            scoreboard: '#scoreboard',
+                            throwsDetails: '#throws-details',
+                            undoButton: '#undo-btn',
+                            loadGameButton: '#load-btn',
+                            saveGameButton: '#save-btn'
+                        }
+                    );
+                    controller._scoreboard.init();
+
+                    controller._gameController = new GameController(
+                        controller._game,
+                        controller._scoreboard
+                    );
+                });
+            })(this);
         }
     };
 
