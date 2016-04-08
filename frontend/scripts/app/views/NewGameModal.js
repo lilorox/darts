@@ -7,7 +7,7 @@ define([
     'jquery',
     'bootstrap',
     'select2',
-    '../model/Dispatcher.js'
+    'models/Dispatcher'
 ], function($, bootstrap, select2, Dispatcher) {
     /**
      * Modal box for the new game form.

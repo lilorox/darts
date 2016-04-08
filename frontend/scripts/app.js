@@ -3,17 +3,17 @@
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 require.config({
+    baseUrl: "/scripts/app",
     shim: {
         bootstrap: { deps: ["jquery"] },
         select2: { deps: ["jquery"] }
     },
-    baseUrl: "/scripts",
     paths: {
-        jquery: "libs/jquery/jquery.min.js",
-        bootstrap: "libs/bootstrap/bootstrap.min.js",
-        select2: "libs/select2/select2.min.js",
-        handlebars: "libs/handlebars/handlebars.min.js",
+        jquery: "/scripts/libs/jquery/jquery.min",
+        bootstrap: "/scripts/libs/bootstrap/bootstrap.min",
+        select2: "/scripts/libs/select2/select2.min",
+        handlebars: "/scripts/libs/handlebars/handlebars.min",
     }
 });
 
-require(["app/main"]);
+require(['main']);

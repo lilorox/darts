@@ -4,7 +4,7 @@
  */
 
 define([
-    '../models/Save'
+    'models/Save'
 ], function(Save) {
     /**
      * Controls the game.

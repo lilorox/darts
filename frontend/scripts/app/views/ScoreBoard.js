@@ -1,5 +1,5 @@
 /**
- * @license Scoreboard.js Copyright (C) 2016 Pierre Gaxatte
+ * @license ScoreBoard.js Copyright (C) 2016 Pierre Gaxatte
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
@@ -7,12 +7,12 @@ define([
     'jquery',
     'bootstrap',
     'handlebars',
-    './Dartboard',
-    '../models/Dispatcher',
-    '../utils'
+    './DartBoard',
+    'models/Dispatcher',
+    'Utils'
 ], function($, bootstrap, Handlebars, DartBoard, Dispatcher, Utils) {
     /**
-     * Scoreboard view object.
+     * ScoreBoard view object.
      * @constructor
      * @param {BaseGame} model - Game object taht constitutes the model.
      * @param {Object} elements - jQuery selectors of the elements that
@@ -25,7 +25,7 @@ define([
      * @param {String} elements.loadGameButton - The load button element selector.
      * @param {String} elements.saveGameButton - The save button element selector.
      */
-    function Scoreboard(model, elements) {
+    function ScoreBoard(model, elements) {
         this._model = model;
         this._elements = {
             dartboard: $(elements.dartboard),
@@ -36,7 +36,7 @@ define([
             saveGameButton: $(elements.save-btn),
         };
     }
-    Scoreboard.prototype = {
+    ScoreBoard.prototype = {
         /**********************************************************************
          * Public methods
          *********************************************************************/

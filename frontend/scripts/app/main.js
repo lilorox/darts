@@ -5,9 +5,9 @@
 
 define([
     'jquery',
-    './models/GamesLibrary',
-    './views/NewGameModal',
-    './controllers/NewGameController',
+    'models/GamesLibrary',
+    'views/NewGameModal',
+    'controllers/NewGameController',
 ], function($, GamesLibrary, NewGameModal, NewGameController) {
     /**
      * Main entry point: creates a GameLibrary object, a NewGameModal

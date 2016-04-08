@@ -4,7 +4,7 @@
  */
 
 define([
-    '../views/ScoreBoard',
+    'views/ScoreBoard',
     './GameController'
 ], function(ScoreBoard, GameController) {
     /**
