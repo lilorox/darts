@@ -22,6 +22,8 @@ define([
      * @param {String} elements.additionalOptionsDiv - The div containing the
      * aditionnal options selector.
      * @param {String} elements.goButton - The submit button element.
+     * @param {boolean} elements.randomizePlayersCheckbox - The randomize players
+     * checkbox.
      */
     function NewGameModal(gameLibrary, elements) {
         this._gameLibrary = gameLibrary;
@@ -31,7 +33,8 @@ define([
             variantSelect: $(elements.variantSelect),
             playersInput: $(elements.playersInput),
             additionalOptionsDiv: $(elements.additionalOptionsDiv),
-            goButton: $(elements.goButton)
+            goButton: $(elements.goButton),
+            randomizePlayersCheckbox: $(elements.randomizePlayersCheckbox),
         };
 
         // Private variables
@@ -44,6 +47,7 @@ define([
         };
         this._players = [];
         this._options = {};
+        this._randomize = $(elements.randomizePlayersCheckbox).is(":checked");
 
         this.setupEvents();
     }
@@ -67,7 +71,8 @@ define([
                         type: modal._game,
                         variant: modal._variant,
                         players: modal._players,
-                        options: modal._options
+                        options: modal._options,
+                        randomize: modal._randomize,
                     });
                     modal._elements.modal.modal('hide');
 
@@ -90,6 +95,10 @@ define([
                     modal.setPlayers($(this).val());
                     modal.validateForm();
                 });
+                modal._elements.randomizePlayersCheckbox.on('change', function(evt) {
+                    modal.setRandomize($(this).is(":checked"));
+                    modal.validateForm();
+                });
             })(this);
         },
 
@@ -108,7 +117,7 @@ define([
             this._buildVariantSelect();
             this._buildAdditionalOptions();
         },
-        
+
         /**
          * Actions after a variant has been chosen.
          * @param {string} selectedVariant - The chosen variant.
@@ -165,6 +174,14 @@ define([
          */
         setAdditionalOption: function(option, value) {
             this._options[option] = value;
+        },
+
+        /**
+         * Sets the randomzie option.
+         * @param {boolean} randomize - The state of the randomize checkbox
+         */
+        setRandomize: function(randomize) {
+            this._randomize = randomize;
         },
 
         /**
@@ -268,10 +285,12 @@ define([
                 var option = options[optionName],
                     inputId = optionName + '-opt',
                     formGroup = $('<div>').addClass('form-group additional-group'),
+                    columnDiv = $('<div>').addClass('col-sm-10'),
                     input = null;
 
                 $('<label>')
                     .attr('for', inputId)
+                    .addClass('col-sm-2 control-label')
                     .text(option.label)
                     .appendTo($(formGroup));
 
@@ -298,8 +317,9 @@ define([
                         }
                 }
 
+                $(columnDiv).append(input);
                 $(formGroup)
-                    .append(input)
+                    .append(columnDiv)
                     .appendTo(elements.additionalOptionsDiv);
             });
             elements.additionalOptionsDiv.show();

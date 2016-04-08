@@ -1,26 +1,25 @@
 * {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    outline: 0;
-    font-weight: inherit;
-    font-style: inherit;
-    font-size: 100%;
-    font-family: inherit;
-    vertical-align: baseline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-weight: inherit;
+  font-style: inherit;
+  font-size: 100%;
+  font-family: inherit;
+  vertical-align: baseline;
 }
 
 html {
-    position: relative;
-    height: 100%;
+  position: relative;
+  height: 100%;
 }
 
 body {
-    position: relative;
-    min-height: 100%;
-    line-height: 1;
-    color: black;
-    background: white;
+  position: relative;
+  min-height: 100%;
+  color: black;
+  background: white;
 }
 
 #winner-info {
@@ -35,7 +34,7 @@ body {
 .dartboard {
   /*
   cursor: crosshair;
-  */
+   */
   cursor: url("images/dart.png"), auto;
 }
 
@@ -55,7 +54,7 @@ span.label-throw1 {
   /*
   background-color: #597859;
   background-color: #5c8eb8;
-  */
+   */
   background-color: #625cb8;
 }
 
@@ -63,7 +62,7 @@ span.label-throw2 {
   /*
   background-color: #5cb85c;
   background-color: #5cb8a3;
-  */
+   */
   background-color: #5cb0b8;
 }
 

@@ -5,8 +5,9 @@
 
 define([
     'views/ScoreBoard',
-    './GameController'
-], function(ScoreBoard, GameController) {
+    './GameController',
+    'Utils'
+], function(ScoreBoard, GameController, Utils) {
     /**
      * Controller for the new game modal.
      * @constructor
@@ -34,16 +35,22 @@ define([
          * @param {string} game.variant - The game variant.
          * @param {string[]} game.players - An array of strings containing the names of the players.
          * @param {Object} game.options - An extra object containing specific options for the selected game type/variant.
+         * @param {boolean} game.randomize - If the players order should be randomized before starting the game or not.
          */
         runGame: function(game) {
             delete this._game;
             delete this._scoreboard;
             delete this._gameController;
 
+            var players = game.players;
+            if(game.randomize) {
+                Utils.shuffleArray(players);
+            }
+
             var className = this._gamesLibrary.getGameClassName(
                 game.type,
                 game.variant,
-                game.players,
+                players,
                 game.options
             );
 

@@ -23,7 +23,8 @@ define([
                     variantSelect: '#variant-select',
                     playersInput: '#players-input',
                     additionalOptionsDiv: '#additional-options',
-                    goButton: '#game-submit'
+                    goButton: '#game-submit',
+                    randomizePlayersCheckbox: '#random-order-check',
                 }
             ),
             newGameController = new NewGameController(gamesLibrary, newGameModal);

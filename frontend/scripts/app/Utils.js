@@ -10,6 +10,13 @@ define([
      * General utility functions
      */
     var Utils = {
+        /**
+         * Take a template from an URL, applies the context and loads the result
+         * into the specified target.
+         * @param {string} url - The location of the template definition.
+         * @param {Object} context - The context to apply to the template.
+         * @param {Object} $target - The jQuery object to apply the template to.
+         */
         loadTemplate: function(url, context, $target) {
             $.ajax({
                 url: url,
@@ -21,6 +28,11 @@ define([
                 $target.html(html);
             });
         },
+
+        /**
+         * Converts a score Object to a readable format.
+         * @param {Score} score - The score to convert.
+         */
         scoreToString: function(score) {
             var factorToString = {
                 1: "",
@@ -29,6 +41,21 @@ define([
             },
             value = (score.bull ? "B" : score.value);
             return factorToString[score.factor] + value;
+        },
+
+        /**
+         * Randomizes array element order in-place.
+         * Using Durstenfeld shuffle algorithm.
+         * @param {*[]} array - The array to shuffle.
+         */
+        shuffleArray: function shuffleArray(array) {
+            for (var i = array.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+            return array;
         }
     };
 
