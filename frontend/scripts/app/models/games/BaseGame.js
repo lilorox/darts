@@ -193,6 +193,7 @@ define([
          * applicable to this game.
          */
         gameOver: function(winners) {
+            winners = winners || [];
             this._gameEnded = true;
 
             // Disable all players

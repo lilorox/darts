@@ -40,7 +40,7 @@ define([
                 var player = this.getActivePlayer();
 
                 if(score.bull && player.currentTarget == "B") {
-                    if(player.remainingDartsforTarget == 1) {
+                    if(player.remainingDartsforTarget <= score.factor) {
                         player.won = true;
                         player.winningTurn = this._turnNumber;
                         player.throwsLeft = 0;
@@ -52,10 +52,10 @@ define([
                             this._nextPlayer();
                         }
                     } else {
-                        player.remainingDartsforTarget --;
+                        player.remainingDartsforTarget -= score.factor;
                     }
                 } else if(score.value == player.currentTarget) {
-                    if(player.remainingDartsforTarget == 1) {
+                    if(player.remainingDartsforTarget <= score.factor) {
                         if(score.value == 20) {
                             player.currentTarget = "B";
                         } else {
@@ -63,7 +63,7 @@ define([
                         }
                         player.remainingDartsforTarget = this._dartsPerSlice;
                     } else {
-                        player.remainingDartsforTarget --;
+                        player.remainingDartsforTarget -= score.factor;
                     }
                 }
                 player.throwsLeft --;

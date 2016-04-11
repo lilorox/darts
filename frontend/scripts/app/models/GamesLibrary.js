@@ -59,6 +59,14 @@ define(function() {
                         _class: "AroundTheClock"
                     }
                 },
+                options: {
+                    dartsPerSlice: {
+                        label: "Darts per target to close",
+                        type: "number",
+                        min: 1,
+                        default: 1
+                    }
+                }
             },
 
             /*

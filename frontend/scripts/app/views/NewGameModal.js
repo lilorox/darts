@@ -274,6 +274,7 @@ define([
          */
         _buildAdditionalOptions: function() {
             var elements = this._elements;
+            this._options = {};
             elements.additionalOptionsDiv.empty();
 
             if(! this._rules[this._game].hasOwnProperty('options')) {
@@ -281,47 +282,68 @@ define([
             }
             var options = this._rules[this._game].options;
 
-            Object.keys(options).forEach(function(optionName) {
-                var option = options[optionName],
-                    inputId = optionName + '-opt',
-                    formGroup = $('<div>').addClass('form-group additional-group'),
-                    columnDiv = $('<div>').addClass('col-sm-10'),
-                    input = null;
+            (function(modal) {
+                Object.keys(options).forEach(function(optionName) {
+                    var option = options[optionName],
+                        inputId = optionName + '-opt',
+                        formGroup = $('<div>').addClass('form-group additional-group'),
+                        columnDiv = $('<div>').addClass('col-sm-8'),
+                        input = null;
 
-                $('<label>')
-                    .attr('for', inputId)
-                    .addClass('col-sm-2 control-label')
-                    .text(option.label)
-                    .appendTo($(formGroup));
+                    $('<label>')
+                        .attr('for', inputId)
+                        .addClass('col-sm-4 control-label')
+                        .text(option.label)
+                        .appendTo($(formGroup));
 
-                switch(option.type) {
-                    case "select":
-                        input = $('<select>')
-                            .attr('id', inputId)
-                            .data('option-name', optionName)
-                            .addClass('form-control additional-option');
+                    switch(option.type) {
+                        case "select":
+                            input = $('<select>')
+                                .attr('id', inputId)
+                                .data('option-name', optionName)
+                                .addClass('form-control additional-option');
 
-                        (function(modal) {
-                            input.on('change', function() {
-                                modal.setAdditionalOption(optionName, $(this).val());
-                            });
-                        })(this);
-
-                        for(var value in option.values) {
-                            if(option.values.hasOwnProperty(value)) {
-                                $('<option>')
-                                .val(value)
-                                .text(option.values[value])
-                                .appendTo($(input));
+                            for(var value in option.values) {
+                                if(option.values.hasOwnProperty(value)) {
+                                    $('<option>')
+                                    .val(value)
+                                    .text(option.values[value])
+                                    .appendTo($(input));
+                                }
                             }
-                        }
-                }
+                            break;
+                        case "number":
+                            input = $('<input>')
+                                .attr('id', inputId)
+                                .attr('type', 'number')
+                                .addClass('form-control additional-option');
 
-                $(columnDiv).append(input);
-                $(formGroup)
-                    .append(columnDiv)
-                    .appendTo(elements.additionalOptionsDiv);
-            });
+                            if(option.min != null) {
+                                input.attr('min', option.min);
+                            }
+                            if(option.max != null) {
+                                input.attr('max', option.max);
+                            }
+                            if(option.default != null) {
+                                input.val(option.default);
+                            }
+                            break;
+                        default:
+                            console.error("Unknown option type '" + option.type + "'");
+                            return;
+                    }
+
+                    modal.setAdditionalOption(optionName, input.val());
+                    input.on('change', function() {
+                        modal.setAdditionalOption(optionName, $(this).val());
+                    });
+
+                    $(columnDiv).append(input);
+                    $(formGroup)
+                        .append(columnDiv)
+                        .appendTo(elements.additionalOptionsDiv);
+                });
+            })(this);
             elements.additionalOptionsDiv.show();
         }
     };
