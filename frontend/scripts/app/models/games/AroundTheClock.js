@@ -10,12 +10,19 @@ define([
      * Around the clock game, without variant.
      * @constructor
      * @param {string[]} game.players - An array of strings containing the names of the players.
+     * @param {Object} options - Object containing the number of darts needed to move to the next target; eg. { dartsPerSlice: 3 }.
      */
-    function AroundTheClock(players) {
+    function AroundTheClock(players, options) {
         BaseGame.call(this, 'clock', 'normal', players);
+
+        options = options || {};
+        this._dartsPerSlice = parseInt(options.dartsPerSlice) || 1;
+
         for(var i = 0; i < this._players.length; i++) {
             this._players[i].won = false;
             this._players[i].winningTurn = 0;
+            this._players[i].remainingDartsforTarget = this._dartsPerSlice;
+            this._players[i].currentTarget = 1;
         }
     }
     AroundTheClock.prototype = Object.create(BaseGame.prototype, {
@@ -32,19 +39,32 @@ define([
             value: function(score) {
                 var player = this.getActivePlayer();
 
-                if(player.score == 20 && score.bull) {
-                    player.won = true;
-                    player.winningTurn = this._turnNumber;
-                    player.throwsLeft = 0;
+                if(score.bull && player.currentTarget == "B") {
+                    if(player.remainingDartsforTarget == 1) {
+                        player.won = true;
+                        player.winningTurn = this._turnNumber;
+                        player.throwsLeft = 0;
 
-                    if(this._isGameOver()) {
-                        this.gameOver();
-                        return;
+                        if(this._isGameOver()) {
+                            this.gameOver();
+                            return;
+                        } else {
+                            this._nextPlayer();
+                        }
                     } else {
-                        this._nextPlayer();
+                        player.remainingDartsforTarget --;
                     }
-                } else if(score.value == player.score + 1) {
-                    player.score ++;
+                } else if(score.value == player.currentTarget) {
+                    if(player.remainingDartsforTarget == 1) {
+                        if(score.value == 20) {
+                            player.currentTarget = "B";
+                        } else {
+                            player.currentTarget++;
+                        }
+                        player.remainingDartsforTarget = this._dartsPerSlice;
+                    } else {
+                        player.remainingDartsforTarget --;
+                    }
                 }
                 player.throwsLeft --;
 

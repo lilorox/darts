@@ -56,7 +56,7 @@ define(function() {
                 variants: {
                     normal: {
                         desc: "No variant",
-                        class: "AroundTheClock"
+                        _class: "AroundTheClock"
                     }
                 },
             },

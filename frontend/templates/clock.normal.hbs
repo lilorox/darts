@@ -3,8 +3,9 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Score</th>
+                <th>Name<span class="sub-th"> (throws left)</span></th>
+                <th>Target<span class="sub-th"> (darts to close)</span></th>
+                <th>Finishing turn</th>
             </tr>
         </thead>
 
@@ -18,10 +19,14 @@
                     {{/if}}
                 </td>
                 <td class="player-score">
+                    {{player.currentTarget}}
+                    <span class="badge">{{player.remainingDartsforTarget}}</span>
+                </td>
+                <td>
                     {{#if player.won}}
                         <span class="label label-success">{{player.winningTurn}}</span>
                     {{else}}
-                        {{player.score}}
+                        &nbsp;
                     {{/if}}
                 </td>
             </tr>
