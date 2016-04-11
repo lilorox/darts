@@ -1,2 +1,2 @@
 # darts
-Web app to count points and stats at darts
+Web app to keep score and stats at darts
