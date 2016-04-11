@@ -22,6 +22,16 @@ body {
   background: white;
 }
 
+th {
+  font-weight: bold;
+}
+
+.sub-th {
+  font-weight: normal;
+  font-style: italic;
+  font-size: 70%;
+}
+
 #winner-info {
   display: none;
 }
