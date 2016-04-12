@@ -52,6 +52,11 @@ th {
   width: 25%;
 }
 
+.score-highlight {
+  font-weight: bold;
+  color: #ff0000;
+}
+
 .undo {
   color: #f06060;
 }

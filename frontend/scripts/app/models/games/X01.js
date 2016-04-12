@@ -98,6 +98,7 @@ define([
             value: function(player, score) {
                 if(! player.startingDouble && score.factor === 2) {
                     player.startingDouble = true;
+                    score.highlight = true;
                 }
             }
         },

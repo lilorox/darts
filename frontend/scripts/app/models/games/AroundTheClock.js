@@ -41,6 +41,7 @@ define([
 
                 if(score.bull && player.currentTarget == "B") {
                     if(player.remainingDartsforTarget <= score.factor) {
+                        score.highlight = true;
                         player.won = true;
                         player.winningTurn = this._turnNumber;
                         player.throwsLeft = 0;
@@ -56,6 +57,7 @@ define([
                     }
                 } else if(score.value == player.currentTarget) {
                     if(player.remainingDartsforTarget <= score.factor) {
+                        score.highlight = true;
                         if(score.value == 20) {
                             player.currentTarget = "B";
                         } else {

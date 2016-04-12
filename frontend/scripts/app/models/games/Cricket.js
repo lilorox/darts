@@ -65,6 +65,7 @@ define([
                 var targetName = (score.bull ? '_B' : '_' + score.value);
                 if(this._allowedTargets.hasOwnProperty(targetName) &&
                         this._allowedTargets[targetName]) {
+                    score.highlight = true;
                     if(player.targets[targetName] < 3) {
                         player.targets[targetName] = Math.min(
                             3,

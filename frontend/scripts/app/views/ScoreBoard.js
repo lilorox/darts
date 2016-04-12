@@ -160,9 +160,11 @@ define([
                             html += '<tr><th>' + (i + 1) + '</th>';
                             for(var j = 0; j < turn.length; j++) {
                                 if(turn[j] != null) {
-                                    html += '<td>' + Utils.scoreToString(turn[j]);
+                                    html += '<td><span' +
+                                        (turn[j].highlight ? ' class="score-highlight"' : '') +
+                                        '>' + Utils.scoreToString(turn[j]) + '</span>';
                                     if(turn[j].invalidate != null && turn[j].invalidate) {
-                                        html += '<span class="glyphicon glyphicon-remove" aria-hidden="true"' +
+                                        html += ' <span class="glyphicon glyphicon-remove" aria-hidden="true"' +
                                             (turn[j].invalidateReason ? ' title="' + turn[j].invalidateReason + '"' : '') +
                                             '></span>';
                                     }
