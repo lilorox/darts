@@ -44,18 +44,17 @@ define([
 
                 if(this.playerCanStartScoring(player)) {
                     player.score -= score.factor * score.value;
-                    if(player.score <= 1 ||
-                            (player.score === 0 && score.factor !== 2)) {
 
-                        this._invalidateTurn();
-
-                        player.score = player.startedTurnAt;
+                    // Winning condition
+                    if(player.score === 0 && score.factor === 2) {
+                        this._finishingPlayers.push(this._currentPlayer);
                         this._nextPlayer();
                         return;
                     }
 
-                    if(player.score === 0 && score.factor === 2) {
-                        this._finishingPlayers.push(this._currentPlayer);
+                    if(player.score <= 1 || player.score === 0 && score.factor !== 2) {
+                        this._invalidateTurn();
+                        player.score = player.startedTurnAt;
                         this._nextPlayer();
                         return;
                     }
