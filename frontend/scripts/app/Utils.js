@@ -46,7 +46,7 @@ define([
         /**
          * Randomizes array element order in-place.
          * Using Durstenfeld shuffle algorithm.
-         * @param {*[]} array - The array to shuffle.
+         * @param {*} array - The array to shuffle.
          */
         shuffleArray: function shuffleArray(array) {
             for (var i = array.length - 1; i > 0; i--) {

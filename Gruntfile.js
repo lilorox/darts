@@ -50,12 +50,20 @@ module.exports = function(grunt) {
                     jQuery: true
                 }
             },
-            all: [ 'frontend/scripts/*.js' ]
+            all: [
+                'frontend/scripts/*.js',
+                'frontend/scripts/app/*.js',
+                'frontend/scripts/app/**/*.js'
+            ]
         },
 
         jsdoc: {
             dist: {
-                src: [ 'frontend/scripts/*.js' ],
+                src: [
+                    'frontend/scripts/*.js',
+                    'frontend/scripts/app/*.js',
+                    'frontend/scripts/app/**/*.js'
+                ],
                 options: {
                     destination: 'docs',
                     package: 'package.json'
