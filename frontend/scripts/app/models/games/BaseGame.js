@@ -32,6 +32,7 @@ define([
         this._players[0].showScoreTab = true;
         this._turnNumber = 1;
         this._gameEnded = false;
+        this._dartsPerTurn = 3;
 
         // Undo actions
         this._undo = [];

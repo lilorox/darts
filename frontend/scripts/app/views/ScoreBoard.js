@@ -159,7 +159,17 @@ define([
 
                             html += '<tr><td>' + (i + 1) + '</td>';
                             for(var j = 0; j < turn.length; j++) {
-                                html += '<td>' + Utils.scoreToString(turn[j]) + '</td>';
+                                if(turn[j] != null) {
+                                    html += '<td>' + Utils.scoreToString(turn[j]);
+                                    if(turn[j].invalidate != null && turn[j].invalidate) {
+                                        html += '<span class="glyphicon glyphicon-remove" aria-hidden="true"' +
+                                            (turn[j].invalidateReason ? ' title="' + turn[j].invalidateReason + '"' : '') +
+                                            '></span>';
+                                    }
+                                    html += '</td>';
+                                } else {
+                                    html += '<td><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>';
+                                }
                             }
 
                             html += '</tr>';
@@ -177,7 +187,7 @@ define([
                 });
             })(this);
         },
-        
+
         /**
          * Apply the templates of the specific scoretable and the throws table.
          */

@@ -44,12 +44,14 @@ define([
 
                 if(this.playerCanStartScoring(player)) {
                     player.score -= score.factor * score.value;
-                    if(player.score < 0 ||
-                            (player.score === 0 && score.factor !== 2) ||
-                            player.score === 1) {
+                    if(player.score <= 1 ||
+                            (player.score === 0 && score.factor !== 2)) {
+
+                        this._invalidateTurn();
 
                         player.score = player.startedTurnAt;
                         this._nextPlayer();
+                        return;
                     }
 
                     if(player.score === 0 && score.factor === 2) {
@@ -61,6 +63,27 @@ define([
 
                 if(player.throwsLeft === 0) {
                     this._nextPlayer();
+                }
+            }
+        },
+
+        /**
+         * Skips the remaining throws of the player as his turn is cancelled
+         * @function
+         */
+        _invalidateTurn: {
+            value: function() {
+                var player = this.getActivePlayer(),
+                    turn = player.throws[this._turnNumber - 1];
+
+                // Invalidate the last dart thrown
+                turn[turn.length - 1].invalidate = true;
+                turn[turn.length - 1].invalidateReason = "Score went to " + player.score;
+
+                // If the player has not thrown all his darts (because he went
+                // below zero for instance), we need to fill the turn with null
+                for(var i = turn.length; i < this._dartsPerTurn; i++) {
+                    turn.push(null);
                 }
             }
         },
@@ -118,7 +141,7 @@ define([
                 this._currentPlayer = nextPlayerId;
                 nextPlayer.active = true;
 
-                if(nextPlayerId < playerId) {
+                if(nextPlayerId <= playerId) {
                     this._turnNumber ++;
 
                     if(this._finishingPlayers.length > 0) {
