@@ -157,7 +157,7 @@ define([
                         for(var i = this.throws.length - 1; i >= 0; i--) {
                             var turn = this.throws[i];
 
-                            html += '<tr><td>' + (i + 1) + '</td>';
+                            html += '<tr><th>' + (i + 1) + '</th>';
                             for(var j = 0; j < turn.length; j++) {
                                 if(turn[j] != null) {
                                     html += '<td>' + Utils.scoreToString(turn[j]);
