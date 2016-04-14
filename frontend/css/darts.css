@@ -52,6 +52,12 @@ th {
   width: 25%;
 }
 
+#throws-details div.tab-content {
+  max-height: 150px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .score-highlight {
   font-weight: bold;
   color: #ff0000;
