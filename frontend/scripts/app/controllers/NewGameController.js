@@ -38,9 +38,12 @@ define([
          * @param {boolean} game.randomize - If the players order should be randomized before starting the game or not.
          */
         runGame: function(game) {
-            delete this._game;
-            delete this._scoreboard;
-            delete this._gameController;
+            // Tells the previous gameController (if it exists) to unlink everything
+            // so we can remove it safely
+            if(this._gameController != null) {
+                this._gameController.unlink();
+                delete this._gameController;
+            }
 
             var players = game.players;
             if(game.randomize) {

@@ -8,7 +8,7 @@ define(['jquery'], function($) {
     var twoPI = 2 * Math.PI;
 
     /**
-     * Displays the dartboard and enabled the user to interact with it by throwing darts.
+     * Displays the dartboard and enables the user to interact with it by throwing darts.
      * @constructor
      */
     function DartBoard(element, options) {
@@ -54,194 +54,197 @@ define(['jquery'], function($) {
 
         this._options = $.extend(true, {}, this._defaults, options);
 
-        /*
-         * Build the dartboard canvas and such
+        /**
+         * Builds the dartboard canvas and such
          */
-        var canvasElement = $("<canvas>")
-            .attr("width", this._options.width)
-            .attr("height", this._options.height);
-        this._element.append(canvasElement);
-        this._element.addClass("dartboard");
+        this.init = function() {
+            var canvasElement = $("<canvas>")
+                .attr("width", this._options.width)
+                .attr("height", this._options.height);
+            this._element.append(canvasElement);
+            this._element.addClass("dartboard");
 
-        var canvas = canvasElement[0],
-            ctx = canvas.getContext('2d'),
-            height = canvas.height,
-            width = canvas.width,
-            radius = Math.min(width, height) / 2,
-            center = { x: width / 2, y: height / 2 };
+            var canvas = canvasElement[0],
+                ctx = canvas.getContext('2d'),
+                height = canvas.height,
+                width = canvas.width,
+                radius = Math.min(width, height) / 2,
+                center = { x: width / 2, y: height / 2 };
 
-        // Save some parameters to the jQuery object
-        this._canvas = canvas;
-        this._radius = radius;
-        this._center = center;
+            // Save some parameters to the jQuery object
+            this._canvas = canvas;
+            this._radius = radius;
+            this._center = center;
 
-        ctx.fillStyle = 'rgb(255, 255, 255)';
-        ctx.fillRect(0, 0, width, height);
-
-        // Whole target
-        ctx.fillStyle = 'rgb(0, 0, 0)';
-        ctx.beginPath();
-        ctx.arc(
-            center.x,
-            center.y,
-            radius,
-            0,
-            twoPI,
-            false
-        );
-        ctx.fill();
-        ctx.closePath();
-
-        // To have a angle starting on the right but with 
-        // sectors centered
-        var startAngle = - Math.PI / 20;
-
-        // Point line separators and color stripes
-        var i, j;
-        for(i = 0; i < 20; i++) {
-            var endAngle = startAngle + Math.PI / 10,
-                single = this._options.boardColors.single[i % 2],
-                multiple = this._options.boardColors.multiple[i % 2],
-                sectors = [
-                    [ this._options.marks.outerDouble, multiple ],
-                    [ this._options.marks.innerDouble, single ],
-                    [ this._options.marks.outerTriple, multiple ],
-                    [ this._options.marks.innerTriple, single ]
-                ];
-
-            // Text
             ctx.fillStyle = 'rgb(255, 255, 255)';
-            ctx.textAlign = "center";
-            ctx.font = '12px Serif';
-            ctx.fillText(
-                this._options.numberOrder[i],
-                center.x +
-                    radius * Math.cos(startAngle + Math.PI / 20) *
-                    this._options.marks.textPosition,
-                center.y +
-                    radius * Math.sin(startAngle + Math.PI / 20) *
-                    this._options.marks.textPosition + 4 // Offset y
-            );
+            ctx.fillRect(0, 0, width, height);
 
-            // Line separating from the next point
-            ctx.beginPath();
-            ctx.moveTo(
-                center.x +
-                    radius * Math.cos(endAngle) * this._options.marks.outerSingleBull,
-                center.y +
-                    radius * Math.sin(endAngle) * this._options.marks.outerSingleBull
-            );
-            ctx.lineTo(
-                center.x +
-                    radius * Math.cos(endAngle) * this._options.marks.outerTriple,
-                center.y +
-                    radius * Math.sin(endAngle) * this._options.marks.outerTriple
-            );
-            ctx.stroke();
-            ctx.closePath();
-
-            // Fill the circle sectors, from the biggest to the smallest
-            for(j = 0; j < sectors.length; j++) {
-                var sector = sectors[j],
-                    r = sector[0] * radius,
-                    color = sector[1];
-
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                ctx.moveTo(center.x, center.y);
-                ctx.arc(
-                    center.x,
-                    center.y,
-                    r,
-                    startAngle,
-                    endAngle
-                );
-                ctx.fill();
-                ctx.closePath();
-            }
-
-            startAngle = endAngle;
-        }
-
-        // Concentric cirlces
-        ctx.strokeStyle = 'rgb(100, 100, 100)';
-        var circlesMarks = [
-            this._options.marks.outerDouble,
-            this._options.marks.innerDouble,
-            this._options.marks.outerTriple,
-            this._options.marks.innerTriple,
-            this._options.marks.outerSingleBull,
-            this._options.marks.outerDoubleBull
-        ];
-        for(j = 0; j < circlesMarks.length; j++) {
+            // Whole target
+            ctx.fillStyle = 'rgb(0, 0, 0)';
             ctx.beginPath();
             ctx.arc(
                 center.x,
                 center.y,
-                radius * circlesMarks[j],
+                radius,
+                0,
                 twoPI,
                 false
             );
-            ctx.stroke();
+            ctx.fill();
             ctx.closePath();
-        }
 
-        // Outer bull's eye
-        ctx.fillStyle = this._options.boardColors.multiple[0];
-        ctx.beginPath();
-        ctx.moveTo(center.x, center.y);
-        ctx.arc(
-            center.x,
-            center.y,
-            this._options.marks.outerSingleBull * radius,
-            0,
-            twoPI
-        );
-        ctx.fill();
-        ctx.closePath();
+            // To have a angle starting on the right but with 
+            // sectors centered
+            var startAngle = - Math.PI / 20;
 
-        // Inner bull's eye
-        ctx.fillStyle = this._options.boardColors.multiple[1];
-        ctx.beginPath();
-        ctx.moveTo(center.x, center.y);
-        ctx.arc(
-            center.x,
-            center.y,
-            this._options.marks.outerDoubleBull * radius,
-            0,
-            twoPI
-        );
-        ctx.fill();
-        ctx.closePath();
+            // Point line separators and color stripes
+            var i, j;
+            for(i = 0; i < 20; i++) {
+                var endAngle = startAngle + Math.PI / 10,
+                    single = this._options.boardColors.single[i % 2],
+                    multiple = this._options.boardColors.multiple[i % 2],
+                    sectors = [
+                        [ this._options.marks.outerDouble, multiple ],
+                        [ this._options.marks.innerDouble, single ],
+                        [ this._options.marks.outerTriple, multiple ],
+                        [ this._options.marks.innerTriple, single ]
+                    ];
 
-        // Set element's handlers
-        (function(dartboard) {
-            dartboard._element.on('click', function(evt) {
-                evt.preventDefault();
-                dartboard._options.onClick();
+                // Text
+                ctx.fillStyle = 'rgb(255, 255, 255)';
+                ctx.textAlign = "center";
+                ctx.font = '12px Serif';
+                ctx.fillText(
+                    this._options.numberOrder[i],
+                    center.x +
+                        radius * Math.cos(startAngle + Math.PI / 20) *
+                        this._options.marks.textPosition,
+                    center.y +
+                        radius * Math.sin(startAngle + Math.PI / 20) *
+                        this._options.marks.textPosition + 4 // Offset y
+                );
 
-                var rect = this.getBoundingClientRect(),
-                    event = new jQuery.Event('dartThrown', {
-                        score: dartboard.getScore(
-                            evt.clientX - rect.left,
-                            evt.clientY - rect.top
-                        )
-                    });
-                $(this).trigger(event);
-            });
-        })(this);
+                // Line separating from the next point
+                ctx.beginPath();
+                ctx.moveTo(
+                    center.x +
+                        radius * Math.cos(endAngle) * this._options.marks.outerSingleBull,
+                    center.y +
+                        radius * Math.sin(endAngle) * this._options.marks.outerSingleBull
+                );
+                ctx.lineTo(
+                    center.x +
+                        radius * Math.cos(endAngle) * this._options.marks.outerTriple,
+                    center.y +
+                        radius * Math.sin(endAngle) * this._options.marks.outerTriple
+                );
+                ctx.stroke();
+                ctx.closePath();
 
-        // Set the data attribute to the jQuery instance
-        this._element.data('dartboard', dartboard);
-    }
-    DartBoard.prototype = {
+                // Fill the circle sectors, from the biggest to the smallest
+                for(j = 0; j < sectors.length; j++) {
+                    var sector = sectors[j],
+                        r = sector[0] * radius,
+                        color = sector[1];
+
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(center.x, center.y);
+                    ctx.arc(
+                        center.x,
+                        center.y,
+                        r,
+                        startAngle,
+                        endAngle
+                    );
+                    ctx.fill();
+                    ctx.closePath();
+                }
+
+                startAngle = endAngle;
+            }
+
+            // Concentric cirlces
+            ctx.strokeStyle = 'rgb(100, 100, 100)';
+            var circlesMarks = [
+                this._options.marks.outerDouble,
+                this._options.marks.innerDouble,
+                this._options.marks.outerTriple,
+                this._options.marks.innerTriple,
+                this._options.marks.outerSingleBull,
+                this._options.marks.outerDoubleBull
+            ];
+            for(j = 0; j < circlesMarks.length; j++) {
+                ctx.beginPath();
+                ctx.arc(
+                    center.x,
+                    center.y,
+                    radius * circlesMarks[j],
+                    twoPI,
+                    false
+                );
+                ctx.stroke();
+                ctx.closePath();
+            }
+
+            // Outer bull's eye
+            ctx.fillStyle = this._options.boardColors.multiple[0];
+            ctx.beginPath();
+            ctx.moveTo(center.x, center.y);
+            ctx.arc(
+                center.x,
+                center.y,
+                this._options.marks.outerSingleBull * radius,
+                0,
+                twoPI
+            );
+            ctx.fill();
+            ctx.closePath();
+
+            // Inner bull's eye
+            ctx.fillStyle = this._options.boardColors.multiple[1];
+            ctx.beginPath();
+            ctx.moveTo(center.x, center.y);
+            ctx.arc(
+                center.x,
+                center.y,
+                this._options.marks.outerDoubleBull * radius,
+                0,
+                twoPI
+            );
+            ctx.fill();
+            ctx.closePath();
+
+            // Set element's handlers
+            (function(dartboard) {
+                dartboard._element.on('click', function(evt) {
+                    evt.preventDefault();
+                    dartboard._options.onClick();
+
+                    var rect = this.getBoundingClientRect(),
+                        event = new jQuery.Event('dartThrown', {
+                            score: dartboard.getScore(
+                                evt.clientX - rect.left,
+                                evt.clientY - rect.top
+                            )
+                        });
+                    $(this).trigger(event);
+                });
+            })(this);
+
+            // Set the data attribute to the jQuery instance
+            this._element.data('dartboard', dartboard);
+
+            return this;
+        };
+
         /**
          * Returns the score under coordinates (x, y)
          * @param {number} inputX - The X coordinates to lookup the score for.
          * @param {number} inputY - The Y coordinates to lookup the score for.
          * @returns {Object} Score object (eg. for a double 10: {value: 10, factor: 3, bull: false}).
          */
-        getScore: function(inputX, inputY) {
+        this.getScore = function(inputX, inputY) {
             var ctx = this._canvas.getContext('2d'),
                 x = this._center.x - inputX, // yes it is backwards because
                 y = this._center.y - inputY, // canvas are backwards...
@@ -293,24 +296,60 @@ define(['jquery'], function($) {
             }
 
             return result;
-        }
-    };
+        };
+
+        /**
+         * Destroys the plugin.
+         */
+        this.destroy = function() {
+            this._element.off('click');
+            this._element.empty();
+            delete this._element;
+        };
+
+        this.init();
+    }
 
 
-    /*
-     * Registers the jQuery Plugin
+    /**
+     * Registers the jQuery Plugin and deals with the options or methods passed
+     * as arguments.
      */
-    $.fn.DartBoard = function(options) {
-        return this.each(function() {
-            var element = $(this);
+    $.fn.DartBoard = function(methodOrOptions) {
+        var method = (typeof methodOrOptions === 'string') ? methodOrOptions : undefined;
 
-            // Return early if this element already has a plugin instance
-            if (element.data('dartboard')) return;
+        if(method) {
+            var dartboards = this.map(function() {
+                return $(this).data('dartboard');
+            });
 
-            var dartboard = new DartBoard(element, options);
+            var args = (arguments.length > 1) ? Array.prototype.slice.call(arguments, 1) : undefined;
+            var results = [];
 
-            // Store plugin object in this element's data
-            element.data('dartboard', dartboard);
-        });
+            this.each(function(index) {
+                var dartboard = dartboards[index];
+
+                if(! dartboard) {
+                    console.warn('$.DartBoard is not instantiated yet');
+                    console.info(this);
+                    results.push(undefined);
+                    return;
+                }
+
+                if(typeof dartboard[method] === 'function') {
+                    var result = dartboard[method].apply(dartboard, args);
+                    results.push(result);
+                } else {
+                    console.warn('Method \'' + method + '\' not defined in $.DartBoard');
+                }
+            });
+
+            return (results.length > 1) ? results : results[0];
+        } else {
+            var options = (typeof methodOrOptions === 'object') ? methodOrOptions : undefined;
+            return this.each(function() {
+                $(this).data('dartboard', new DartBoard($(this), options));
+            });
+        }
     };
 });

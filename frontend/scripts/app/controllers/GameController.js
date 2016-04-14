@@ -39,30 +39,30 @@ define([
          * Attaches the game related scoreboard's dispatcher to the controller's methods.
          */
         setupGameEvents: function() {
-            (function(controller) {
-                // Attach to the scoreboard events
-                controller._scoreboard.dartThrown.attach(function(data) {
-                    controller.registerScore(data.score);
-                });
-                controller._scoreboard.undoButtonClicked.attach(function() {
-                    controller.undo();
-                });
-            })(this);
+            var controller = this;
+
+            // Attach to the scoreboard events
+            this._scoreboard.dartThrown.attach(function(data) {
+                controller.registerScore(data.score);
+            });
+            this._scoreboard.undoButtonClicked.attach(function() {
+                controller.undo();
+            });
         },
 
         /**
          * Attaches the scoreboard's load & save dispatcher to the controller's methods.
          */
         setupLoadSaveEvents: function() {
-            (function(controller) {
-                // Attach to the scoreboard events
-                controller._scoreboard.loadGameButtonClicked.attach(function() {
-                    controller.loadGame();
-                });
-                controller._scoreboard.saveGameButtonClicked.attach(function() {
-                    controller.saveGame();
-                });
-            })(this);
+            var controller = this;
+
+            // Attach to the scoreboard events
+            this._scoreboard.loadGameButtonClicked.attach(function() {
+                controller.loadGame();
+            });
+            this._scoreboard.saveGameButtonClicked.attach(function() {
+                controller.saveGame();
+            });
         },
 
         /**
@@ -134,6 +134,22 @@ define([
             this.setupGameEvents();
             this.setupLoadSaveEvents();
             $('#load-btn').toggleClass("disabled", false);
+        },
+
+        /**
+         * Unlinks everything from the controller and delete the model and view.
+         */
+        unlink: function() {
+            this.detachAllDispatchers();
+            if(this._game != null) {
+                this._game.unlink();
+                delete this._game;
+            }
+
+            if(this._scoreboard != null) {
+                this._scoreboard.unlink();
+                delete this._scoreboard;
+            }
         }
     };
 

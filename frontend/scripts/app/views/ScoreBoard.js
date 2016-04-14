@@ -49,6 +49,9 @@ define([
             // Create the DartBoard Object
             this._elements.dartboard.DartBoard();
 
+            // Make sure the undo button is disabled
+            this._elements.undoButton.toggleClass('disabled', true);
+
             // Hide the winner info div
             $('#winner-info').hide();
 
@@ -207,6 +210,26 @@ define([
                 this._model.getContext(),
                 this._elements.throwsDetails
             );
+        },
+
+        /**
+         * Unlinks everything from the scoreboard.
+         */
+        unlink: function() {
+            this.detachAllDispatchers();
+            delete this.dartThrown;
+            delete this.undoButtonClicked;
+            delete this.loadGameButtonClicked;
+            delete this.saveGameButtonClicked;
+
+            this._elements.dartboard.off('dartThrown');
+            this._elements.dartboard.DartBoard('destroy');
+
+            this._elements.undoButton.off('click');
+            this._elements.loadGameButton.off('click');
+            this._elements.saveGameButton.off('click');
+
+            delete this._elements;
         }
     };
 

@@ -221,6 +221,16 @@ define([
             ));
         },
 
+        /**
+         * Unlinks everything from the game.and delete Dispatchers.
+         */
+        unlink: function() {
+            this.detachAllDispatchers();
+            delete this.undoListChanged;
+            delete this.gameHasEnded;
+            delete this.scoreChanged;
+        },
+
 
         /**********************************************************************
          * "Abstract" methods that may be overridden
