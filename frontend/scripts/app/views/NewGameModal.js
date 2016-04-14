@@ -65,41 +65,38 @@ define([
             this.goButtonClicked = new Dispatcher();
 
             // Dispatch events on element changes
-            (function(modal) {
-                modal._elements.goButton.on('click', function(evt) {
-                    modal.goButtonClicked.dispatch({
-                        type: modal._game,
-                        variant: modal._variant,
-                        players: modal._players,
-                        options: modal._options,
-                        randomize: modal._randomize,
-                    });
-                    modal._elements.modal.modal('hide');
-
-                    // Enable the save button
-                    $('#save-btn').toggleClass('disabled', false);
+            var modal = this;
+            modal._elements.goButton.on('click', function(evt) {
+                modal.goButtonClicked.dispatch({
+                    type: modal._game,
+                    variant: modal._variant,
+                    players: modal._players,
+                    options: modal._options,
+                    randomize: modal._randomize,
                 });
-            })(this);
+                modal._elements.modal.modal('hide');
+
+                // Enable the save button
+                $('#save-btn').toggleClass('disabled', false);
+            });
 
             // Other events
-            (function(modal) {
-                modal._elements.gameSelect.on('change', function(evt) {
-                    modal.setGame($(this).val());
-                    modal.validateForm();
-                });
-                modal._elements.variantSelect.on('change', function(evt) {
-                    modal.setVariant($(this).val());
-                    modal.validateForm();
-                });
-                modal._elements.playersInput.on('change', function(evt) {
-                    modal.setPlayers($(this).val());
-                    modal.validateForm();
-                });
-                modal._elements.randomizePlayersCheckbox.on('change', function(evt) {
-                    modal.setRandomize($(this).is(":checked"));
-                    modal.validateForm();
-                });
-            })(this);
+            modal._elements.gameSelect.on('change', function(evt) {
+                modal.setGame($(this).val());
+                modal.validateForm();
+            });
+            modal._elements.variantSelect.on('change', function(evt) {
+                modal.setVariant($(this).val());
+                modal.validateForm();
+            });
+            modal._elements.playersInput.on('change', function(evt) {
+                modal.setPlayers($(this).val());
+                modal.validateForm();
+            });
+            modal._elements.randomizePlayersCheckbox.on('change', function(evt) {
+                modal.setRandomize($(this).is(":checked"));
+                modal.validateForm();
+            });
         },
 
         /**
@@ -190,14 +187,13 @@ define([
          */
         validateForm: function() {
             this.validatePlayers();
-            (function(modal) {
-                modal._elements.goButton.prop('disabled', function() {
-                    return (modal._players == null ||
-                        modal._nbPlayersConf.min != null && modal._players.length < modal._nbPlayersConf.min ||
-                        modal._nbPlayersConf.max != null && modal._players.length > modal._nbPlayersConf.max
-                    );
-                });
-            })(this);
+            var modal = this;
+            modal._elements.goButton.prop('disabled', function() {
+                return (modal._players == null ||
+                    modal._nbPlayersConf.min != null && modal._players.length < modal._nbPlayersConf.min ||
+                    modal._nbPlayersConf.max != null && modal._players.length > modal._nbPlayersConf.max
+                );
+            });
         },
 
         /**
@@ -282,68 +278,67 @@ define([
             }
             var options = this._rules[this._game].options;
 
-            (function(modal) {
-                Object.keys(options).forEach(function(optionName) {
-                    var option = options[optionName],
-                        inputId = optionName + '-opt',
-                        formGroup = $('<div>').addClass('form-group additional-group'),
-                        columnDiv = $('<div>').addClass('col-sm-8'),
-                        input = null;
+            var modal = this;
+            Object.keys(options).forEach(function(optionName) {
+                var option = options[optionName],
+                    inputId = optionName + '-opt',
+                    formGroup = $('<div>').addClass('form-group additional-group'),
+                    columnDiv = $('<div>').addClass('col-sm-8'),
+                    input = null;
 
-                    $('<label>')
-                        .attr('for', inputId)
-                        .addClass('col-sm-4 control-label')
-                        .text(option.label)
-                        .appendTo($(formGroup));
+                $('<label>')
+                    .attr('for', inputId)
+                    .addClass('col-sm-4 control-label')
+                    .text(option.label)
+                    .appendTo($(formGroup));
 
-                    switch(option.type) {
-                        case "select":
-                            input = $('<select>')
-                                .attr('id', inputId)
-                                .data('option-name', optionName)
-                                .addClass('form-control additional-option');
+                switch(option.type) {
+                    case "select":
+                        input = $('<select>')
+                            .attr('id', inputId)
+                            .data('option-name', optionName)
+                            .addClass('form-control additional-option');
 
-                            for(var value in option.values) {
-                                if(option.values.hasOwnProperty(value)) {
-                                    $('<option>')
-                                    .val(value)
-                                    .text(option.values[value])
-                                    .appendTo($(input));
-                                }
+                        for(var value in option.values) {
+                            if(option.values.hasOwnProperty(value)) {
+                                $('<option>')
+                                .val(value)
+                                .text(option.values[value])
+                                .appendTo($(input));
                             }
-                            break;
-                        case "number":
-                            input = $('<input>')
-                                .attr('id', inputId)
-                                .attr('type', 'number')
-                                .addClass('form-control additional-option');
+                        }
+                        break;
+                    case "number":
+                        input = $('<input>')
+                            .attr('id', inputId)
+                            .attr('type', 'number')
+                            .addClass('form-control additional-option');
 
-                            if(option.min != null) {
-                                input.attr('min', option.min);
-                            }
-                            if(option.max != null) {
-                                input.attr('max', option.max);
-                            }
-                            if(option.default != null) {
-                                input.val(option.default);
-                            }
-                            break;
-                        default:
-                            console.error("Unknown option type '" + option.type + "'");
-                            return;
-                    }
+                        if(option.min != null) {
+                            input.attr('min', option.min);
+                        }
+                        if(option.max != null) {
+                            input.attr('max', option.max);
+                        }
+                        if(option.default != null) {
+                            input.val(option.default);
+                        }
+                        break;
+                    default:
+                        console.error("Unknown option type '" + option.type + "'");
+                        return;
+                }
 
-                    modal.setAdditionalOption(optionName, input.val());
-                    input.on('change', function() {
-                        modal.setAdditionalOption(optionName, $(this).val());
-                    });
-
-                    $(columnDiv).append(input);
-                    $(formGroup)
-                        .append(columnDiv)
-                        .appendTo(elements.additionalOptionsDiv);
+                modal.setAdditionalOption(optionName, input.val());
+                input.on('change', function() {
+                    modal.setAdditionalOption(optionName, $(this).val());
                 });
-            })(this);
+
+                $(columnDiv).append(input);
+                $(formGroup)
+                    .append(columnDiv)
+                    .appendTo(elements.additionalOptionsDiv);
+            });
             elements.additionalOptionsDiv.show();
         }
     };

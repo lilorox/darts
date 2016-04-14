@@ -82,20 +82,19 @@ define([
          */
         setupElementsEvents: function() {
             // Dispatch events on element changes
-            (function(scoreboard) {
-                scoreboard._elements.dartboard.on('dartThrown', function(evt) {
-                    scoreboard.dartThrown.dispatch({ score: evt.score });
-                });
-                scoreboard._elements.undoButton.on('click', function(evt) {
-                    scoreboard.undoButtonClicked.dispatch();
-                });
-                scoreboard._elements.loadGameButton.on('click', function(evt) {
-                    scoreboard.loadGameButtonClicked.dispatch();
-                });
-                scoreboard._elements.saveGameButton.on('click', function(evt) {
-                    scoreboard.saveGameButtonClicked.dispatch();
-                });
-            })(this);
+            var scoreboard = this;
+            scoreboard._elements.dartboard.on('dartThrown', function(evt) {
+                scoreboard.dartThrown.dispatch({ score: evt.score });
+            });
+            scoreboard._elements.undoButton.on('click', function(evt) {
+                scoreboard.undoButtonClicked.dispatch();
+            });
+            scoreboard._elements.loadGameButton.on('click', function(evt) {
+                scoreboard.loadGameButtonClicked.dispatch();
+            });
+            scoreboard._elements.saveGameButton.on('click', function(evt) {
+                scoreboard.saveGameButtonClicked.dispatch();
+            });
         },
 
         /**
@@ -110,25 +109,24 @@ define([
             this.saveGameButtonClicked = new Dispatcher();
 
             // Attach to the models events
-            (function(scoreboard) {
-                scoreboard._model.undoListChanged.attach(function() {
-                    // Enable-disable undo button in function of the undo queue length
-                    scoreboard._elements.undoButton.toggleClass(
-                        'disabled',
-                        (scoreboard._model.getUndoQueueLength() <= 0)
-                    );
-                    $('#winner-info').hide();
-                });
-                scoreboard._model.scoreChanged.attach(function() {
-                    scoreboard.update();
-                });
-                scoreboard._model.gameHasEnded.attach(function(winners) {
-                    if(winners && winners.hasOwnProperty('players') && winners.players) {
-                        $('#winners').text(winners.players);
-                        $('#winner-info').show();
-                    }
-                });
-            })(this);
+            var scoreboard = this;
+            scoreboard._model.undoListChanged.attach(function() {
+                // Enable-disable undo button in function of the undo queue length
+                scoreboard._elements.undoButton.toggleClass(
+                    'disabled',
+                    (scoreboard._model.getUndoQueueLength() <= 0)
+                );
+                $('#winner-info').hide();
+            });
+            scoreboard._model.scoreChanged.attach(function() {
+                scoreboard.update();
+            });
+            scoreboard._model.gameHasEnded.attach(function(winners) {
+                if(winners && winners.hasOwnProperty('players') && winners.players) {
+                    $('#winners').text(winners.players);
+                    $('#winner-info').show();
+                }
+            });
         },
 
         /**
@@ -145,52 +143,51 @@ define([
          * Registers the needed Handlebar helpers
          */
         registerHelpers: function() {
-            (function(scoreboard) {
-                Handlebars.registerHelper({
-                    activePlayer: function() {
-                        return scoreboard._model.getActivePlayer().name;
-                    },
-                    throwsTable: function(playerId) {
-                        if(this.throws.length === 0) {
-                            return new Handlebars.SafeString('<tr><td colspan="4">No throws yet</td></tr>');
-                        }
-
-                        var html = '',
-                            lastTurn = true;
-                        for(var i = this.throws.length - 1; i >= 0; i--) {
-                            var turn = this.throws[i];
-
-                            html += '<tr><th>' + (i + 1) + '</th>';
-                            for(var j = 0; j < turn.length; j++) {
-                                if(turn[j] != null) {
-                                    html += '<td><span' +
-                                        (turn[j].highlight ? ' class="score-highlight"' : '') +
-                                        '>' + Utils.scoreToString(turn[j]) + '</span>';
-                                    if(turn[j].invalidate != null && turn[j].invalidate) {
-                                        html += ' <span class="glyphicon glyphicon-remove" aria-hidden="true"' +
-                                            (turn[j].invalidateReason ? ' title="' + turn[j].invalidateReason + '"' : '') +
-                                            '></span>';
-                                    }
-                                    html += '</td>';
-                                } else {
-                                    html += '<td><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>';
-                                }
-                            }
-
-                            html += '</tr>';
-                            lastTurn = false;
-                        }
-                        return new Handlebars.SafeString(html);
-                    },
-                    targetFormat: function() {
-                        // See css for color definitions
-                        var labelClass = "throw" + this;
-                        return new Handlebars.SafeString(
-                            '<span class="label label-' + labelClass + '">' + this + '</span>'
-                        );
+            var scoreboard = this;
+            Handlebars.registerHelper({
+                activePlayer: function() {
+                    return scoreboard._model.getActivePlayer().name;
+                },
+                throwsTable: function(playerId) {
+                    if(this.throws.length === 0) {
+                        return new Handlebars.SafeString('<tr><td colspan="4">No throws yet</td></tr>');
                     }
-                });
-            })(this);
+
+                    var html = '',
+                        lastTurn = true;
+                    for(var i = this.throws.length - 1; i >= 0; i--) {
+                        var turn = this.throws[i];
+
+                        html += '<tr><th>' + (i + 1) + '</th>';
+                        for(var j = 0; j < turn.length; j++) {
+                            if(turn[j] != null) {
+                                html += '<td><span' +
+                                    (turn[j].highlight ? ' class="score-highlight"' : '') +
+                                    '>' + Utils.scoreToString(turn[j]) + '</span>';
+                                if(turn[j].invalidate != null && turn[j].invalidate) {
+                                    html += ' <span class="glyphicon glyphicon-remove" aria-hidden="true"' +
+                                        (turn[j].invalidateReason ? ' title="' + turn[j].invalidateReason + '"' : '') +
+                                        '></span>';
+                                }
+                                html += '</td>';
+                            } else {
+                                html += '<td><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></td>';
+                            }
+                        }
+
+                        html += '</tr>';
+                        lastTurn = false;
+                    }
+                    return new Handlebars.SafeString(html);
+                },
+                targetFormat: function() {
+                    // See css for color definitions
+                    var labelClass = "throw" + this;
+                    return new Handlebars.SafeString(
+                        '<span class="label label-' + labelClass + '">' + this + '</span>'
+                    );
+                }
+            });
         },
 
         /**

@@ -202,12 +202,10 @@ define([
                 this._players[i].active = false;
             }
 
-            var winnersNames = [];
-            (function(game) {
-                winnersNames = winners.map(function(playerId) {
-                    return game._players[playerId].name;
-                }).join(', ');
-            })(this);
+            var game = this;
+            var winnersNames = winners.map(function(playerId) {
+                return game._players[playerId].name;
+            }).join(', ');
 
 
             // Dispatch an event for the end of the game

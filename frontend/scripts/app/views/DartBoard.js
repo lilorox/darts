@@ -216,21 +216,20 @@ define(['jquery'], function($) {
             ctx.closePath();
 
             // Set element's handlers
-            (function(dartboard) {
-                dartboard._element.on('click', function(evt) {
-                    evt.preventDefault();
-                    dartboard._options.onClick();
+            var dartboard = this;
+            dartboard._element.on('click', function(evt) {
+                evt.preventDefault();
+                dartboard._options.onClick();
 
-                    var rect = this.getBoundingClientRect(),
-                        event = new jQuery.Event('dartThrown', {
-                            score: dartboard.getScore(
-                                evt.clientX - rect.left,
-                                evt.clientY - rect.top
-                            )
-                        });
-                    $(this).trigger(event);
-                });
-            })(this);
+                var rect = this.getBoundingClientRect(),
+                    event = new jQuery.Event('dartThrown', {
+                        score: dartboard.getScore(
+                            evt.clientX - rect.left,
+                            evt.clientY - rect.top
+                        )
+                    });
+                $(this).trigger(event);
+            });
 
             // Set the data attribute to the jQuery instance
             this._element.data('dartboard', dartboard);

@@ -21,11 +21,10 @@ define([
         this._scoreboard = null;
         this._gameController = null;
 
-        (function(controller) {
-            controller._view.goButtonClicked.attach(function(data) {
-                this._gameController = controller.runGame(data);
-            });
-        })(this);
+        var controller = this;
+        controller._view.goButtonClicked.attach(function(data) {
+            this._gameController = controller.runGame(data);
+        });
     }
     NewGameController.prototype = {
         /**
@@ -57,29 +56,28 @@ define([
                 game.options
             );
 
-            (function(controller) {
-                require(["models/games/" + className], function(Game) {
-                    controller._game = new Game(game.players, game.options);
+            var controller = this;
+            require(["models/games/" + className], function(Game) {
+                controller._game = new Game(game.players, game.options);
 
-                    controller._scoreboard = new ScoreBoard(
-                        controller._game,
-                        {
-                            dartboard: '#dartboard',
-                            scoreboard: '#scoreboard',
-                            throwsDetails: '#throws-details',
-                            undoButton: '#undo-btn',
-                            loadGameButton: '#load-btn',
-                            saveGameButton: '#save-btn'
-                        }
-                    );
-                    controller._scoreboard.init();
+                controller._scoreboard = new ScoreBoard(
+                    controller._game,
+                    {
+                        dartboard: '#dartboard',
+                        scoreboard: '#scoreboard',
+                        throwsDetails: '#throws-details',
+                        undoButton: '#undo-btn',
+                        loadGameButton: '#load-btn',
+                        saveGameButton: '#save-btn'
+                    }
+                );
+                controller._scoreboard.init();
 
-                    controller._gameController = new GameController(
-                        controller._game,
-                        controller._scoreboard
-                    );
-                });
-            })(this);
+                controller._gameController = new GameController(
+                    controller._game,
+                    controller._scoreboard
+                );
+            });
         }
     };
 
