@@ -16,8 +16,9 @@ define([
          * @param {string} url - The location of the template definition.
          * @param {Object} context - The context to apply to the template.
          * @param {Object} $target - The jQuery object to apply the template to.
+         * @param {function} callback - The function to call after the new html is inserted
          */
-        loadTemplate: function(url, context, $target) {
+        loadTemplate: function(url, context, $target, callback) {
             $.ajax({
                 url: url,
                 method: 'GET',
@@ -26,6 +27,9 @@ define([
                 return Handlebars.compile(src)(context);
             }).done(function(html) {
                 $target.html(html);
+                if(callback && typeof callback === 'function') {
+                    callback();
+                }
             });
         },
 

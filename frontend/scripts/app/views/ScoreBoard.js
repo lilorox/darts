@@ -166,7 +166,7 @@ define([
                                     '>' + Utils.scoreToString(turn[j]) + '</span>';
                                 if(turn[j].invalidate != null && turn[j].invalidate) {
                                     html += ' <span class="glyphicon glyphicon-remove" aria-hidden="true"' +
-                                        (turn[j].invalidateReason ? ' title="' + turn[j].invalidateReason + '"' : '') +
+                                        (turn[j].invalidateReason ? 'data-toggle="tooltip" data-placement="bottom" title="' + turn[j].invalidateReason + '"' : '') +
                                         '></span>';
                                 }
                                 html += '</td>';
@@ -205,7 +205,8 @@ define([
             Utils.loadTemplate(
                 'templates/throws-details.hbs',
                 this._model.getContext(),
-                this._elements.throwsDetails
+                this._elements.throwsDetails,
+                function() { $('[data-toggle="tooltip"]').tooltip(); }
             );
         },
 
