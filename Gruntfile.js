@@ -16,6 +16,7 @@ module.exports = function(grunt) {
                     'bootstrap/bootstrap.min.js': 'bootstrap/dist/js/bootstrap.min.js',
                     'select2/select2.min.js': 'select2/dist/js/select2.min.js',
                     'handlebars/handlebars.min.js': 'handlebars/handlebars.min.js',
+                    'chartist/chartist.min.js': 'chartist/dist/chartist.min.js',
                 }
             },
             css: {
@@ -28,6 +29,7 @@ module.exports = function(grunt) {
                     'bootstrap/bootstrap-theme.min.css': 'bootstrap/dist/css/bootstrap-theme.min.css',
                     'select2/select2.min.css': 'select2/dist/css/select2.min.css',
                     'select2/select2-bootstrap.css': 'select2-bootstrap/select2-bootstrap.css',
+                    'chartist/chartist.min.css': 'chartist/dist/chartist.min.css',
                 }
             },
             fonts: {

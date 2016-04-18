@@ -4,6 +4,7 @@
  */
 require.config({
     baseUrl: "/scripts/app",
+    nodeIdCompat: true,
     shim: {
         bootstrap: { deps: ["jquery"] },
         select2: { deps: ["jquery"] }
@@ -13,6 +14,7 @@ require.config({
         bootstrap: "/scripts/libs/bootstrap/bootstrap.min",
         select2: "/scripts/libs/select2/select2.min",
         handlebars: "/scripts/libs/handlebars/handlebars.min",
+        chartist: "/scripts/libs/chartist/chartist.min",
     }
 });
 

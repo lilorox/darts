@@ -58,6 +58,10 @@ th {
   overflow-x: hidden;
 }
 
+#stats-details {
+  display: none;
+}
+
 .score-highlight {
   font-weight: bold;
   color: #ff0000;

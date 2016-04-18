@@ -5,9 +5,10 @@
 
 define([
     'views/ScoreBoard',
+    'views/LiveStats',
     './GameController',
     'Utils'
-], function(ScoreBoard, GameController, Utils) {
+], function(ScoreBoard, LiveStats, GameController, Utils) {
     /**
      * Controller for the new game modal.
      * @constructor
@@ -19,6 +20,7 @@ define([
         this._view = modalView;
         this._game = null;
         this._scoreboard = null;
+        this._livestats = null;
         this._gameController = null;
 
         var controller = this;
@@ -73,9 +75,18 @@ define([
                 );
                 controller._scoreboard.init();
 
+                controller._livestats = new LiveStats(
+                    controller._game,
+                    {
+                        statsDetails: '#stats-details',
+                    }
+                );
+                controller._livestats.init();
+
                 controller._gameController = new GameController(
                     controller._game,
-                    controller._scoreboard
+                    controller._scoreboard,
+                    controller._livestats
                 );
             });
         }

@@ -10,9 +10,12 @@ define([
      * Controls the game.
      * @constructor
      * @param {BaseGame} game - The game (model) to control.
-     * @param {ScoreBoard} scoreboard - The scoreboard (view) that interacts with the model.
+     * @param {ScoreBoard} scoreboard - The scoreboard (view) that interacts
+     * with the model.
+     * @param {LiveStats} livestats - The livestats (view) that displays the
+     * statistics of the current game.
      */
-    function GameController(game, scoreboard) {
+    function GameController(game, scoreboard, livestats) {
         this._game = game;
         this._scoreboard = scoreboard;
 
@@ -149,6 +152,11 @@ define([
             if(this._scoreboard != null) {
                 this._scoreboard.unlink();
                 delete this._scoreboard;
+            }
+
+            if(this._livestats != null) {
+                this._livestats.unlink();
+                delete this._livestats;
             }
         }
     };

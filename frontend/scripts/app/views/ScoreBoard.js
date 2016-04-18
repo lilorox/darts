@@ -7,20 +7,23 @@ define([
     'jquery',
     'bootstrap',
     'handlebars',
+    'chartist',
     './DartBoard',
     'models/Dispatcher',
     'Utils'
-], function($, bootstrap, Handlebars, DartBoard, Dispatcher, Utils) {
+], function($, bootstrap, Handlebars, Chartist, DartBoard, Dispatcher, Utils) {
     /**
      * ScoreBoard view object.
      * @constructor
-     * @param {BaseGame} model - Game object taht constitutes the model.
+     * @param {BaseGame} model - Game object that constitutes the model.
      * @param {Object} elements - jQuery selectors of the elements that
      * constitute the view.
      * @param {String} elements.dartboard - The dartboard div selector.
      * @param {String} elements.scoreboard - The scoreboard div selector.
      * @param {String} elements.throwsDetails - The div selector that will
      * contain the throws details table.
+     * @param {String} elements.statsDetails - The div selector that will
+     * contain the statistics graphs.
      * @param {String} elements.undoButton - The undo button element selector.
      * @param {String} elements.loadGameButton - The load button element selector.
      * @param {String} elements.saveGameButton - The save button element selector.
@@ -31,6 +34,7 @@ define([
             dartboard: $(elements.dartboard),
             scoreboard: $(elements.scoreboard),
             throwsDetails: $(elements.throwsDetails),
+            statsDetails: $(elements.statsDetails),
             undoButton: $(elements.undoButton),
             loadGameButton: $(elements.loadGameButton),
             saveGameButton: $(elements.saveGameButton),
@@ -42,8 +46,8 @@ define([
          *********************************************************************/
 
         /**
-         * Init the scoreboard with the jQuery plugin, registers helpers and
-         * sets the event handlers.
+         * Initializes the scoreboard with the jQuery plugin, registers helpers
+         * and sets the event handlers.
          */
         init: function() {
             // Create the DartBoard Object
@@ -110,7 +114,7 @@ define([
 
             // Attach to the models events
             var scoreboard = this;
-            scoreboard._model.undoListChanged.attach(function() {
+            this._model.undoListChanged.attach(function() {
                 // Enable-disable undo button in function of the undo queue length
                 scoreboard._elements.undoButton.toggleClass(
                     'disabled',
@@ -118,10 +122,10 @@ define([
                 );
                 $('#winner-info').hide();
             });
-            scoreboard._model.scoreChanged.attach(function() {
+            this._model.scoreChanged.attach(function() {
                 scoreboard.update();
             });
-            scoreboard._model.gameHasEnded.attach(function(winners) {
+            this._model.gameHasEnded.attach(function(winners) {
                 if(winners && winners.hasOwnProperty('players') && winners.players) {
                     $('#winners').text(winners.players);
                     $('#winner-info').show();
@@ -191,7 +195,8 @@ define([
         },
 
         /**
-         * Apply the templates of the specific scoretable and the throws table.
+         * Applies the templates of the specific scoretable and the throws table.
+         * Creates the stats graphs.
          */
         update: function() {
             // Game template
