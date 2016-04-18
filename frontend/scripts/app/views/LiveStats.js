@@ -25,28 +25,41 @@ define([
             statsDetails: $(elements.statsDetails)
         };
 
+        this._chartOptions = {
+            showPoint: false,
+            seriesBarDistance: 15,
+            axisX: {
+                showLabels: true
+            }
+        };
+
         this._graphs = {
             global: {
                 dartsPerNumber: {
                     element: '#global-graph-darts-per-number',
                     chart: null,
-                    options: {
-                        seriesBarDistance: 10,
-                        axisX: {
-                            offset: 60
-                        },
+                    labels: null,
+                    series: [
+                        // Init to a array of 22 zeroes
+                        Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0)
+                    ],
+                    options: $.extend({}, this._chartOptions, {
                         axisY: {
-                            offset: 80,
-                            scaleMinSpace:15
+                            onlyInteger: true,
+                            low: 0
                         }
-                    }
+                    })
                 },
                 dartsPerFactor: {
                     element: '#global-graph-darts-per-factor',
-                    chart: null
+                    chart: null,
+                    labels: ["Simple", "Double", "Triple"],
+                    series: [0, 0, 0],
+                    options: {}
                 }
             }
         };
+        this._initGlobalDartsPerNumber();
     }
     LiveStats.prototype = {
         /**********************************************************************
@@ -76,16 +89,19 @@ define([
         setupDisptacherEvents: function() {
             // Attach to the models events
             var livestats = this;
-            this._model.scoreChanged.attach(function() {
-                livestats.update();
+            this._model.scoreChanged.attach(function(score) {
+                livestats.update(score);
             });
         },
 
+
         /**
          * Updates the statistics graphs
+         * @param {Score} score - The new throw to register
          */
-        update: function() {
-            this._updateGlobalDartsPerNumber();
+        update: function(score) {
+            this._updateGlobalDartsPerNumber(score);
+            this._updateGlobalDartsPerFactor(score);
         },
 
         /**
@@ -110,43 +126,88 @@ define([
          *********************************************************************/
 
         /**
+         * Sets the labels for the global dartsPerNumber stats
+         * @private
+         */
+        _initGlobalDartsPerNumber: function() {
+            var labels = ['Out'];
+            for(var i = 1; i <= 20; i++) {
+                labels.push(i.toString());
+            }
+            labels.push('B');
+
+            this._graphs.global.dartsPerNumber.labels = labels;
+        },
+
+        /**
          * Updates (or creates if necessary) the graph that displays the
          * statistics of the numbers hit by players
          * @private
+         * @param {Score} score - The new throw to register
          */
-        _updateGlobalDartsPerNumber: function() {
-            if(! $(this._graphs.global.dartsPerNumber.element).length) {
+        _updateGlobalDartsPerNumber: function(score) {
+            var graph = this._graphs.global.dartsPerNumber;
+
+            if(! $(graph.element).length) {
                 return;
             }
 
-            var chart = this._graphs.global.dartsPerNumber.chart,
-                data = {};
-
-            data.labels = [];
-            data.series = [];
-            for(var i = 0; i <= 20; i++) {
-                data.labels.push(i);
-            }
-            data.labels.push('B');
-
-            for(var i = 0; i < this._model._players.length; i++) {
-                var serie = [];
-                for(var j = 0; j <= 21; j++) {
-                    serie.push(Math.floor(Math.random() * 10));
-                }
-                data.series.push(serie);
+            if(score.bull) {
+                graph.series[0][21] ++;
+            } else {
+                graph.series[0][score.value] ++;
             }
 
-            if(chart == null) {
-                chart = new Chartist.Bar(
-                    this._graphs.global.dartsPerNumber.element,
-                    data,
-                    this._graphs.global.dartsPerNumber.options
+            if(graph.chart == null) {
+                graph.chart = new Chartist.Bar(
+                    graph.element,
+                    {
+                        labels: graph.labels,
+                        series: graph.series,
+                    },
+                    graph.options
                 );
             } else {
-                chart.update(data);
+                graph.chart.update(graph.data);
+            }
+        },
+
+        /**
+         * Updates (or creates if necessary) the graph that displays the
+         * statistics of the numbers hit by players
+         * @private
+         * @param {Score} score - The new throw to register
+         */
+        _updateGlobalDartsPerFactor: function(score) {
+            var graph = this._graphs.global.dartsPerFactor;
+
+            if(! $(graph.element).length) {
+                return;
+            }
+
+            if(score.value !== 0) {
+                graph.series[score.factor - 1] ++;
+            }
+
+            console.log( {
+                        labels: graph.labels,
+                        series: graph.series,
+                    });
+
+            if(graph.chart == null) {
+                graph.chart = new Chartist.Pie(
+                    graph.element,
+                    {
+                        labels: graph.labels,
+                        series: graph.series,
+                    },
+                    graph.options
+                );
+            } else {
+                graph.chart.update(graph.data);
             }
         }
+
     };
 
     return LiveStats;
