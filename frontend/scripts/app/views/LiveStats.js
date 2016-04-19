@@ -55,7 +55,11 @@ define([
                     chart: null,
                     labels: ["Simple", "Double", "Triple"],
                     series: [0, 0, 0],
-                    options: {}
+                    options: {
+                        donut: true,
+                        donutWidth: 60,
+                        startAngle: 270,
+                    }
                 }
             }
         };
