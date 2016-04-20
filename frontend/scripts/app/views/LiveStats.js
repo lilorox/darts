@@ -6,10 +6,10 @@
 define([
     'jquery',
     'handlebars',
-    'chartist',
+    'highcharts',
     'models/Dispatcher',
     'Utils'
-], function($, Handlebars, Chartist, Dispatcher, Utils) {
+], function($, Handlebars, Highcharts, Dispatcher, Utils) {
     /**
      * LiveStats view object.
      * @constructor
@@ -25,6 +25,7 @@ define([
             statsDetails: $(elements.statsDetails)
         };
 
+        /*
         this._chartOptions = {
             showPoint: false,
             seriesBarDistance: 15,
@@ -32,27 +33,47 @@ define([
                 showLabels: true
             }
         };
+        */
 
         this._graphs = {
             global: {
                 dartsPerNumber: {
-                    element: '#global-graph-darts-per-number',
                     chart: null,
-                    labels: null,
-                    series: [
-                        // Init to a array of 22 zeroes
-                        Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0)
-                    ],
-                    options: $.extend({}, this._chartOptions, {
-                        axisY: {
-                            onlyInteger: true,
-                            low: 0
-                        }
-                    })
+                    element: '#global-graph-darts-per-number',
+                    options: {
+                        chart: {
+                            renderTo: null,
+                            type: 'column'
+                        },
+                        xAxis: {
+                            categories: null
+                        },
+                        yAxis: {
+                            min: 0,
+                            title: {
+                                text: "darts"
+                            }
+                        },
+                        /*
+                        plotOptions: {
+                            column: {
+                                borderWidth: 0,
+                                pointPadding: 0.2
+                            }
+                        },
+                        */
+                        series: [{
+                            name: 'Global',
+                            // Init to a array of 22 zeroes
+                            data: Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0)
+                        }]
+                    }
                 },
                 dartsPerFactor: {
                     element: '#global-graph-darts-per-factor',
                     chart: null,
+                    options: {}
+                    /*
                     labels: ["Simple", "Double", "Triple"],
                     series: [0, 0, 0],
                     options: {
@@ -60,6 +81,7 @@ define([
                         donutWidth: 60,
                         startAngle: 270,
                     }
+                    */
                 }
             }
         };
@@ -105,7 +127,7 @@ define([
          */
         update: function(score) {
             this._updateGlobalDartsPerNumber(score);
-            this._updateGlobalDartsPerFactor(score);
+            //this._updateGlobalDartsPerFactor(score);
         },
 
         /**
@@ -130,17 +152,17 @@ define([
          *********************************************************************/
 
         /**
-         * Sets the labels for the global dartsPerNumber stats
+         * Sets the categories for the global dartsPerNumber stats
          * @private
          */
         _initGlobalDartsPerNumber: function() {
-            var labels = ['Out'];
+            var categories = ['Out'];
             for(var i = 1; i <= 20; i++) {
-                labels.push(i.toString());
+                categories.push(i.toString());
             }
-            labels.push('B');
+            categories.push('B');
 
-            this._graphs.global.dartsPerNumber.labels = labels;
+            this._graphs.global.dartsPerNumber.options.xAxis.categories = categories;
         },
 
         /**
@@ -157,22 +179,20 @@ define([
             }
 
             if(score.bull) {
-                graph.series[0][21] ++;
+                graph.options.series[0].data[21] ++;
             } else {
-                graph.series[0][score.value] ++;
+                graph.options.series[0].data[score.value] ++;
             }
 
             if(graph.chart == null) {
-                graph.chart = new Chartist.Bar(
-                    graph.element,
-                    {
-                        labels: graph.labels,
-                        series: graph.series,
-                    },
-                    graph.options
-                );
+                graph.options.chart.renderTo = $(graph.element);
+                console.log('init', graph.options.chart.renderTo, graph.options);
+                graph.chart = new Highcharts.Chart(graph.options);
             } else {
-                graph.chart.update(graph.data);
+                console.log('redraw', graph.chart);
+                /*
+                graph.chart.redraw();
+                */
             }
         },
 

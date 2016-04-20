@@ -7,14 +7,18 @@ require.config({
     nodeIdCompat: true,
     shim: {
         bootstrap: { deps: ["jquery"] },
-        select2: { deps: ["jquery"] }
+        select2: { deps: ["jquery"] },
+        highcharts: {
+            exports: 'Highcharts',
+            deps: ["jquery"]
+        }
     },
     paths: {
         jquery: "/scripts/libs/jquery/jquery.min",
         bootstrap: "/scripts/libs/bootstrap/bootstrap.min",
         select2: "/scripts/libs/select2/select2.min",
         handlebars: "/scripts/libs/handlebars/handlebars.min",
-        chartist: "/scripts/libs/chartist/chartist.min",
+        highcharts: "/scripts/libs/highcharts/highcharts",
     }
 });
 
