@@ -25,25 +25,31 @@ define([
             statsDetails: $(elements.statsDetails)
         };
 
-        /*
-        this._chartOptions = {
-            showPoint: false,
-            seriesBarDistance: 15,
-            axisX: {
-                showLabels: true
+        this._defaultOptions = {
+            chart: {
+                animation: false
+            },
+            title: {
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            credits: {
+                enabled: false
             }
         };
-        */
 
         this._graphs = {
             global: {
                 dartsPerNumber: {
                     chart: null,
-                    element: '#global-graph-darts-per-number',
-                    options: {
+                    element: '#graph-global-darts-per-number',
+                    options: $.extend(true, {}, this._defaultOptions, {
                         chart: {
-                            renderTo: null,
                             type: 'column'
+                        },
+                        title: {
+                            text: 'Darts per number'
                         },
                         xAxis: {
                             categories: null
@@ -54,34 +60,59 @@ define([
                                 text: "darts"
                             }
                         },
-                        /*
-                        plotOptions: {
-                            column: {
-                                borderWidth: 0,
-                                pointPadding: 0.2
-                            }
-                        },
-                        */
-                        series: [{
-                            name: 'Global',
-                            // Init to a array of 22 zeroes
-                            data: Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0)
-                        }]
-                    }
+                        legend: {
+                            enabled: false
+                        }
+                    }),
+                    series: [{
+                        name: 'Global',
+                        // Init to a array of 22 zeroes
+                        data: Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0)
+                    }]
                 },
                 dartsPerFactor: {
-                    element: '#global-graph-darts-per-factor',
                     chart: null,
-                    options: {}
-                    /*
-                    labels: ["Simple", "Double", "Triple"],
-                    series: [0, 0, 0],
-                    options: {
-                        donut: true,
-                        donutWidth: 60,
-                        startAngle: 270,
-                    }
-                    */
+                    element: '#graph-global-darts-per-factor',
+                    options: $.extend(true, {}, this._defaultOptions, {
+                        chart: {
+                            plotBackgroundColor: null,
+                            plotBorderWidth: 0,
+                            plotShadow: false
+                        },
+                        title: {
+                            text: 'Darts per factor'
+                        },
+                        plotOptions: {
+                            pie: {
+                                dataLabels: {
+                                    enabled: false,
+                                },
+                                startAngle: -90,
+                                endAngle: 90,
+                                showInLegend: true
+                            },
+                        },
+                        tooltip: {
+                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        },
+                        legend: {
+                            enabled: true,
+                            align: 'right',
+                            verticalAlign: 'top',
+                            layout: 'vertical',
+                            x: -50,
+                        }
+                    }),
+                    series: [{
+                        type: 'pie',
+                        name: 'Darts per factor',
+                        innerSize: '50%',
+                        data: [
+                            ['Simple', 0],
+                            ['Double', 0],
+                            ['Triple', 0]
+                        ]
+                    }]
                 }
             }
         };
@@ -127,7 +158,7 @@ define([
          */
         update: function(score) {
             this._updateGlobalDartsPerNumber(score);
-            //this._updateGlobalDartsPerFactor(score);
+            this._updateGlobalDartsPerFactor(score);
         },
 
         /**
@@ -150,6 +181,23 @@ define([
          * "Private" methods that must not be called outside the object itself
          * and must not be overridden by inherited objects
          *********************************************************************/
+
+        /**
+         * Helper function to create a Highchart graph and return the Highchart object
+         * @private
+         * @param {string} element - The jQuery selector for the element containing the graph
+         * @param {Object} options - The graph's options
+         * @param {Object} series - The graph's series (the object will be cloned)
+         * @returns {Object} The Highcharts object created
+         */
+        _createHighchartsGraph: function(element, options, series) {
+                // Clone of the series object
+                options.series = $.map(series, function (obj) {
+                     return $.extend(true, {}, obj);
+                });
+                $(element).highcharts(options);
+                return $(element).highcharts();
+        },
 
         /**
          * Sets the categories for the global dartsPerNumber stats
@@ -179,20 +227,19 @@ define([
             }
 
             if(score.bull) {
-                graph.options.series[0].data[21] ++;
+                graph.series[0].data[21] ++;
             } else {
-                graph.options.series[0].data[score.value] ++;
+                graph.series[0].data[score.value] ++;
             }
 
             if(graph.chart == null) {
-                graph.options.chart.renderTo = $(graph.element);
-                console.log('init', graph.options.chart.renderTo, graph.options);
-                graph.chart = new Highcharts.Chart(graph.options);
+                this._createHighchartsGraph(
+                    graph.element,
+                    graph.options,
+                    graph.series
+                );
             } else {
-                console.log('redraw', graph.chart);
-                /*
-                graph.chart.redraw();
-                */
+                graph.chart.series[0].setData(graph.series[0].data, true, false);
             }
         },
 
@@ -209,26 +256,21 @@ define([
                 return;
             }
 
-            if(score.value !== 0) {
-                graph.series[score.factor - 1] ++;
+            if(score.value == 0) {
+                return;
             }
 
-            console.log( {
-                        labels: graph.labels,
-                        series: graph.series,
-                    });
+            var serieIndex = score.factor - 1;
+            graph.series[0].data[serieIndex][1] ++;
 
             if(graph.chart == null) {
-                graph.chart = new Chartist.Pie(
+                this._createHighchartsGraph(
                     graph.element,
-                    {
-                        labels: graph.labels,
-                        series: graph.series,
-                    },
-                    graph.options
+                    graph.options,
+                    graph.series
                 );
             } else {
-                graph.chart.update(graph.data);
+                graph.chart.series[0].setData(graph.series[0].data, true, false);
             }
         }
 

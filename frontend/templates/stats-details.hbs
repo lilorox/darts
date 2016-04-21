@@ -1,6 +1,20 @@
 <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active">
-        <a href="#global-stats" aria-controls="global-stats" role="tab" data-toggle="tab">Global</a>
+    <li role="presentation" class="dropdown active">
+        <a href="#" aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" class="dropdown-toggle">
+            Global<span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="#tab-global-darts-per-number" aria-controls="tab-global-darts-per-number" role="tab" data-toggle="tab">
+                    Darts per number
+                </a>
+            </li>
+            <li>
+                <a href="#tab-global-darts-per-factor" aria-controls="tab-global-darts-per-factor" role="tab" data-toggle="tab">
+                    Darts per factor
+                </a>
+            </li>
+        </ul>
     </li>
     <li role="presentation">
         <a href="#players-stats" aria-controls="players-stats" role="tab" data-toggle="tab">Players</a>
@@ -8,18 +22,14 @@
 </ul>
 
 <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="global-stats">
+    <div role="tabpanel" class="tab-pane active" id="tab-global-darts-per-number">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div id="global-graph-darts-per-number" class="ct-chart ct-major-eleventh"></div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12">
-                    <div id="global-graph-darts-per-factor" class="ct-chart ct-major-eleventh"></div>
-                </div>
-            </div>
+            <div id="graph-global-darts-per-number"></div>
+        </div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="tab-global-darts-per-factor">
+        <div class="container-fluid">
+            <div id="graph-global-darts-per-factor"></div>
         </div>
     </div>
     <div role="tabpanel" class="tab-pane" id="players-stats"></div>
