@@ -36,7 +36,7 @@ define(['jquery'], function($) {
 
             // Radius of the concentric circles, relative to the size of the canvas
             marks : {
-                textPosition: 0.95,
+                textPosition: 0.92,
                 outerDouble: 0.85,
                 innerDouble: 0.80,
                 outerTriple: 0.53,
@@ -57,7 +57,7 @@ define(['jquery'], function($) {
         /**
          * Builds the dartboard canvas and such
          */
-        this.init = function() {
+        this.draw = function() {
             var canvasElement = $("<canvas>")
                 .attr("width", this._options.width)
                 .attr("height", this._options.height);
@@ -113,7 +113,7 @@ define(['jquery'], function($) {
                 // Text
                 ctx.fillStyle = 'rgb(255, 255, 255)';
                 ctx.textAlign = "center";
-                ctx.font = '12px Serif';
+                ctx.font = 'bold 1.2em Arial';
                 ctx.fillText(
                     this._options.numberOrder[i],
                     center.x +
@@ -306,7 +306,7 @@ define(['jquery'], function($) {
             delete this._element;
         };
 
-        this.init();
+        this.draw();
     }
 
 
