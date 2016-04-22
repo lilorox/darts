@@ -318,7 +318,7 @@ define([
                             return;
                         }
 
-                        if(score.value == 0) {
+                        if(score.value === 0) {
                             graph.series[0].data[0][1] ++;
                             return;
                         }
