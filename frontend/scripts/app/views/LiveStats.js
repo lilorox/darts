@@ -283,9 +283,11 @@ define([
                     graph.series
                 );
             } else {
-                graph.chart.series[0].setData(graph.series[0].data, false);
+                // Update order is reversed because of the index property
+                // of the series
+                graph.chart.series[2].setData(graph.series[0].data, false);
                 graph.chart.series[1].setData(graph.series[1].data, false);
-                graph.chart.series[2].setData(graph.series[2].data, false);
+                graph.chart.series[0].setData(graph.series[2].data, false);
                 graph.chart.redraw(false);
             }
         },
