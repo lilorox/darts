@@ -305,6 +305,7 @@ define([
             }
 
             graph.series[0].data = [
+                ['Out', 0],
                 ['Simple', 0],
                 ['Double', 0],
                 ['Triple', 0]
@@ -317,7 +318,11 @@ define([
                             return;
                         }
 
-                        var serieIndex = score.factor - 1;
+                        if(score.value == 0) {
+                            graph.series[0].data[0][1] ++;
+                            return;
+                        }
+                        var serieIndex = score.factor;
                         graph.series[0].data[serieIndex][1] ++;
                     });
                 });
