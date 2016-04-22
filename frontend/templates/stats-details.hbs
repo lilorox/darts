@@ -17,7 +17,18 @@
         </ul>
     </li>
     <li role="presentation">
-        <a href="#players-stats" aria-controls="players-stats" role="tab" data-toggle="tab">Players</a>
+        <a href="#" aria-expanded="false" aria-haspopup="true" data-toggle="dropdown" class="dropdown-toggle">
+            Players
+        </a>
+        <ul class="dropdown-menu">
+            {{#each players as |player playerId|}}
+            <li>
+                <a href="#tab-player-{{playerId}}" aria-controls="tab-player-{{playerId}}" role="tab" data-toggle="tab">
+                    {{player.name}}
+                </a>
+            </li>
+            {{/each}}
+        </ul>
     </li>
 </ul>
 
@@ -32,5 +43,8 @@
             <div id="graph-global-darts-per-factor"></div>
         </div>
     </div>
-    <div role="tabpanel" class="tab-pane" id="players-stats"></div>
+    {{#each players as |player playerId|}}
+    <div role="tabpanel" class="tab-pane" id="tab-player-{{playerId}}">
+    </div>
+    {{/each}}
 </div>
