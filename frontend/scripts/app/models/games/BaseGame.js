@@ -23,6 +23,7 @@ define([
                 throwsLeft: 3,
                 active: false,
                 throws: [],
+                scoreProgress: [0],
                 showScoreTab: false
             };
         });
@@ -155,6 +156,7 @@ define([
             // Save current state to the undo queue
             this._saveState();
 
+            // Save the current throw
             if(player.throws.length < this._turnNumber) {
                 player.throws.push([]);
             }
@@ -165,6 +167,11 @@ define([
 
             // Run specific game logic
             this.processNewScore(score);
+
+            // Save the player's score progress
+            player.scoreProgress.push(player.score);
+
+            // Notify everyone the score has changed
             this.scoreChanged.dispatch();
         },
 

@@ -20,6 +20,7 @@ define([
         this._finishingPlayers = [];
 
         for(var i = 0; i < this._players.length; i++) {
+            this._players[i].scoreProgress = [this._startingScore];
             this._players[i].startingDouble = false;
             this._players[i].score = this._startingScore;
             this._players[i].startedTurnAt = this._startingScore;
@@ -81,8 +82,10 @@ define([
 
                 // If the player has not thrown all his darts (because he went
                 // below zero for instance), we need to fill the turn with null
+                // and the progress with the same score
                 for(var i = turn.length; i < this._dartsPerTurn; i++) {
                     turn.push(null);
+                    player.scoreProgress.push(player.startedTurnAt);
                 }
             }
         },

@@ -5,6 +5,11 @@
         </a>
         <ul class="dropdown-menu">
             <li>
+                <a href="#tab-global-players-progress" aria-controls="tab-global-players-progress" role="tab" data-toggle="tab">
+                    Players progress
+                </a>
+            </li>
+            <li>
                 <a href="#tab-global-darts-per-number" aria-controls="tab-global-darts-per-number" role="tab" data-toggle="tab">
                     Darts per number
                 </a>
@@ -33,7 +38,12 @@
 </ul>
 
 <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="tab-global-darts-per-number">
+    <div role="tabpanel" class="tab-pane active" id="tab-global-players-progress">
+        <div class="container-fluid">
+            <div id="graph-global-players-progress"></div>
+        </div>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="tab-global-darts-per-number">
         <div class="container-fluid">
             <div id="graph-global-darts-per-number"></div>
         </div>

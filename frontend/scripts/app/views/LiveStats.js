@@ -31,11 +31,15 @@ define([
 
         this._defaultOptions = {
             chart: {
-                animation: false
+                animation: false,
+                plotBackgroundColor: null,
+                plotBorderWidth: 0,
+                plotShadow: false
             },
             title: {
                 style: {
-                    fontSize: '12px'
+                    fontFamily: 'Arial',
+                    fontSize: '14px'
                 }
             },
             credits: {
@@ -56,6 +60,9 @@ define([
                             text: 'Darts per number'
                         },
                         xAxis: {
+                            title: {
+                                text: 'Numbers hit'
+                            },
                             categories: [
                                 "Out", "1", "2", "3", "4", "5", "6", "7", "8", "9",
                                 "10", "11", "12", "13", "14", "15", "16", "17", "18",
@@ -65,7 +72,7 @@ define([
                         yAxis: {
                             min: 0,
                             title: {
-                                text: "darts"
+                                text: "Darts"
                             }
                         },
                         plotOptions: {
@@ -127,6 +134,28 @@ define([
                         innerSize: '50%',
                         data: null
                     }]
+                },
+                playersProgress: {
+                    chart: null,
+                    element: '#graph-global-players-progress',
+                    options: $.extend(true, {}, this._defaultOptions, {
+                        title: {
+                            text: 'Players progress'
+                        },
+                        xAxis: {
+                            title: {
+                                text: 'Throw'
+                            },
+                            categories: []
+                        },
+                        yAxis: {
+                            min: 0,
+                            title: {
+                                text: "Score"
+                            }
+                        },
+                    }),
+                    series: []
                 }
             }
         };
@@ -169,9 +198,10 @@ define([
          * Updates the statistics graphs
          * @param {Score} score - The new throw to register
          */
-        update: function(score) {
-            this._updateGlobalDartsPerNumber(score);
-            this._updateGlobalDartsPerFactor(score);
+        update: function() {
+            this._updateGlobalDartsPerNumber();
+            this._updateGlobalDartsPerFactor();
+            this._updateGlobalPlayersProgress();
         },
 
         /**
@@ -232,6 +262,10 @@ define([
             this._model._players.forEach(function(player) {
                 player.throws.forEach(function(turn) {
                     turn.forEach(function(score) {
+                        if(score == null) {
+                            return;
+                        }
+
                         var serieIndex = score.factor - 1;
                         if(score.bull) {
                             graph.series[serieIndex].data[21] ++;
@@ -243,7 +277,7 @@ define([
             });
 
             if(graph.chart == null) {
-                this._createHighchartsGraph(
+                graph.chart = this._createHighchartsGraph(
                     graph.element,
                     graph.options,
                     graph.series
@@ -277,6 +311,10 @@ define([
             this._model._players.forEach(function(player) {
                 player.throws.forEach(function(turn) {
                     turn.forEach(function(score) {
+                        if(score == null) {
+                            return;
+                        }
+
                         var serieIndex = score.factor - 1;
                         graph.series[0].data[serieIndex][1] ++;
                     });
@@ -284,13 +322,51 @@ define([
             });
 
             if(graph.chart == null) {
-                this._createHighchartsGraph(
+                graph.chart = this._createHighchartsGraph(
                     graph.element,
                     graph.options,
                     graph.series
                 );
             } else {
                 graph.chart.series[0].setData(graph.series[0].data, false);
+                graph.chart.redraw(false);
+            }
+        },
+
+        /**
+         * Updates (or creates if necessary) the graph that displays the
+         * score progress of each player
+         * @private
+         */
+        _updateGlobalPlayersProgress: function() {
+            var graph = this._graphs.global.playersProgress;
+
+            if(! $(graph.element).length) {
+                return;
+            }
+
+            var turns = 0;
+            graph.series = [];
+            this._model._players.forEach(function(player) {
+                graph.series.push({
+                    name: player.name,
+                    data: player.scoreProgress.slice(0)
+                });
+                console.log(player.name, player.scoreProgress);
+                turns = Math.max(turns, player.scoreProgress.length);
+            });
+            graph.options.xAxis.categories = Array.apply(null, {length: turns}).map(Number.call, Number);
+
+            if(graph.chart == null) {
+                graph.chart = this._createHighchartsGraph(
+                    graph.element,
+                    graph.options,
+                    graph.series
+                );
+            } else {
+                this._model._players.forEach(function(player, idx) {
+                    graph.chart.series[idx].setData(graph.series[idx].data, false);
+                });
                 graph.chart.redraw(false);
             }
         }
