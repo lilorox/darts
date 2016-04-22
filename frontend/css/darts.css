@@ -99,3 +99,7 @@ span.label-throw3 {
 span.label-closed {
   background-color: #a31d1d;
 }
+
+.tab-content {
+  margin-bottom: 20px;
+}
