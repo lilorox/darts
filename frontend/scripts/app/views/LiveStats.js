@@ -25,6 +25,10 @@ define([
             statsDetails: $(elements.statsDetails)
         };
 
+        this._context = {
+            players: this._model._players
+        };
+
         this._defaultOptions = {
             chart: {
                 animation: false
@@ -52,7 +56,11 @@ define([
                             text: 'Darts per number'
                         },
                         xAxis: {
-                            categories: null
+                            categories: [
+                                "Out", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                                "10", "11", "12", "13", "14", "15", "16", "17", "18",
+                                "19", "20", "B"
+                            ]
                         },
                         yAxis: {
                             min: 0,
@@ -122,7 +130,6 @@ define([
                 }
             }
         };
-        this._initGlobalDartsPerNumber();
     }
     LiveStats.prototype = {
         /**********************************************************************
@@ -139,7 +146,7 @@ define([
             // Loads the stats template
             Utils.loadTemplate(
                 'templates/stats-details.hbs',
-                this.getGraphsContext(),
+                this._context,
                 this._elements.statsDetails
             );
 
@@ -203,20 +210,6 @@ define([
                 });
                 $(element).highcharts(options);
                 return $(element).highcharts();
-        },
-
-        /**
-         * Sets the categories for the global dartsPerNumber stats
-         * @private
-         */
-        _initGlobalDartsPerNumber: function() {
-            var categories = ['Out'];
-            for(var i = 1; i <= 20; i++) {
-                categories.push(i.toString());
-            }
-            categories.push('B');
-
-            this._graphs.global.dartsPerNumber.options.xAxis.categories = categories;
         },
 
         /**
