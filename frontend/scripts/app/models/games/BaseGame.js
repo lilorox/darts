@@ -165,7 +165,7 @@ define([
 
             // Run specific game logic
             this.processNewScore(score);
-            this.scoreChanged.dispatch(score);
+            this.scoreChanged.dispatch();
         },
 
         /**
@@ -184,6 +184,7 @@ define([
             }
 
             this.undoListChanged.dispatch();
+            this.scoreChanged.dispatch();
         },
 
         /**

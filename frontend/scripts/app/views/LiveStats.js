@@ -60,14 +60,24 @@ define([
                                 text: "darts"
                             }
                         },
-                        legend: {
-                            enabled: false
+                        plotOptions: {
+                            series: {
+                                stacking: 'normal'
+                            }
                         }
                     }),
                     series: [{
-                        name: 'Global',
-                        // Init to a array of 22 zeroes
-                        data: Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0)
+                        name: 'Simple',
+                        index: 2,
+                        data: null
+                    }, {
+                        name: 'Double',
+                        index: 1,
+                        data: null
+                    }, {
+                        name: 'Triple',
+                        index: 0,
+                        data: null
                     }]
                 },
                 dartsPerFactor: {
@@ -107,11 +117,7 @@ define([
                         type: 'pie',
                         name: 'Darts per factor',
                         innerSize: '50%',
-                        data: [
-                            ['Simple', 0],
-                            ['Double', 0],
-                            ['Triple', 0]
-                        ]
+                        data: null
                     }]
                 }
             }
@@ -217,20 +223,31 @@ define([
          * Updates (or creates if necessary) the graph that displays the
          * statistics of the numbers hit by players
          * @private
-         * @param {Score} score - The new throw to register
          */
-        _updateGlobalDartsPerNumber: function(score) {
+        _updateGlobalDartsPerNumber: function() {
             var graph = this._graphs.global.dartsPerNumber;
 
             if(! $(graph.element).length) {
                 return;
             }
 
-            if(score.bull) {
-                graph.series[0].data[21] ++;
-            } else {
-                graph.series[0].data[score.value] ++;
-            }
+            // Init series to arrays of 22 zeroes
+            graph.series[0].data = Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0);
+            graph.series[1].data = Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0);
+            graph.series[2].data = Array.apply(null, Array(22)).map(Number.prototype.valueOf, 0);
+
+            this._model._players.forEach(function(player) {
+                player.throws.forEach(function(turn) {
+                    turn.forEach(function(score) {
+                        var serieIndex = score.factor - 1;
+                        if(score.bull) {
+                            graph.series[serieIndex].data[21] ++;
+                        } else {
+                            graph.series[serieIndex].data[score.value] ++;
+                        }
+                    });
+                });
+            });
 
             if(graph.chart == null) {
                 this._createHighchartsGraph(
@@ -239,7 +256,10 @@ define([
                     graph.series
                 );
             } else {
-                graph.chart.series[0].setData(graph.series[0].data, true, false);
+                graph.chart.series[0].setData(graph.series[0].data, false);
+                graph.chart.series[1].setData(graph.series[1].data, false);
+                graph.chart.series[2].setData(graph.series[2].data, false);
+                graph.chart.redraw(false);
             }
         },
 
@@ -247,21 +267,28 @@ define([
          * Updates (or creates if necessary) the graph that displays the
          * statistics of the numbers hit by players
          * @private
-         * @param {Score} score - The new throw to register
          */
-        _updateGlobalDartsPerFactor: function(score) {
+        _updateGlobalDartsPerFactor: function() {
             var graph = this._graphs.global.dartsPerFactor;
 
             if(! $(graph.element).length) {
                 return;
             }
 
-            if(score.value == 0) {
-                return;
-            }
+            graph.series[0].data = [
+                ['Simple', 0],
+                ['Double', 0],
+                ['Triple', 0]
+            ];
 
-            var serieIndex = score.factor - 1;
-            graph.series[0].data[serieIndex][1] ++;
+            this._model._players.forEach(function(player) {
+                player.throws.forEach(function(turn) {
+                    turn.forEach(function(score) {
+                        var serieIndex = score.factor - 1;
+                        graph.series[0].data[serieIndex][1] ++;
+                    });
+                });
+            });
 
             if(graph.chart == null) {
                 this._createHighchartsGraph(
@@ -270,7 +297,8 @@ define([
                     graph.series
                 );
             } else {
-                graph.chart.series[0].setData(graph.series[0].data, true, false);
+                graph.chart.series[0].setData(graph.series[0].data, false);
+                graph.chart.redraw(false);
             }
         }
 
