@@ -1,0 +1,112 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<svg id="dartboard" width="600" height="600" shape-rendering="geometricPrecision"></svg>
+
+<script type="text/javascript" data-main="scripts/app" src="scripts/libs/jquery/jquery.min.js"></script>
+<script>
+$(function() {
+console.log('start');
+
+var $svg = $('#dartboard'),
+  center = { x: 300, y: 300 },
+  radius = 300,
+  svgContents = '<circle cx="' + center.x + '" cy="' + center.y + '" r="' + radius + '" fill="rgb(50,50,50)" />',
+  marks = {
+      textPosition: 0.92,
+      outerDouble: 0.85,
+      innerDouble: 0.80,
+      outerTriple: 0.53,
+      innerTriple: 0.48,
+      outerSingleBull: 0.07,
+      outerDoubleBull: 0.03
+  },
+  boardColors = [
+    [ "rgb(0,150,61)",    "rgb(206,21,0)" ],
+    [ "rgb(255,255,255)", "rgb(0,0,0)" ]
+  ],
+  pieces = [
+    [ marks.outerDouble, marks.innerDouble ],
+    [ marks.innerDouble, marks.outerTriple ],
+    [ marks.outerTriple, marks.innerTriple ],
+    [ marks.innerTriple, marks.outerSingleBull ]
+  ];
+
+function makePoints(center, radius, startAngle, endAngle, startRatio, endRatio) {
+  return [
+    {
+      x: center.x + radius * Math.cos(startAngle) * startRatio,
+      y: center.y + radius * Math.sin(startAngle) * startRatio
+    },
+    {
+      x: center.x + radius * Math.cos(endAngle) * startRatio,
+      y: center.y + radius * Math.sin(endAngle) * startRatio
+    },
+    {
+      x: center.x + radius * Math.cos(endAngle) * endRatio,
+      y: center.y + radius * Math.sin(endAngle) * endRatio
+    },
+    {
+      x: center.x + radius * Math.cos(startAngle) * endRatio,
+      y: center.y + radius * Math.sin(startAngle) * endRatio
+    }
+  ];
+}
+
+var startAngle = - 11 * Math.PI / 20;
+
+for(i = 0; i < 20; i++) {
+  var endAngle = startAngle + Math.PI / 10;
+
+  for(var j = 0; j < 4; j++) {
+    var startRatio = pieces[j][0],
+      endRatio = pieces[j][1],
+      points = makePoints(center,radius, startAngle, endAngle, startRatio, endRatio),
+      color = boardColors[j % 2][i % 2],
+      outerRadius = startRatio * radius,
+      innerRadius = endRatio * radius,
+      d = [
+        "M", points[0].x, points[0].y,
+        "A", outerRadius, outerRadius, 1, 0, 1, points[1].x, points[1].y,
+        "L", points[2].x, points[2].y,
+        "A", innerRadius, innerRadius, 1, 0, 0, points[3].x, points[3].y,
+        "L", points[0].x, points[0].y,
+        "Z"
+      ],
+      contents = '<path d="' + d.join(" ") + '" fill="' + color + '"/>';
+    svgContents += contents;
+    console.log(contents);
+  }
+
+  startAngle = endAngle;
+}
+
+var outerRadius = marks.outerSingleBull * radius,
+  innerRadius = marks.outerDoubleBull * radius,
+  singleBull = '<path d="' +
+    [
+      "M", center.x, center.y - outerRadius,
+      "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y + outerRadius,
+      "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y - outerRadius,
+      "z",
+      "M", center.x, center.y - innerRadius,
+      "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y + innerRadius,
+      "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y - innerRadius,
+      "z"
+    ].join(" ") +
+    '" + fill="' + boardColors[0][0] + '" fill-rule="evenodd"/>',
+    doubleBull = '<circle cx="' + center.x + '" cy="' + center.y + '" r="' + innerRadius + '" fill="' + boardColors[0][1] + '" />';
+
+//M 950,81 A 107,107 0 0,1 950,295 A 107,107 0 0,1 950,81 z              M 950,139 A 49,49 0 0,0 950,237 A 49,49 0 0,0 950,139 z
+
+console.log(singleBull);
+svgContents += singleBull + doubleBull;
+$svg.html(svgContents);
+
+console.log('end');
+});
+</script>
+</body>
+</html>
