@@ -4,9 +4,6 @@
  */
 
 define(['jquery', 'd3'], function($, d3) {
-    // Computed once and used everywhere
-    var twoPI = 2 * Math.PI;
-
     /**
      * Displays the dartboard and enables the user to interact with it by throwing darts.
      * @constructor
@@ -201,7 +198,7 @@ define(['jquery', 'd3'], function($, d3) {
                 .classed("scorable", true)
                 .classed("dartboard-segment", true)
                 .attr("data-score", this._options.bullSingleValue)
-                .attr("data-factor", 2)
+                .attr("data-factor", 1)
                 .attr("data-bull", true)
                 .attr(
                     "d",
@@ -224,7 +221,7 @@ define(['jquery', 'd3'], function($, d3) {
                 .classed("scorable", true)
                 .classed("dartboard-segment", true)
                 .attr("data-score", this._options.bullSingleValue)
-                .attr("data-factor", 1)
+                .attr("data-factor", 2)
                 .attr("data-bull", true)
                 .attr("cx", center.x)
                 .attr("cy", center.y)
