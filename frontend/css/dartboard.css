@@ -2,7 +2,7 @@
   cursor: url("images/dart.png"), auto;
 }
 .dartboard-segment:hover {
-  fill: rgb(100, 100, 255);
+  fill: rgb(100, 100, 255) !important;
 }
 .dartboard text {
   font-size: 33px;

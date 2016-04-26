@@ -359,7 +359,6 @@ define([
                     name: player.name,
                     data: player.scoreProgress.slice(0)
                 });
-                console.log(player.name, player.scoreProgress);
                 turns = Math.max(turns, player.scoreProgress.length);
             });
             graph.options.xAxis.categories = Array.apply(null, {length: turns}).map(Number.call, Number);

@@ -81,8 +81,6 @@ define(['jquery', 'd3'], function($, d3) {
                     [ this._options.marks.innerTriple, this._options.marks.outerSingleBull ]
                 ];
 
-                console.log(svg);
-
             // Adds the external rect and circle
             svg.append("rect")
                 .classed("scorable", true)
@@ -232,21 +230,6 @@ define(['jquery', 'd3'], function($, d3) {
                 .attr("cy", center.y)
                 .attr("r", innerBullRadius)
                 .style("fill", this._options.boardColors[0][1]);
-
-            /*
-            // Adds the html definition of the SVG object
-            this._element.html(
-                '<svg xmlns:svg="http://www.w3.org/2000/svg" ' +
-                    'xmlns="http://www.w3.org/2000/svg" width="100%" ' +
-                    'height="100%" viewBox="0 0 1000 1000" class="dartboard">' +
-                    '<defs>' + svgDefs + '</defs>' +
-                    svgContents +
-                '</svg>'
-            );
-
-            // Reload div content
-            this._element.html(this._element.html());
-            */
         };
 
         /**
@@ -262,7 +245,6 @@ define(['jquery', 'd3'], function($, d3) {
                     factor = $(this).data('factor') || 1,
                     bull = ($(this).data('bull') === true ? true : false);
 
-                console.log('click', score, factor, this);
                 $(this).trigger(
                     new jQuery.Event('dartThrown', {
                         score: {

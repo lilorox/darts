@@ -40,6 +40,7 @@ define([
                 var player = this.getActivePlayer();
 
                 if(score.bull && player.currentTarget == "B") {
+                    player.score += 1 / this._dartsPerSlice;
                     if(player.remainingDartsforTarget <= score.factor) {
                         score.highlight = true;
                         player.won = true;
@@ -56,6 +57,7 @@ define([
                         player.remainingDartsforTarget -= score.factor;
                     }
                 } else if(score.value == player.currentTarget) {
+                    player.score += 1 / this._dartsPerSlice;
                     if(player.remainingDartsforTarget <= score.factor) {
                         score.highlight = true;
                         if(score.value == 20) {
