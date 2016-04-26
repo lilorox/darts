@@ -15,15 +15,16 @@ define([
     function X01(players, options) {
         BaseGame.call(this, 'x01', 'normal', players);
 
-        options = options || {};
-        this._startingScore = parseInt(options.startingScore) || 301;
+        this._options = options || {};
+        this._options.startingScore = parseInt(this._options.startingScore) || 301;
         this._finishingPlayers = [];
+        this._minimumScore = (this._options.doubleOut ? 1 : (this._options.tripleOut ? 2 : 0));
 
         for(var i = 0; i < this._players.length; i++) {
-            this._players[i].scoreProgress = [this._startingScore];
-            this._players[i].startingDouble = false;
-            this._players[i].score = this._startingScore;
-            this._players[i].startedTurnAt = this._startingScore;
+            this._players[i].scoreProgress = [this._options.startingScore];
+            this._players[i].canStart = (! this._options.doubleIn && ! this._options.tripleIn);
+            this._players[i].score = this._options.startingScore;
+            this._players[i].startedTurnAt = this._options.startingScore;
         }
     }
     X01.prototype = Object.create(BaseGame.prototype, {
@@ -43,17 +44,21 @@ define([
 
                 this.registerStartingCondition(player, score);
 
-                if(this.playerCanStartScoring(player)) {
+                if(player.canStart) {
                     player.score -= score.factor * score.value;
 
                     // Winning condition
-                    if(player.score === 0 && score.factor === 2) {
+                    if(player.score === 0 && (
+                            score.factor === 2 && this._options.doubleOut ||
+                            score.factor === 3 && this._options.tripleOut)) {
                         this._finishingPlayers.push(this._currentPlayer);
                         this._nextPlayer();
                         return;
                     }
 
-                    if(player.score <= 1 || player.score === 0 && score.factor !== 2) {
+                    if(player.score <= this._minimumScore || player.score === 0 && (
+                            (score.factor !== 2 && this._options.doubleOut) ||
+                            (score.factor !== 3 && this._options.tripleOut))) {
                         this._invalidateTurn();
                         player.score = player.startedTurnAt;
                         this._nextPlayer();
@@ -99,23 +104,11 @@ define([
          */
         registerStartingCondition: {
             value: function(player, score) {
-                if(! player.startingDouble && score.factor === 2) {
-                    player.startingDouble = true;
+                if(! player.canStart && (this._options.doubleIn && score.factor === 2 ||
+                        this._options.tripleIn && score.factor === 3)) {
+                    player.canStart = true;
                     score.highlight = true;
                 }
-            }
-        },
-
-        /**
-         * Determines if the player can start registering the throws as score.
-         * In classic x01, the player must start with a double before points
-         * are registered.
-         * @function
-         * @param {Player} player - The player who threw a dart.
-         */
-        playerCanStartScoring: {
-            value: function(player) {
-                return player.startingDouble;
             }
         },
 

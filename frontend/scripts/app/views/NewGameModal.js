@@ -386,7 +386,6 @@ define([
                     .appendTo(elements.additionalOptionsDiv);
             });
             elements.additionalOptionsDiv.show();
-            console.log('init', modal._options);
         }
     };
 
