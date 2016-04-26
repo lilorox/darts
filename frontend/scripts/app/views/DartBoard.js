@@ -3,7 +3,7 @@
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
-define(['jquery'], function($) {
+define(['jquery', 'd3'], function($, d3) {
     // Computed once and used everywhere
     var twoPI = 2 * Math.PI;
 
@@ -21,22 +21,28 @@ define(['jquery'], function($) {
             height: 500,
 
             // Colors of the sectors
-            boardColors: {
-                single:   [ "rgb(255,255,255)", "rgb(0,0,0)" ],
-                multiple: [ "rgb(0,150,61)",    "rgb(206,21,0)" ]
-            },
+           boardColors: [
+                [ "rgb(0,150,61)",    "rgb(206,21,0)" ], // Double / Triple
+                [ "rgb(255,255,255)", "rgb(0,0,0)" ] // Single
+           ],
 
             // Order of the numbers, starting on the right, clockwise
             numberOrder: [
+                /*
                 6,  10, 15, 2,  17,
                 3,  19, 7,  16, 8,
                 11, 14, 9,  12, 5,
                 20, 1,  18, 4,  13
+                */
+                20, 1,  18, 4,  13,
+                6,  10, 15, 2,  17,
+                3,  19, 7,  16, 8,
+                11, 14, 9,  12, 5
             ],
 
             // Radius of the concentric circles, relative to the size of the canvas
             marks : {
-                textPosition: 0.92,
+                textPosition: 0.90,
                 outerDouble: 0.85,
                 innerDouble: 0.80,
                 outerTriple: 0.53,
@@ -55,229 +61,45 @@ define(['jquery'], function($) {
         this._options = $.extend(true, {}, this._defaults, options);
 
         /**
-         * Builds the dartboard canvas and such
+         * Builds the dartboard SVG object and appends it to the main element
          */
-        this.draw = function() {
-            var canvasElement = $("<canvas>")
-                .attr("width", this._options.width)
-                .attr("height", this._options.height);
-            this._element.append(canvasElement);
-            this._element.addClass("dartboard");
-
-            var canvas = canvasElement[0],
-                ctx = canvas.getContext('2d'),
-                height = canvas.height,
-                width = canvas.width,
-                radius = Math.min(width, height) / 2,
-                center = { x: width / 2, y: height / 2 };
-
-            // Save some parameters to the jQuery object
-            this._canvas = canvas;
-            this._radius = radius;
-            this._center = center;
-
-            ctx.fillStyle = 'rgb(255, 255, 255)';
-            ctx.fillRect(0, 0, width, height);
-
-            // Whole target
-            ctx.fillStyle = 'rgb(0, 0, 0)';
-            ctx.beginPath();
-            ctx.arc(
-                center.x,
-                center.y,
-                radius,
-                0,
-                twoPI,
-                false
-            );
-            ctx.fill();
-            ctx.closePath();
-
-            // To have a angle starting on the right but with 
-            // sectors centered
-            var startAngle = - Math.PI / 20;
-
-            // Point line separators and color stripes
-            var i, j;
-            for(i = 0; i < 20; i++) {
-                var endAngle = startAngle + Math.PI / 10,
-                    single = this._options.boardColors.single[i % 2],
-                    multiple = this._options.boardColors.multiple[i % 2],
-                    sectors = [
-                        [ this._options.marks.outerDouble, multiple ],
-                        [ this._options.marks.innerDouble, single ],
-                        [ this._options.marks.outerTriple, multiple ],
-                        [ this._options.marks.innerTriple, single ]
-                    ];
-
-                // Text
-                ctx.fillStyle = 'rgb(255, 255, 255)';
-                ctx.textAlign = "center";
-                ctx.font = 'bold 1.2em Arial';
-                ctx.fillText(
-                    this._options.numberOrder[i],
-                    center.x +
-                        radius * Math.cos(startAngle + Math.PI / 20) *
-                        this._options.marks.textPosition,
-                    center.y +
-                        radius * Math.sin(startAngle + Math.PI / 20) *
-                        this._options.marks.textPosition + 4 // Offset y
-                );
-
-                // Line separating from the next point
-                ctx.beginPath();
-                ctx.moveTo(
-                    center.x +
-                        radius * Math.cos(endAngle) * this._options.marks.outerSingleBull,
-                    center.y +
-                        radius * Math.sin(endAngle) * this._options.marks.outerSingleBull
-                );
-                ctx.lineTo(
-                    center.x +
-                        radius * Math.cos(endAngle) * this._options.marks.outerTriple,
-                    center.y +
-                        radius * Math.sin(endAngle) * this._options.marks.outerTriple
-                );
-                ctx.stroke();
-                ctx.closePath();
-
-                // Fill the circle sectors, from the biggest to the smallest
-                for(j = 0; j < sectors.length; j++) {
-                    var sector = sectors[j],
-                        r = sector[0] * radius,
-                        color = sector[1];
-
-                    ctx.fillStyle = color;
-                    ctx.beginPath();
-                    ctx.moveTo(center.x, center.y);
-                    ctx.arc(
-                        center.x,
-                        center.y,
-                        r,
-                        startAngle,
-                        endAngle
-                    );
-                    ctx.fill();
-                    ctx.closePath();
-                }
-
-                startAngle = endAngle;
-            }
-
-            // Concentric cirlces
-            ctx.strokeStyle = 'rgb(100, 100, 100)';
-            var circlesMarks = [
-                this._options.marks.outerDouble,
-                this._options.marks.innerDouble,
-                this._options.marks.outerTriple,
-                this._options.marks.innerTriple,
-                this._options.marks.outerSingleBull,
-                this._options.marks.outerDoubleBull
-            ];
-            for(j = 0; j < circlesMarks.length; j++) {
-                ctx.beginPath();
-                ctx.arc(
-                    center.x,
-                    center.y,
-                    radius * circlesMarks[j],
-                    twoPI,
-                    false
-                );
-                ctx.stroke();
-                ctx.closePath();
-            }
-
-            // Outer bull's eye
-            ctx.fillStyle = this._options.boardColors.multiple[0];
-            ctx.beginPath();
-            ctx.moveTo(center.x, center.y);
-            ctx.arc(
-                center.x,
-                center.y,
-                this._options.marks.outerSingleBull * radius,
-                0,
-                twoPI
-            );
-            ctx.fill();
-            ctx.closePath();
-
-            // Inner bull's eye
-            ctx.fillStyle = this._options.boardColors.multiple[1];
-            ctx.beginPath();
-            ctx.moveTo(center.x, center.y);
-            ctx.arc(
-                center.x,
-                center.y,
-                this._options.marks.outerDoubleBull * radius,
-                0,
-                twoPI
-            );
-            ctx.fill();
-            ctx.closePath();
-
-            // Set element's handlers
-            var dartboard = this;
-            dartboard._element.on('click', function(evt) {
-                evt.preventDefault();
-                dartboard._options.onClick();
-
-                var rect = this.getBoundingClientRect(),
-                    event = new jQuery.Event('dartThrown', {
-                        score: dartboard.getScore(
-                            evt.clientX - rect.left,
-                            evt.clientY - rect.top
-                        )
-                    });
-                $(this).trigger(event);
-            });
-
-            // Set the data attribute to the jQuery instance
-            this._element.data('dartboard', dartboard);
-
-            return this;
-        };
-
-        /**
-         * Builds the dartboard SVG object and returns it
-         */
-        this.draw = function() {
-            var $svg = $('<svg>')
-                    .attr('width', '100%')
-                    .attr('height', '100%')
-                    .attr('viewBox', "0 0 1000 1000")
-                    .addClass('dartboard'),
-                radius = 500,
+        this._draw = function() {
+            var radius = 500,
                 center = { x: radius, y: radius },
-                svgDefs = '',
-                svgContents = '<rect class="scorable" width="1000" height="1000" fill="rgb(255, 255, 255)" data-factor="2"/>' +
-                '<circle class="scorable" cx="' + center.x + '" cy="' + center.y + '" r="' + radius + '" fill="rgb(50,50,50)" />',
-            marks = {
-                textPosition: 0.90,
-                outerDouble: 0.85,
-                innerDouble: 0.80,
-                outerTriple: 0.53,
-                innerTriple: 0.48,
-                outerSingleBull: 0.07,
-                outerDoubleBull: 0.03
-            },
-            numberOrder = [
-                20, 1,  18, 4,  13,
-                6,  10, 15, 2,  17,
-                3,  19, 7,  16, 8,
-                11, 14, 9,  12, 5
-            ],
-            factors = [ 3, 1, 2, 1 ],
-                boardColors = [
-                [ "rgb(0,150,61)",    "rgb(206,21,0)" ],
-                [ "rgb(255,255,255)", "rgb(0,0,0)" ]
-            ],
-            pieces = [
-                [ marks.outerDouble, marks.innerDouble ],
-                [ marks.innerDouble, marks.outerTriple ],
-                [ marks.outerTriple, marks.innerTriple ],
-                [ marks.innerTriple, marks.outerSingleBull ]
-            ];
+                svg = d3.select(this._element.get(0))
+                    .classed("dartboard", true)
+                    .append("svg")
+                    .attr("width", "100%")
+                    .attr("height", "100%")
+                    .attr("viewBox", "0 0 1000 1000"),
+                svgDefs = svg.append("defs"),
+                factors = [ 2, 1, 3, 1 ],
+                pieces = [
+                    [ this._options.marks.outerDouble, this._options.marks.innerDouble ],
+                    [ this._options.marks.innerDouble, this._options.marks.outerTriple ],
+                    [ this._options.marks.outerTriple, this._options.marks.innerTriple ],
+                    [ this._options.marks.innerTriple, this._options.marks.outerSingleBull ]
+                ];
 
+                console.log(svg);
+
+            // Adds the external rect and circle
+            svg.append("rect")
+                .classed("scorable", true)
+                .attr("width", 1000)
+                .attr("height", 1000)
+                .attr("fill", "rgb(255, 255, 255)")
+                .attr("data-factor", "2");
+            svg.append("circle")
+                .classed("scorable", true)
+                .attr("cx", center.x)
+                .attr("cy", center.y)
+                .attr("r", radius)
+                .attr("fill", "rgb(50,50,50)");
+
+            /**
+             * Private function to return the 4 points of a segment of a hollow circle
+             */
             function makePoints(center, radius, startAngle, endAngle, startRatio, endRatio) {
                 return [
                     {
@@ -299,146 +121,159 @@ define(['jquery'], function($) {
                 ];
             }
 
+            // Construction of each of the dartboard slices
             var startAngle = - 11 * Math.PI / 20;
-
             for(i = 0; i < 20; i++) {
                 var endAngle = startAngle + Math.PI / 10;
 
+                // For each slice, construction of the 4 segments (double, single, triple, single)
                 for(var j = 0; j < 4; j++) {
                     var startRatio = pieces[j][0],
                         endRatio = pieces[j][1],
                         points = makePoints(center,radius, startAngle, endAngle, startRatio, endRatio),
-                        color = boardColors[j % 2][i % 2],
+                        color = this._options.boardColors[j % 2][i % 2],
                         outerRadius = startRatio * radius,
                         innerRadius = endRatio * radius,
                         d = [
-                        "M", points[0].x, points[0].y,
-                        "A", outerRadius, outerRadius, 1, 0, 1, points[1].x, points[1].y,
-                        "L", points[2].x, points[2].y,
-                        "A", innerRadius, innerRadius, 1, 0, 0, points[3].x, points[3].y,
-                        "L", points[0].x, points[0].y,
-                        "Z"
-                    ],
-                    contents = '<path class="scorable dartboard-segment" ' +
-                        'data-score="' + numberOrder[i] + '" ' +
-                        'data-factor="' + factors[j] + '" ' +
-                        'd="' + d.join(" ") + '" fill="' + color + '"/>';
-                    svgContents += contents;
+                            "M", points[0].x, points[0].y,
+                            "A", outerRadius, outerRadius, 1, 0, 1, points[1].x, points[1].y,
+                            "L", points[2].x, points[2].y,
+                            "A", innerRadius, innerRadius, 1, 0, 0, points[3].x, points[3].y,
+                            "L", points[0].x, points[0].y,
+                            "Z"
+                        ];
+                    svg.append("path")
+                        .classed("scorable", true)
+                        .classed("dartboard-segment", true)
+                        .attr("data-score", this._options.numberOrder[i])
+                        .attr("data-factor", factors[j])
+                        .attr("d", d.join(" "))
+                        .attr("fill", color);
                 }
 
-                var textRadius = marks.textPosition * radius,
+                // Adds the textPath and the text of the current slice
+                var textRadius = this._options.marks.textPosition * radius,
                     textStart = {
-                    x: center.x + textRadius * Math.cos(startAngle),
-                    y: center.y + textRadius * Math.sin(startAngle)
-                },
-                textEnd = {
-                    x: center.x + textRadius * Math.cos(endAngle),
-                    y: center.y + textRadius * Math.sin(endAngle)
-                };
-                svgDefs += '<path id="dartboard-text-path-' + numberOrder[i] + '" d="' +
-                    [
-                    "M", textStart.x, textStart.y,
-                    "A", textRadius, textRadius, 0, 0, 1, textEnd.x, textEnd.y
-                ].join(" ") +
-                    '"/>';
+                        x: center.x + textRadius * Math.cos(startAngle),
+                        y: center.y + textRadius * Math.sin(startAngle)
+                    },
+                    textEnd = {
+                        x: center.x + textRadius * Math.cos(endAngle),
+                        y: center.y + textRadius * Math.sin(endAngle)
+                    };
 
-                svgContents +=
-                    '<text x="0" y="0" text-anchor="middle" font-size="' + (radius / 15) + '" fill="white" font-family="Arial">' +
-                    '<textPath xlink:href="#dartboard-text-path-' + numberOrder[i] + '" startOffset="50%">' + numberOrder[i] + '</textPath>' +
-                    '</text>';
+                // SVG defs of the textPath
+                svgDefs.append("path")
+                    .attr("id", "dartboard-text-path-" + this._options.numberOrder[i])
+                    .attr(
+                        "d",
+                        [
+                            "M", textStart.x, textStart.y,
+                            "A", textRadius, textRadius, 0, 0, 1, textEnd.x, textEnd.y
+                        ].join(" ")
+                    );
+
+                svg.append("text")
+                    .attr("x", 0)
+                    .attr("y", 0)
+                    .attr("text-anchor", "middle")
+                    /*
+                    .attr("font-size", Math.floor(radius / 15))
+                    .attr("font-family", "Arial")
+                    */
+                    .attr("fill", "white")
+                    .append("textPath")
+                        .attr("xlink:href", "#dartboard-text-path-" + this._options.numberOrder[i])
+                        .attr("startOffset", "50%")
+                        .text(this._options.numberOrder[i]);
+
+                        /*
+                svg.append("use")
+                    .attr("xlink:href", "#dartboard-text-path-" + this._options.numberOrder[i])
+                    .attr("stroke", "red");
+                    */
 
                 startAngle = endAngle;
             }
 
-            var outerRadius = marks.outerSingleBull * radius,
-                innerRadius = marks.outerDoubleBull * radius,
-                singleBull = '<path class="scorable dartboard-segment" ' +
-                'data-score="25" data-factor="1" ' +
-                'd="' + [
-                "M", center.x, center.y - outerRadius,
-                "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y + outerRadius,
-                "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y - outerRadius,
-                "z",
-                "M", center.x, center.y - innerRadius,
-                "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y + innerRadius,
-                "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y - innerRadius,
-                "z"
-            ].join(" ") + '" ' +
-                'fill="' + boardColors[0][0] + '" fill-rule="evenodd"/>',
-            doubleBull = '<circle class="scorable dartboard-segment" ' +
-                'data-score="25" data-factor="2" ' +
-                'cx="' + center.x + '" cy="' + center.y + '" ' +
-                'r="' + innerRadius + '" fill="' + boardColors[0][1] + '" />';
+            // Adds the single bull hollow circle
+            var outerBullRadius = this._options.marks.outerSingleBull * radius,
+                innerBullRadius = this._options.marks.outerDoubleBull * radius;
+            svg.append("path")
+                .classed("scorable", true)
+                .classed("dartboard-segment", true)
+                .attr("data-score", this._options.bullSingleValue)
+                .attr("data-factor", 2)
+                .attr("data-bull", true)
+                .attr(
+                    "d",
+                    [
+                        "M", center.x, center.y - outerBullRadius,
+                        "A", outerBullRadius, outerBullRadius, 0, 0, 1, center.x, center.y + outerBullRadius,
+                        "A", outerBullRadius, outerBullRadius, 0, 0, 1, center.x, center.y - outerBullRadius,
+                        "z",
+                        "M", center.x, center.y - innerBullRadius,
+                        "A", innerBullRadius, innerBullRadius, 0, 0, 0, center.x, center.y + innerBullRadius,
+                        "A", innerBullRadius, innerBullRadius, 0, 0, 0, center.x, center.y - innerBullRadius,
+                        "z"
+                    ].join(" ")
+                )
+                .style("fill",  this._options.boardColors[0][0])
+                .attr("fill-rule", "evenodd");
 
-            svgContents += singleBull + doubleBull;
+            // Adds the double bull plain circle
+            svg.append("circle")
+                .classed("scorable", true)
+                .classed("dartboard-segment", true)
+                .attr("data-score", this._options.bullSingleValue)
+                .attr("data-factor", 1)
+                .attr("data-bull", true)
+                .attr("cx", center.x)
+                .attr("cy", center.y)
+                .attr("r", innerBullRadius)
+                .style("fill", this._options.boardColors[0][1]);
 
-            $svg.html('<defs>' + svgDefs + '</defs>' + svgContents);
+            /*
+            // Adds the html definition of the SVG object
+            this._element.html(
+                '<svg xmlns:svg="http://www.w3.org/2000/svg" ' +
+                    'xmlns="http://www.w3.org/2000/svg" width="100%" ' +
+                    'height="100%" viewBox="0 0 1000 1000" class="dartboard">' +
+                    '<defs>' + svgDefs + '</defs>' +
+                    svgContents +
+                '</svg>'
+            );
 
-            $svg.children('.scorable').on('click', function(evt) {
-                var score = $(this).data('score') || 0,
-                    factor = $(this).data('factor') || 0;
-                console.log('click', score, factor, this);
-            });
+            // Reload div content
+            this._element.html(this._element.html());
+            */
         };
 
         /**
-         * Returns the score under coordinates (x, y)
-         * @param {number} inputX - The X coordinates to lookup the score for.
-         * @param {number} inputY - The Y coordinates to lookup the score for.
-         * @returns {Object} Score object (eg. for a double 10: {value: 10, factor: 3, bull: false}).
+         * Sets the onClick event
          */
-        this.getScore = function(inputX, inputY) {
-            var ctx = this._canvas.getContext('2d'),
-                x = this._center.x - inputX, // yes it is backwards because
-                y = this._center.y - inputY, // canvas are backwards...
-                angle = Math.atan2(y, x) + Math.PI, // Angle starting on the right
-                radius = Math.sqrt(
-                    Math.pow(x, 2) +
-                    Math.pow(y, 2)
-                ) / this._radius;
+        this._setupEvents = function() {
+            var dartboard = this;
+            this._element.children('svg').children('.scorable').on('click', function(evt) {
+                evt.preventDefault();
+                dartboard._options.onClick();
 
-            var result = {
-                value: 0,
-                factor: 1,
-                bull: false
-            };
+                var score = $(this).data('score') || 0,
+                    factor = $(this).data('factor') || 1,
+                    bull = ($(this).data('bull') === true ? true : false);
 
-            // Outside of the target
-            if(radius > this._options.marks.outerDouble) {
-                return result;
-            }
+                console.log('click', score, factor, this);
+                $(this).trigger(
+                    new jQuery.Event('dartThrown', {
+                        score: {
+                            value: score,
+                            factor: factor,
+                            bull: bull
+                        }
+                    })
+                );
+            });
 
-            // Bull's eye check
-            if(radius <= this._options.marks.outerSingleBull) {
-                result.value = this._options.bullSingleValue;
-                result.bull = true;
-
-                if(radius <= this._options.marks.outerDoubleBull) {
-                    result.factor = 2;
-                }
-                return result;
-            }
-
-            // Rotate angle by pi/10 to correctly align the sectors
-            var correctedAngle = angle + Math.PI / 20;
-            if(correctedAngle < 0) {
-                correctedAngle += twoPI;
-            } else if(correctedAngle > twoPI) {
-                correctedAngle -= twoPI;
-            }
-
-            // Get sector index and corresponding value
-            var sector = Math.floor( correctedAngle * 10 / Math.PI);
-            result.value = this._options.numberOrder[sector];
-
-            // Get the factor depending on radius
-            if(radius >= this._options.marks.innerDouble && radius <= this._options.marks.outerDouble) {
-                result.factor = 2;
-            } else if(radius >= this._options.marks.innerTriple && radius <= this._options.marks.outerTriple) {
-                result.factor = 3;
-            }
-
-            return result;
         };
 
         /**
@@ -450,7 +285,8 @@ define(['jquery'], function($) {
             delete this._element;
         };
 
-        this.draw();
+        this._draw();
+        this._setupEvents();
     }
 
 

@@ -19,6 +19,7 @@ require.config({
         select2: "/scripts/libs/select2/select2.min",
         handlebars: "/scripts/libs/handlebars/handlebars.min",
         highcharts: "/scripts/libs/highcharts/highcharts",
+        d3: "/scripts/libs/d3/d3.min",
     }
 });
 
