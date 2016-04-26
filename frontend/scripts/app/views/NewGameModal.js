@@ -246,6 +246,12 @@ define([
                     .appendTo(elements.variantSelect);
             });
 
+            // Disable select if there is only one option
+            $(elements.variantSelect).prop(
+                "disabled",
+                (Object.keys(variants).length === 1)
+            );
+
             elements.variantSelect.trigger('change');
         },
 
@@ -284,7 +290,8 @@ define([
                     inputId = optionName + '-opt',
                     formGroup = $('<div>').addClass('form-group additional-group'),
                     columnDiv = $('<div>').addClass('col-sm-8'),
-                    input = null;
+                    input = null,
+                    dontSetEvents = false;
 
                 $('<label>')
                     .attr('for', inputId)
@@ -296,17 +303,53 @@ define([
                     case "select":
                         input = $('<select>')
                             .attr('id', inputId)
-                            .data('option-name', optionName)
                             .addClass('form-control additional-option');
 
-                        for(var value in option.values) {
-                            if(option.values.hasOwnProperty(value)) {
-                                $('<option>')
-                                .val(value)
-                                .text(option.values[value])
-                                .appendTo($(input));
+                        Object.keys(option.values).forEach(function(value) {
+                            var selectOption = option.values[value];
+                            if(selectOption.text) {
+                                var opt = $('<option>')
+                                    .val(value)
+                                    .text(selectOption.text);
+                                if(selectOption.selected) {
+                                    opt.prop('selected', true);
+                                }
+                                $(input).append(opt);
                             }
-                        }
+                        });
+                        break;
+                    case "checkbox":
+                        dontSetEvents = true;
+
+                        input = $('<div>')
+                            .attr('id', inputId);
+
+                        Object.keys(option.values).forEach(function(value) {
+                            var checkOption = option.values[value];
+                            if(checkOption.text) {
+                                var checkContainer = $('<div>')
+                                        .addClass("checkbox"),
+                                    checkLabel = $('<label>'),
+                                    checkbox = $('<input>')
+                                        .attr('type', 'checkbox')
+                                        .addClass('additional-option');
+
+                                if(checkOption.checked) {
+                                    checkbox.prop('checked', true);
+                                }
+
+                                modal.setAdditionalOption(value, (checkOption.checked ? true : false));
+                                checkbox.on('change', function() {
+                                    modal.setAdditionalOption(value, $(this).is(':checked'));
+                                });
+
+                                $(checkLabel)
+                                    .text(checkOption.text)
+                                    .prepend(checkbox)
+                                    .appendTo(checkContainer);
+                                $(input).append(checkContainer);
+                            }
+                        });
                         break;
                     case "number":
                         input = $('<input>')
@@ -329,10 +372,13 @@ define([
                         return;
                 }
 
-                modal.setAdditionalOption(optionName, input.val());
-                input.on('change', function() {
-                    modal.setAdditionalOption(optionName, $(this).val());
-                });
+                // Do not set events for special types like checkboxes
+                if(! dontSetEvents) {
+                    modal.setAdditionalOption(optionName, input.val());
+                    input.on('change', function() {
+                        modal.setAdditionalOption(optionName, $(this).val());
+                    });
+                }
 
                 $(columnDiv).append(input);
                 $(formGroup)
@@ -340,6 +386,7 @@ define([
                     .appendTo(elements.additionalOptionsDiv);
             });
             elements.additionalOptionsDiv.show();
+            console.log('init', modal._options);
         }
     };
 
