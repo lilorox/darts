@@ -1,21 +1,30 @@
 <html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <style>
+.dartboard-segment:hover {
+  fill: rgb(100, 100, 255);
+}
+  </style>
 </head>
 <body>
-<svg id="dartboard" width="600" height="600" shape-rendering="geometricPrecision"></svg>
+<div id="dartboard">
+  <svg id="dartboard-svg" width="100%" height="100%" viewBox="0 0 1000 1000"></svg>
+</div>
 
 <script type="text/javascript" data-main="scripts/app" src="scripts/libs/jquery/jquery.min.js"></script>
 <script>
 $(function() {
 console.log('start');
 
-var $svg = $('#dartboard'),
-  center = { x: 300, y: 300 },
-  radius = 300,
-  svgContents = '<circle cx="' + center.x + '" cy="' + center.y + '" r="' + radius + '" fill="rgb(50,50,50)" />',
+var $svg = $('#dartboard-svg'),
+  radius = 500,
+  center = { x: radius, y: radius },
+  svgDefs = '',
+  svgContents = '<rect class="scorable" width="1000" height="1000" fill="rgb(255, 255, 255)" data-factor="2"/>' +
+    '<circle class="scorable" cx="' + center.x + '" cy="' + center.y + '" r="' + radius + '" fill="rgb(50,50,50)" />',
   marks = {
-      textPosition: 0.92,
+      textPosition: 0.90,
       outerDouble: 0.85,
       innerDouble: 0.80,
       outerTriple: 0.53,
@@ -23,6 +32,13 @@ var $svg = $('#dartboard'),
       outerSingleBull: 0.07,
       outerDoubleBull: 0.03
   },
+  numberOrder = [
+    20, 1,  18, 4,  13,
+    6,  10, 15, 2,  17,
+    3,  19, 7,  16, 8,
+    11, 14, 9,  12, 5
+  ],
+  factors = [ 3, 1, 2, 1 ],
   boardColors = [
     [ "rgb(0,150,61)",    "rgb(206,21,0)" ],
     [ "rgb(255,255,255)", "rgb(0,0,0)" ]
@@ -75,37 +91,69 @@ for(i = 0; i < 20; i++) {
         "L", points[0].x, points[0].y,
         "Z"
       ],
-      contents = '<path d="' + d.join(" ") + '" fill="' + color + '"/>';
+      contents = '<path class="scorable dartboard-segment" ' +
+        'data-score="' + numberOrder[i] + '" ' +
+        'data-factor="' + factors[j] + '" ' +
+        'd="' + d.join(" ") + '" fill="' + color + '"/>';
     svgContents += contents;
-    console.log(contents);
   }
+
+  var textRadius = marks.textPosition * radius,
+    textStart = {
+      x: center.x + textRadius * Math.cos(startAngle),
+      y: center.y + textRadius * Math.sin(startAngle)
+    },
+    textEnd = {
+      x: center.x + textRadius * Math.cos(endAngle),
+      y: center.y + textRadius * Math.sin(endAngle)
+    };
+  svgDefs += '<path id="dartboard-text-path-' + numberOrder[i] + '" d="' +
+    [
+      "M", textStart.x, textStart.y,
+      "A", textRadius, textRadius, 0, 0, 1, textEnd.x, textEnd.y
+    ].join(" ") +
+    '"/>';
+
+  svgContents +=
+    '<text x="0" y="0" text-anchor="middle" font-size="' + (radius / 15) + '" fill="white" font-family="Arial">' +
+    '<textPath xlink:href="#dartboard-text-path-' + numberOrder[i] + '" startOffset="50%">' + numberOrder[i] + '</textPath>' +
+    '</text>';
 
   startAngle = endAngle;
 }
 
 var outerRadius = marks.outerSingleBull * radius,
   innerRadius = marks.outerDoubleBull * radius,
-  singleBull = '<path d="' +
-    [
-      "M", center.x, center.y - outerRadius,
-      "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y + outerRadius,
-      "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y - outerRadius,
-      "z",
-      "M", center.x, center.y - innerRadius,
-      "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y + innerRadius,
-      "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y - innerRadius,
-      "z"
-    ].join(" ") +
-    '" + fill="' + boardColors[0][0] + '" fill-rule="evenodd"/>',
-    doubleBull = '<circle cx="' + center.x + '" cy="' + center.y + '" r="' + innerRadius + '" fill="' + boardColors[0][1] + '" />';
+  singleBull = '<path class="scorable dartboard-segment" ' +
+      'data-score="25" data-factor="1" ' +
+      'd="' + [
+        "M", center.x, center.y - outerRadius,
+        "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y + outerRadius,
+        "A", outerRadius, outerRadius, 0, 0, 1, center.x, center.y - outerRadius,
+        "z",
+        "M", center.x, center.y - innerRadius,
+        "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y + innerRadius,
+        "A", innerRadius, innerRadius, 0, 0, 0, center.x, center.y - innerRadius,
+        "z"
+      ].join(" ") + '" ' +
+      'fill="' + boardColors[0][0] + '" fill-rule="evenodd"/>',
+    doubleBull = '<circle class="scorable dartboard-segment" ' +
+      'data-score="25" data-factor="2" ' +
+      'cx="' + center.x + '" cy="' + center.y + '" ' +
+      'r="' + innerRadius + '" fill="' + boardColors[0][1] + '" />';
 
-//M 950,81 A 107,107 0 0,1 950,295 A 107,107 0 0,1 950,81 z              M 950,139 A 49,49 0 0,0 950,237 A 49,49 0 0,0 950,139 z
-
-console.log(singleBull);
 svgContents += singleBull + doubleBull;
-$svg.html(svgContents);
+
+$svg.html('<defs>' + svgDefs + '</defs>' + svgContents);
+
+$svg.children('.scorable').on('click', function(evt) {
+  var score = $(this).data('score') || 0,
+    factor = $(this).data('factor') || 0;
+  console.log('click', score, factor, this);
+});
 
 console.log('end');
+
 });
 </script>
 </body>
