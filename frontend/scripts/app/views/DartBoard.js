@@ -19,8 +19,8 @@ define(['jquery', 'd3'], function($, d3) {
 
             // Colors of the sectors
            boardColors: [
-                [ "rgb(0,150,61)",    "rgb(206,21,0)" ], // Double / Triple
-                [ "rgb(255,255,255)", "rgb(0,0,0)" ] // Single
+                [ "rgb(206,21,0)", "rgb(0,150,61)"    ], // Double / Triple
+                [ "rgb(0,0,0)",    "rgb(255,255,255)" ] // Single
            ],
 
             // Order of the numbers, starting on the right, clockwise
@@ -213,7 +213,7 @@ define(['jquery', 'd3'], function($, d3) {
                         "z"
                     ].join(" ")
                 )
-                .style("fill",  this._options.boardColors[0][0])
+                .style("fill",  this._options.boardColors[0][1])
                 .attr("fill-rule", "evenodd");
 
             // Adds the double bull plain circle
@@ -226,7 +226,7 @@ define(['jquery', 'd3'], function($, d3) {
                 .attr("cx", center.x)
                 .attr("cy", center.y)
                 .attr("r", innerBullRadius)
-                .style("fill", this._options.boardColors[0][1]);
+                .style("fill", this._options.boardColors[0][0]);
         };
 
         /**
