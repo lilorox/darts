@@ -56,6 +56,7 @@ define([
                         return;
                     }
 
+                    // Invalid score (below the minimum)
                     if(player.score <= this._minimumScore || player.score === 0 && (
                             (score.factor !== 2 && this._options.doubleOut) ||
                             (score.factor !== 3 && this._options.tripleOut))) {
@@ -104,8 +105,10 @@ define([
          */
         registerStartingCondition: {
             value: function(player, score) {
-                if(! player.canStart && (this._options.doubleIn && score.factor === 2 ||
-                        this._options.tripleIn && score.factor === 3)) {
+                if(! player.canStart && score > 0 && (
+                        this._options.doubleIn && score.factor === 2 ||
+                        this._options.tripleIn && score.factor === 3
+                        )) {
                     player.canStart = true;
                     score.highlight = true;
                 }
