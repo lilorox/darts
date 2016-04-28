@@ -105,7 +105,7 @@ define([
          */
         registerStartingCondition: {
             value: function(player, score) {
-                if(! player.canStart && score > 0 && (
+                if(! player.canStart && score.value > 0 && (
                         this._options.doubleIn && score.factor === 2 ||
                         this._options.tripleIn && score.factor === 3
                         )) {
