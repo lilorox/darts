@@ -17,6 +17,7 @@ module.exports = function(grunt) {
                     'select2/select2.min.js': 'select2/dist/js/select2.min.js',
                     'handlebars/handlebars.min.js': 'handlebars/handlebars.min.js',
                     'highcharts/highcharts.js': 'highcharts/highcharts.js',
+                    'd3/d3.min.js': 'd3/d3.min.js',
                 }
             },
             css: {

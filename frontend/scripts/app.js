@@ -3,7 +3,7 @@
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 require.config({
-    baseUrl: "/scripts/app",
+    baseUrl: "scripts/app",
     nodeIdCompat: true,
     shim: {
         bootstrap: { deps: ["jquery"] },
@@ -14,11 +14,12 @@ require.config({
         }
     },
     paths: {
-        jquery: "/scripts/libs/jquery/jquery.min",
-        bootstrap: "/scripts/libs/bootstrap/bootstrap.min",
-        select2: "/scripts/libs/select2/select2.min",
-        handlebars: "/scripts/libs/handlebars/handlebars.min",
-        highcharts: "/scripts/libs/highcharts/highcharts",
+        jquery: "../libs/jquery/jquery.min",
+        bootstrap: "../libs/bootstrap/bootstrap.min",
+        select2: "../libs/select2/select2.min",
+        handlebars: "../libs/handlebars/handlebars.min",
+        highcharts: "../libs/highcharts/highcharts",
+        d3: "../libs/d3/d3.min",
     }
 });
 

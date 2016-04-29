@@ -41,13 +41,6 @@ th {
   margin-bottom: 10px;
 }
 
-.dartboard {
-  /*
-  cursor: crosshair;
-   */
-  cursor: url("images/dart.png"), auto;
-}
-
 .scoretable td {
   width: 25%;
 }

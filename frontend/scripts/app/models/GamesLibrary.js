@@ -31,10 +31,6 @@ define(function() {
                     normal: {
                         desc: "Normal",
                         _class: "X01"
-                    },
-                    noDoubleStart: {
-                        desc: "Start without double",
-                        _class: "NoDoubleStartX01"
                     }
                 },
                 options: {
@@ -42,10 +38,26 @@ define(function() {
                         label: "Starting score",
                         type: "select",
                         values: {
-                            301: "301",
-                            501: "501",
-                            701: "701",
-                            1001: "1001",
+                            301: { selected: true, text: "301" },
+                            501: { text: "501" },
+                            701: { text: "701" },
+                            1001: { text: "1001" },
+                        }
+                    },
+                    startCondition: {
+                        label: "Starting conditions",
+                        type: "checkbox",
+                        values: {
+                            doubleIn: { checked: true, text: "Double in" },
+                            tripleIn: { text: "Triple in" }
+                        }
+                    },
+                    endCondition: {
+                        label: "Ending conditions",
+                        type: "checkbox",
+                        values: {
+                            doubleOut: { checked: true, text: "Double out" },
+                            tripleOut: { text: "Triple out" }
                         }
                     }
                 }
