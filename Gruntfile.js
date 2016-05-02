@@ -2,6 +2,8 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
+        clean: [ 'frontend/scripts/libs', 'frontend/css/libs' ],
+
         bowercopy: {
             options: {
                 srcPrefix: 'bower_components'
@@ -74,9 +76,10 @@ module.exports = function(grunt) {
         }
     });
 
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-bowercopy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-jsdoc');
 
-    grunt.registerTask('default', ['jshint', 'bowercopy', 'jsdoc' ]);
+    grunt.registerTask('default', [ 'clean', 'jshint', 'bowercopy', 'jsdoc' ]);
 };
