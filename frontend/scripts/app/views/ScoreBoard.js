@@ -5,12 +5,11 @@
 
 define([
     'jquery',
-    'bootstrap',
     'handlebars',
     './DartBoard',
     'models/Dispatcher',
     'Utils'
-], function($, bootstrap, Handlebars, DartBoard, Dispatcher, Utils) {
+], function($, Handlebars, DartBoard, Dispatcher, Utils) {
     /**
      * ScoreBoard view object.
      * @constructor

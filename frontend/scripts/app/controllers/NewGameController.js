@@ -51,44 +51,41 @@ define([
                 Utils.shuffleArray(players);
             }
 
-            var className = this._gamesLibrary.getGameClassName(
+            var Game = this._gamesLibrary.getGameClass(
                 game.type,
                 game.variant,
                 players,
                 game.options
             );
 
-            var controller = this;
-            require(["models/games/" + className], function(Game) {
-                controller._game = new Game(game.players, game.options);
+            this._game = new Game(game.players, game.options);
 
-                controller._scoreboard = new ScoreBoard(
-                    controller._game,
-                    {
-                        dartboard: '#dartboard',
-                        scoreboard: '#scoreboard',
-                        throwsDetails: '#throws-details',
-                        undoButton: '#undo-btn',
-                        loadGameButton: '#load-btn',
-                        saveGameButton: '#save-btn'
-                    }
-                );
-                controller._scoreboard.init();
+            this._scoreboard = new ScoreBoard(
+                this._game,
+                {
+                    dartboard: '#dartboard',
+                    scoreboard: '#scoreboard',
+                    throwsDetails: '#throws-details',
+                    undoButton: '#undo-btn',
+                    loadGameButton: '#load-btn',
+                    saveGameButton: '#save-btn'
+                }
+            );
+            this._scoreboard.init();
 
-                controller._livestats = new LiveStats(
-                    controller._game,
-                    {
-                        statsDetails: '#stats-details',
-                    }
-                );
-                controller._livestats.init();
+            this._livestats = new LiveStats(
+                this._game,
+                {
+                    statsDetails: '#stats-details',
+                }
+            );
+            this._livestats.init();
 
-                controller._gameController = new GameController(
-                    controller._game,
-                    controller._scoreboard,
-                    controller._livestats
-                );
-            });
+            this._gameController = new GameController(
+                this._game,
+                this._scoreboard,
+                this._livestats
+            );
         }
     };
 
