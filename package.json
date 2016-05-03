@@ -17,10 +17,16 @@
   },
   "homepage": "https://github.com/lilorox/darts#readme",
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-bowercopy": "^1.2.4",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-jshint": "^1.0.0",
-    "grunt-jsdoc": "^1.1.0"
+    "del": "^2.2.0",
+    "event-stream": "^3.3.2",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-debug": "^2.1.2",
+    "gulp-inject": "^4.0.0",
+    "gulp-insert": "^0.5.0",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-rename": "^1.2.2",
+    "gulp-requirejs-optimize": "^1.0.0",
+    "merge-stream": "^1.0.0"
   }
 }
