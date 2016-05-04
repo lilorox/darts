@@ -5,9 +5,10 @@
 
 define([
     'jquery',
+    'bootstrap',
     'select2',
     'models/Dispatcher'
-], function($, select2, Dispatcher) {
+], function($, bootstrap, select2, Dispatcher) {
     /**
      * Modal box for the new game form.
      * @constructor

@@ -6,20 +6,20 @@ require.config({
     baseUrl: "scripts/app",
     nodeIdCompat: true,
     shim: {
-        bootstrap: { deps: ["jquery"] },
-        select2: { deps: ["jquery"] },
+        boostrap: { deps: [ 'jquery' ] },
+        select2: { deps: [ 'jquery' ] },
         highcharts: {
-            exports: 'Highcharts',
-            deps: ["jquery"]
+            deps: [ 'jquery' ],
+            exports: 'Highcharts'
         }
     },
     paths: {
-        jquery: "../libs/jquery/jquery.min",
-        bootstrap: "../libs/bootstrap/bootstrap.min",
-        select2: "../libs/select2/select2.min",
-        handlebars: "../libs/handlebars/handlebars.min",
-        highcharts: "../libs/highcharts/highcharts",
-        d3: "../libs/d3/d3.min",
+        jquery: "../../libs/jquery",
+        bootstrap: "../../libs/bootstrap",
+        select2: "../../libs/select2",
+        handlebars: "../../libs/handlebars",
+        highcharts: "../../libs/highcharts",
+        d3: "../../libs/d3",
     }
 });
 
