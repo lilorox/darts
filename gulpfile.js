@@ -23,17 +23,17 @@ var config = {
 };
 
 var gulp = require('gulp'),
+    bower = require('gulp-bower'),
     concat = require('gulp-concat'),
     debug = require('gulp-debug'),
     del = require('del'),
-    rename = require('gulp-rename'),
-    insert = require('gulp-insert'),
-    requirejsOptimize = require('gulp-requirejs-optimize'),
-    concat = require('gulp-concat'),
-    minifyCSS = require('gulp-minify-css'),
     inject = require('gulp-inject'),
+    insert = require('gulp-insert'),
     merge = require('merge-stream'),
+    minifyCSS = require('gulp-minify-css'),
     pjson = require('./package.json'),
+    rename = require('gulp-rename'),
+    requirejsOptimize = require('gulp-requirejs-optimize'),
     versionString = '/** darts v' + pjson.version + ' Copyright (C) 2016 Pierre Gaxatte; Released under GPLv3 license, see the LICENSE file at the root of the project at https://github.com/lilorox/darts */\n',
     destDir = 'dist/';
 
@@ -43,6 +43,16 @@ var gulp = require('gulp'),
 gulp.task('clean', function() {
     return del([ destDir ]);
 });
+
+
+/**
+ * Runs bower to install dependencies
+ */
+gulp.task('bower', function() {
+    return bower();
+});
+
+gulp.task('prepare', [ 'clean', 'bower' ]);
 
 /**
  * Builds the index page
@@ -71,7 +81,7 @@ gulp.task('index', [ 'scripts', 'styles', 'fonts', 'images' ], function() {
 /**
  * Copies the templates
  */
-gulp.task('templates', [ 'clean' ], function() {
+gulp.task('templates', [ 'prepare' ], function() {
     return gulp.src(config.templates)
         .pipe(gulp.dest(destDir + 'templates'));
 });
@@ -79,7 +89,7 @@ gulp.task('templates', [ 'clean' ], function() {
 /**
  * Merges and minifies the CSS
  */
-gulp.task('styles', [ 'clean' ], function() {
+gulp.task('styles', [ 'prepare' ], function() {
     return gulp.src(config.styles)
             .pipe(concat('darts.min.css'))
             .pipe(minifyCSS())
@@ -89,7 +99,7 @@ gulp.task('styles', [ 'clean' ], function() {
 /**
  * Copies the fonts
  */
-gulp.task('fonts', [ 'clean' ], function() {
+gulp.task('fonts', [ 'prepare' ], function() {
     return gulp.src(config.fonts)
             .pipe(gulp.dest(destDir + 'css/fonts'));
 });
@@ -97,7 +107,7 @@ gulp.task('fonts', [ 'clean' ], function() {
 /**
  * Copies the images
  */
-gulp.task('images', [ 'clean' ], function() {
+gulp.task('images', [ 'prepare' ], function() {
     return gulp.src(config.images)
             .pipe(gulp.dest(destDir + 'css/images'));
 });
@@ -105,7 +115,7 @@ gulp.task('images', [ 'clean' ], function() {
 /**
  * Compiles the requirejs code and prepends the license
  */
-gulp.task('scripts', [ 'clean' ], function() {
+gulp.task('scripts', [ 'prepare' ], function() {
     return gulp.src('frontend/scripts/app/main.js')
         .pipe(requirejsOptimize({
             baseUrl: 'frontend/scripts/app',
