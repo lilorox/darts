@@ -33,8 +33,11 @@ var gulp = require('gulp'),
     minifyCSS = require('gulp-minify-css'),
     pjson = require('./package.json'),
     rename = require('gulp-rename'),
-    requirejsOptimize = require('gulp-requirejs-optimize'),
-    versionString = '/** darts v' + pjson.version + ' Copyright (C) 2016 Pierre Gaxatte; Released under GPLv3 license, see the LICENSE file at the root of the project at https://github.com/lilorox/darts */\n',
+    requirejsOptimize = require('gulp-requirejs-optimize');
+
+var versionString = '/** darts v' + pjson.version + ' Copyright (C) 2016 ' +
+        'Pierre Gaxatte; Released under GPLv3 license, see the LICENSE file ' +
+        'at the root of the project at https://github.com/lilorox/darts */\n',
     destDir = 'dist/';
 
 /**
@@ -44,6 +47,12 @@ gulp.task('clean', function() {
     return del([ destDir ]);
 });
 
+/**
+ * Removes the generated files and the bower components
+ */
+gulp.task('mrproper', function() {
+    return del([ destDir, 'bower_components' ]);
+});
 
 /**
  * Runs bower to install dependencies
@@ -147,3 +156,4 @@ gulp.task('scripts', [ 'prepare' ], function() {
 });
 
 gulp.task('default', [ 'index', 'templates' ]);
+gulp.task('dev', [ 'index:dev', 'templates:dev' ]);
