@@ -30,6 +30,13 @@ var config = {
             'bower_components/highcharts/highcharts.js',
             'bower_components/d3/d3.js',
             'bower_components/requirejs/require.js'
+        ],
+        styles: [
+            'bower_components/bootstrap/dist/css/bootstrap.css',
+            'bower_components/bootstrap/dist/css/bootstrap-theme.css',
+            'bower_components/select2/dist/css/select2.css',
+            'bower_components/select2-bootstrap/select2-bootstrap.css',
+            'bower_components/select2-bootstrap/select2-bootstrap.css'
         ]
     }
 };
@@ -45,8 +52,7 @@ var gulp = require('gulp'),
     minifyCSS = require('gulp-minify-css'),
     pjson = require('./package.json'),
     rename = require('gulp-rename'),
-    requirejsOptimize = require('gulp-requirejs-optimize'),
-    series = require('stream-series');
+    requirejsOptimize = require('gulp-requirejs-optimize');
 
 var versionString = '/** darts v' + pjson.version + ' Copyright (C) 2016 ' +
         'Pierre Gaxatte; Released under GPLv3 license, see the LICENSE file ' +
@@ -79,14 +85,14 @@ gulp.task('prepare', [ 'clean', 'bower' ]);
  */
 
 // Copies the fonts to the libs directory
-gulp.task('dev:fonts', [ 'clean', 'bower' ], function() {
+gulp.task('dev:fonts', [ 'prepare' ], function() {
     return gulp.src(config.fonts)
         .pipe(gulp.dest(config.dev.destDir + 'libs/fonts'));
 });
 
 // Copies the dev files to the libs directory
-gulp.task('dev:libs', [ 'dev:fonts', 'clean', 'bower' ], function() {
-    var sources = [].concat(config.styles, config.dev.scripts);
+gulp.task('dev:libs', [ 'dev:fonts', 'prepare' ], function() {
+    var sources = [].concat(config.dev.styles, config.dev.scripts);
     return gulp.src(sources)
         .pipe(gulp.dest(config.dev.destDir + 'libs'));
 });
@@ -95,6 +101,7 @@ gulp.task('dev:libs', [ 'dev:fonts', 'clean', 'bower' ], function() {
 gulp.task('dev:index', [ 'dev:libs' ], function() {
     var sources = gulp.src([
             './libs/*.css',
+            './css/*.css',
             './libs/require.js'
         ], {
             read: false,
@@ -107,25 +114,19 @@ gulp.task('dev:index', [ 'dev:libs' ], function() {
             return inject.transform.apply(inject.transform, arguments);
         };
 
-        /*
-    // The order is important so we use stream-series
-    var jqueryStream = gulp.src([ 'libs/jquery.js' ], srcOptions).pipe(debug({title:'jquery'})),
-        libsStream = gulp.src([
-            '../bower_components/bootstrap/dist/js/bootstrap.js',
-            '../bower_components/select2/dist/js/select2.js',
-            '../bower_components/handlebars/handlebars.js',
-            '../bower_components/highcharts/highcharts.js',
-            '../bower_components/d3/d3.js',
-        ], srcOptions),
-        requireStram = gulp.src([ '../bower_components/requirejs/require.js' ], srcOptions),
-        cssStream = gulp.src('./libs/*.css', srcOptions),
-        sources = series(jqueryStream, libsStream, requireStram, cssStream);
-        */
-
     return gulp.src(config.index)
         .pipe(inject(sources, { addRootSlash: false, transform: transformRequire }))
         .pipe(rename('index.html'))
         .pipe(gulp.dest('./frontend/'));
+});
+
+// Watch task
+gulp.task('watch', [ 'prepare' ], function() {
+    gulp.watch([
+        'frontend/**/*',
+        '!frontend/index.html',
+        '!frontend/libs/**/*'
+    ], ['dev']);
 });
 
 gulp.task('dev', [ 'dev:index' ]);
