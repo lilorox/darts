@@ -169,6 +169,9 @@ define(['jquery', 'd3'], function($, d3) {
                     );
 
                 svg.append("text")
+                    .classed("scorable", true)
+                    .attr("data-score", 0)
+                    .attr("data-factor", 1)
                     .attr("x", 0)
                     .attr("y", 0)
                     .attr("text-anchor", "middle")

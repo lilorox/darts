@@ -3,7 +3,12 @@
  * Released under GPLv3 license, see the LICENSE file at the root of the project
  */
 
-define(function() {
+define([
+    './games/AroundTheClock',
+    './games/Cricket',
+    './games/CutThroatCricket',
+    './games/X01',
+], function(AroundTheClock, Cricket, CutThroatCricket, X01) {
     /*
      * Games library object
      */
@@ -15,12 +20,12 @@ define(function() {
                     normal: {
                         desc: "Normal (2 players)",
                         nbPlayers: { min: 2, max: 2 },
-                        _class: "Cricket"
+                        _class: Cricket
                     },
                     cutThroat: {
                         desc: "Cut throat (2+ players)",
                         nbPlayers: { min: 2 },
-                        _class: "CutThroatCricket"
+                        _class: CutThroatCricket
                     }
                 }
             },
@@ -30,7 +35,7 @@ define(function() {
                 variants: {
                     normal: {
                         desc: "Normal",
-                        _class: "X01"
+                        _class: X01
                     }
                 },
                 options: {
@@ -68,7 +73,7 @@ define(function() {
                 variants: {
                     normal: {
                         desc: "No variant",
-                        _class: "AroundTheClock"
+                        _class: AroundTheClock
                     }
                 },
                 options: {
@@ -98,7 +103,7 @@ define(function() {
         getRules: function() {
             return this._games;
         },
-        getGameClassName: function(type, variant, players, options) {
+        getGameClass: function(type, variant, players, options) {
             if(! this._games.hasOwnProperty(type) ||
                     ! this._games[type].variants.hasOwnProperty(variant)) {
                 return null;

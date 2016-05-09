@@ -5,15 +5,11 @@
     <meta name="title" content="Darts"/>
 
     <title>Darts</title>
+    <!-- inject:css -->
+    <!-- endinject -->
 
-    <link rel="stylesheet" href="css/libs/bootstrap/bootstrap.min.css"/>
-    <link rel="stylesheet" href="css/libs/bootstrap/bootstrap-theme.min.css"/>
-    <link rel="stylesheet" href="css/libs/select2/select2.min.css"/>
-    <link rel="stylesheet" href="css/libs/select2/select2-bootstrap.css"/>
-    <link rel="stylesheet" href="css/darts.css" media="screen"/>
-    <link rel="stylesheet" href="css/dartboard.css" media="screen"/>
-
-    <script type="text/javascript" data-main="scripts/app" src="scripts/libs/requirejs/require.js"></script>
+    <!-- inject:js -->
+    <!-- endinject -->
   </head>
   <body>
     <nav class="navbar navbar-default">
@@ -34,6 +30,9 @@
             <li id="save-btn" class="disabled"><a href="#">Save</a></li>
             <li id="undo-btn" class="disabled"><a href="#">Undo</a></li>
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" data-toggle="modal" data-target="#about-modal">About</a></li>
+          </ul>
         </div>
       </div>
     </nav>
@@ -43,7 +42,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">New game</h4>
+            <h4 class="modal-title centered">New game</h4>
           </div>
           <div class="modal-body">
             <form class="form-horizontal">
@@ -90,6 +89,32 @@
       </div>
     </div>
 
+    <div class="modal fade" tabindex="-1" role="dialog" id="about-modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title centered">About darts</h4>
+          </div>
+          <div class="modal-body">
+            <p class="centered">
+              Version 0.0.4
+            </p>
+            <p class="centered">
+              This application is presented to you by <a href="mailto:pierre.gaxatte@gmail.com">Pierre Gaxatte</a>.
+            </p>
+            <p class="centered">
+              It is released under the <a href="https://raw.githubusercontent.com/lilorox/darts/master/LICENSE">GPL v3 license</a> and sources are hosted on <a href="https://github.com/lilorox/darts/">Github</a>.<br/>
+              Please report errors here: <a href="https://github.com/lilorox/darts/issues">https://github.com/lilorox/darts/issues</a>.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="container-fluid">
       <div class="row">
         <div class="col-md-6">
@@ -124,6 +149,5 @@
         </div>
       </div>
     </div>
-
   </body>
 </html>
