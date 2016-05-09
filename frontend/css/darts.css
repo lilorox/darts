@@ -96,3 +96,7 @@ span.label-closed {
 .tab-content {
   margin-bottom: 20px;
 }
+
+.centered {
+  text-align: center;
+}

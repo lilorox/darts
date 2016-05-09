@@ -30,6 +30,9 @@
             <li id="save-btn" class="disabled"><a href="#">Save</a></li>
             <li id="undo-btn" class="disabled"><a href="#">Undo</a></li>
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" data-toggle="modal" data-target="#about-modal">About</a></li>
+          </ul>
         </div>
       </div>
     </nav>
@@ -39,7 +42,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">New game</h4>
+            <h4 class="modal-title centered">New game</h4>
           </div>
           <div class="modal-body">
             <form class="form-horizontal">
@@ -81,6 +84,32 @@
           <div class="modal-footer">
             <button id="game-submit" type="button" class="btn btn-primary" disabled="">Go</button>
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="about-modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title centered">About darts</h4>
+          </div>
+          <div class="modal-body">
+            <p class="centered">
+              Version 0.0.3
+            </p>
+            <p class="centered">
+              This application is presented to you by <a href="mailto:pierre.gaxatte@gmail.com">Pierre Gaxatte</a>.
+            </p>
+            <p class="centered">
+              It is released under the <a href="https://raw.githubusercontent.com/lilorox/darts/master/LICENSE">GPL v3 license</a> and sources are hosted on <a href="https://github.com/lilorox/darts/">Github</a>.<br/>
+              Please report errors here: <a href="https://github.com/lilorox/darts/issues">https://github.com/lilorox/darts/issues</a>.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
