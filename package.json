@@ -1,6 +1,6 @@
 {
   "name": "darts",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Web app to keep scores and stats at darts",
   "main": "index.js",
   "scripts": {
