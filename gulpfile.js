@@ -87,14 +87,14 @@ gulp.task('prepare', [ 'clean', 'bower' ]);
 // Copies the fonts to the libs directory
 gulp.task('dev:fonts', [ 'prepare' ], function() {
     return gulp.src(config.fonts)
-        .pipe(gulp.dest(config.dev.destDir + 'libs/fonts'));
+        .pipe(gulp.dest(config.dev.destDir + 'fonts'));
 });
 
 // Copies the dev files to the libs directory
 gulp.task('dev:libs', [ 'dev:fonts', 'prepare' ], function() {
     var sources = [].concat(config.dev.styles, config.dev.scripts);
     return gulp.src(sources)
-        .pipe(gulp.dest(config.dev.destDir + 'libs'));
+        .pipe(gulp.dest(config.dev.destDir + 'libs/fonts'));
 });
 
 // Builds the index page
@@ -174,7 +174,7 @@ gulp.task('styles', [ 'prepare' ], function() {
 // Copies the fonts
 gulp.task('fonts', [ 'prepare' ], function() {
     return gulp.src(config.fonts)
-            .pipe(gulp.dest(destDir + 'css/fonts'));
+            .pipe(gulp.dest(destDir + 'fonts'));
 });
 
 // Copies the images
